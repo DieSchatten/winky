@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
+    # Erst die Anmeldung zurückstellen, dann den Dienst stoppen
+    pam-auth-update --package --remove winky
+    rm -f /etc/polkit-1/rules.d/50-winky-keepassxc.rules
+    systemctl disable --now winky.socket winky-polkit.socket >/dev/null 2>&1 || true
+fi
+exit 0

@@ -1,0 +1,58 @@
+Winky – Gesichtsentsperrung für den GNOME-Sperrbildschirm
+Copyright (c) 2026 Die Winky-Autoren (siehe AUTHORS)
+Lizenz: MIT (Volltext in LICENSE, installiert unter /usr/share/doc/winky/LICENSE).
+Das gilt für den gesamten eigenen Code, das Icon und die Bildschirmfotos.
+
+Mitgeliefert werden die folgenden fremden Bestandteile. Sie werden beim Bau geladen bzw.
+liegen geprüft im Repository; jede Datei ist per SHA-256 festgeschrieben
+(scripts/abhaengigkeiten.sh, modelle/HERKUNFT.md).
+
+ONNX Runtime 1.30.0 – https://github.com/microsoft/onnxruntime
+  MIT License, Copyright (c) Microsoft Corporation.
+  Hinweise zu dessen Fremdbestandteilen: onnxruntime-ThirdPartyNotices.txt
+
+face_detection_yunet_2023mar.onnx – YuNet, Gesichtssuche mit 5 Gesichtspunkten
+  https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet
+  https://github.com/ShiqiYu/libfacedetection.train
+  MIT License, Copyright (c) 2020 Shiqi Yu, Wortlaut unten.
+
+face_recognition_sface_2021dec.onnx – SFace, Gesichtsvergleich (MobileFaceNet)
+  https://github.com/opencv/opencv_zoo/tree/main/models/face_recognition_sface
+  Beigetragen von Yaoyao Zhong (SFace: Sigmoid-Constrained Hypersphere Loss for Robust
+  Face Recognition), ONNX-Umwandlung Chengrui Wang.
+  Apache License 2.0, Volltext unter /usr/share/common-licenses/Apache-2.0.
+
+hand_detector.onnx, hand_landmarks_detector.onnx, gesture_embedder.onnx,
+canned_gesture_classifier.onnx – MediaPipe Gesture Recognizer, Copyright Google LLC
+  https://github.com/google-ai-edge/mediapipe
+  Apache License 2.0, Volltext unter /usr/share/common-licenses/Apache-2.0.
+  Von TFLite nach ONNX umgewandelt (scripts/mediapipe-umwandeln.sh, modelle/HERKUNFT.md),
+  sonst unverändert. src/core/hand_gesture.cc bildet die Vor- und Nachverarbeitung von
+  MediaPipe nach (Ankerraster, Ausschnitte, Normierung, Teilmengen der Punkte).
+
+Die 5-Punkt-Sollpositionen für die Gesichtsausrichtung (src/core/face_align.h) sind die
+übliche Vorlage für 112 x 112-Gesichtsvergleichsnetze; der Code dazu ist eigen.
+
+Die MIT-Lizenz von YuNet:
+
+  MIT License
+
+  Copyright (c) 2020 Shiqi Yu <shiqi.yu@gmail.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.

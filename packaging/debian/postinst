@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+if [ "$1" = "configure" ]; then
+    systemd-sysusers /usr/lib/sysusers.d/winky.conf
+    systemd-tmpfiles --create /usr/lib/tmpfiles.d/winky.conf
+    # Ab 0.8.0 vergleicht Winky mit einem anderen Modell (SFace, Kennung WNKV). Gesichtsdaten
+    # im alten Format passen nicht mehr und werden gelöscht; die Person nimmt ihr Gesicht in
+    # der App neu auf. Bis dahin gilt überall das Passwort.
+    alt=0
+    for d in /var/lib/winky/[0-9]*; do
+        [ -d "$d" ] && [ ! -L "$d" ] && [ -f "$d/vorlagen.bin" ] || continue
+        if [ "$(head -c 4 "$d/vorlagen.bin")" != "WNKV" ]; then
+            rm -f "$d/vorlagen.bin" "$d/geste-ok" "/var/lib/winky/status/${d##*/}.json"
+            alt=1
+        fi
+    done
+    if [ "$alt" = 1 ]; then
+        echo "Winky: neues Erkennungsmodell. Bitte in der App das Gesicht neu aufnehmen." >&2
+    fi
+    # Benutzerordner der Vorlagen gehören der Gruppe des Prüfdienstes
+    for d in /var/lib/winky/[0-9]*; do
+        [ -d "$d" ] && [ ! -L "$d" ] && chown -R root:_winky "$d" && chmod 0750 "$d"
+    done
+    systemctl daemon-reload >/dev/null 2>&1 || true
+    systemctl enable --now winky.socket >/dev/null 2>&1 || true
+    # Profil bekannt machen. "Default: no" lässt es aus, bis es in der App
+    # aktiviert wird; bei Aktualisierungen wird ein aktives Profil erneuert.
+    pam-auth-update --package
+fi
+exit 0

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Winky: Schloss mit offenem Bügel, der Körper ist ein Bildschirm mit zwinkerndem Gesicht,
+       daneben eine Hand mit dem Victory-Zeichen ✌ (Bestätigung für sudo). Nur Blautöne der
+       GNOME-Palette. -->
+  <defs>
+    <linearGradient id="rahmen" x1="0" y1="50" x2="0" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3584e4"/>
+      <stop offset="1" stop-color="#1c71d8"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(-6 0)">
+    <path d="M39 54 V35 A25 25 0 0 1 89 35 V40" fill="none" stroke="#62a0ea" stroke-width="10" stroke-linecap="round"/>
+    <rect x="16" y="54" width="96" height="62" rx="14" fill="#1a5fb4"/>
+    <rect x="16" y="50" width="96" height="62" rx="14" fill="url(#rahmen)"/>
+    <rect x="25" y="59" width="78" height="44" rx="7" fill="#e9f2fd"/>
+    <circle cx="50" cy="75" r="5.5" fill="#1a5fb4"/>
+    <path d="M70 77 Q77 69.5 84 77" fill="none" stroke="#1a5fb4" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M50 87 Q63.5 96 77 87" fill="none" stroke="#1a5fb4" stroke-width="5.5" stroke-linecap="round"/>
+  </g>
+  <!-- Hand mit ✌: dunkle Unterlage als Umriss, darüber hell; Daumen über den eingeklappten Fingern -->
+  <g stroke-linecap="round">
+    <line x1="98" y1="96" x2="90.5" y2="65" stroke="#1a5fb4" stroke-width="16"/>
+    <line x1="110" y1="96" x2="117" y2="63" stroke="#1a5fb4" stroke-width="16"/>
+    <rect x="87" y="85" width="36" height="38" rx="14" fill="#1a5fb4"/>
+    <line x1="98" y1="96" x2="90.5" y2="65" stroke="#e9f2fd" stroke-width="9"/>
+    <line x1="110" y1="96" x2="117" y2="63" stroke="#e9f2fd" stroke-width="9"/>
+    <rect x="90.5" y="88.5" width="29" height="31" rx="10.5" fill="#e9f2fd"/>
+    <path d="M94.5 107.5 Q103 105 111.5 99.5" fill="none" stroke="#1a5fb4" stroke-width="3.5"/>
+  </g>
+</svg>

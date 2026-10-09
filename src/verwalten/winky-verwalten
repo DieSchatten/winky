@@ -1,0 +1,673 @@
+#!/usr/bin/python3 -I
+"""winky-verwalten / winky-gesicht: Verwaltung der Gesichtsentsperrung.
+
+Läuft als root, gestartet über pkexec (Polkit fragt nach dem Passwort) oder
+sudo. Wirkt immer nur für den aufrufenden Benutzer (PKEXEC_UID bzw. SUDO_UID)
+und liest nichts aus dem Home-Verzeichnis.
+
+Unter dem Namen winky-gesicht (eigenes Passwort genügt) sind nur Befehle für
+das eigene Gesicht erlaubt. Unter winky-verwalten (Administratorpasswort)
+zusätzlich die systemweiten Einstellungen.
+
+Eigenes Gesicht:
+  status                 Zustand als JSON
+  kameras                IR-Kameras suchen und prüfen
+  einlernen              Gesicht aufnehmen (über den Prüfdienst) und speichern
+  testen                 Erkennung probeweise, ohne Sperrzähler
+  gegenprobe             eine andere Person schaut in die Kamera und darf nicht passen
+  geste-testen           Gesicht und Handzeichen ✌ probeweise (Freigabe für sudo)
+  entfernen              eingelernte Vorlagen löschen
+System (Administrator):
+  kamera PFAD|auto       IR-Kamera festlegen, Blinkprüfung passend einstellen
+  schwelle WERT          Schwelle setzen (0.40 bis 0.95)
+  aktivieren             Gesicht am Sperrbildschirm einschalten (pam-auth-update)
+  deaktivieren           wieder ausschalten
+  pausieren / fortsetzen Notschalter setzen oder entfernen
+  keepassxc an|aus       Schnellentsperren von KeePassXC (ab 2.8) per Gesicht
+  keepassxc geste-an|geste-aus   dafür zusätzlich ✌ verlangen (Vorgabe) oder nicht
+  sudo an|aus            sudo mit Gesicht und Handzeichen ✌ bestätigen
+
+Ausgabe für die Oberfläche (zeilenweise):
+  STATUS {json}   BILD <breite> <hoehe> <bytes>\\n<RGB>   ERGEBNIS {json}
+Abbruch: Schließt der Aufrufer die Standardeingabe, endet ein laufender Vorgang.
+"""
+
+import grp
+import json
+import math
+import os
+import pwd
+import select
+import socket
+import stat
+import struct
+import subprocess
+import sys
+import time
+
+KONFIG = "/etc/winky/winky.conf"
+NOTSCHALTER = "/etc/winky/disabled"
+BASIS = "/var/lib/winky"
+STATUS_ORDNER = BASIS + "/status"
+SICHERUNG = BASIS + "/sicherung"
+SOCKET = "/run/winky.sock"
+COMMON_AUTH = "/etc/pam.d/common-auth"
+KEEPASSXC_REGEL_VORLAGE = "/usr/share/winky/polkit/50-winky-keepassxc.rules"
+KEEPASSXC_REGEL = "/etc/polkit-1/rules.d/50-winky-keepassxc.rules"
+SUDO_SCHALTER = "/etc/winky/sudo-ein"
+GRUPPE = "_winky"
+MODELL_SHA = b"0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79"
+MODELL_DIM = 128
+MAGIC = 0x314B4E57
+OP_EINLERNEN, OP_TESTEN, OP_KAMERAS, OP_GESTE_TESTEN = 3, 4, 5, 8
+GEGENPROBE_ABSTAND = 0.10  # so weit muss eine fremde Person unter der Schwelle bleiben
+GEGENPROBE_COUNTDOWN = 5  # Sekunden, um nach der Passworteingabe aus dem Bild zu gehen
+GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "testen", "gegenprobe", "geste-testen",
+                   "entfernen"}
+STATUS_TEXT = {0: "treffer", 1: "kein_treffer", 2: "kein_gesicht", 3: "nicht_eingerichtet",
+               4: "gesperrt", 5: "fehler", 6: "abgelehnt", 7: "ok"}
+KONFIG_VORGABE = """\
+# Winky: Gesichtsentsperrung am Sperrbildschirm. Wird von winky-verwalten geschrieben.
+# schwelle = 0 heißt: noch nicht kalibriert, das Gesicht bleibt aus.
+schwelle = 0.65
+kamera =
+"""
+
+
+class Abbruch(Exception):
+    pass
+
+
+def ausgabe(art, daten):
+    sys.stdout.write(f"{art} {json.dumps(daten, ensure_ascii=False)}\n")
+    sys.stdout.flush()
+
+
+def fertig(ok, **daten):
+    daten["ok"] = ok
+    ausgabe("ERGEBNIS", daten)
+    sys.exit(0 if ok else 1)
+
+
+def aufrufer():
+    if os.geteuid() != 0:
+        fertig(False, fehler="winky-verwalten muss als root laufen (pkexec oder sudo)")
+    roh = os.environ.get("PKEXEC_UID") or os.environ.get("SUDO_UID")
+    try:
+        uid = int(roh)
+        eintrag = pwd.getpwuid(uid)
+    except (TypeError, ValueError, KeyError):
+        fertig(False, fehler="Aufrufer nicht erkennbar")
+    if uid < 1000 or uid == 65534:
+        fertig(False, fehler="Nur für normale Benutzerkonten")
+    return uid, eintrag.pw_name
+
+
+# ------------------------------------------------------------------ Dateien
+
+def schreibe_atomar(pfad, daten: bytes, modus, gid=0):
+    ordner = os.path.dirname(pfad)
+    tmp = os.path.join(ordner, f".{os.path.basename(pfad)}.neu")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW | os.O_CLOEXEC, modus)
+    try:
+        os.fchown(fd, 0, gid)
+        os.fchmod(fd, modus)
+        os.write(fd, daten)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    os.replace(tmp, pfad)
+
+
+def sicherer_ordner(pfad, modus, gid=0):
+    try:
+        st = os.lstat(pfad)
+        if not stat.S_ISDIR(st.st_mode) or stat.S_ISLNK(st.st_mode):
+            fertig(False, fehler=f"{pfad} ist kein Ordner")
+    except FileNotFoundError:
+        os.mkdir(pfad, modus)
+    os.chown(pfad, 0, gid, follow_symlinks=False)
+    os.chmod(pfad, modus)
+
+
+def lese_konfig():
+    try:
+        with open(KONFIG, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return KONFIG_VORGABE
+
+
+def konfig_wert(text, schluessel):
+    for zeile in text.splitlines():
+        zeile = zeile.split("#", 1)[0].strip()
+        if "=" in zeile:
+            k, v = (t.strip() for t in zeile.split("=", 1))
+            if k == schluessel:
+                return v
+    return None
+
+
+def setze_konfig(schluessel, wert):
+    text = lese_konfig()
+    zeilen, gesetzt = [], False
+    for zeile in text.splitlines():
+        kern = zeile.split("#", 1)[0].strip()
+        if "=" in kern and kern.split("=", 1)[0].strip() == schluessel:
+            zeilen.append(f"{schluessel} = {wert}")
+            gesetzt = True
+        else:
+            zeilen.append(zeile)
+    if not gesetzt:
+        zeilen.append(f"{schluessel} = {wert}")
+    sicherer_ordner("/etc/winky", 0o755)
+    schreibe_atomar(KONFIG, ("\n".join(zeilen) + "\n").encode(), 0o644)
+
+
+def vorlagen_pfad(uid):
+    return f"{BASIS}/{uid}/vorlagen.bin"
+
+
+def geste_pfad(uid):
+    """Freigabe für sudo: ✌-Test bestanden (liest der Prüfdienst)."""
+    return f"{BASIS}/{uid}/geste-ok"
+
+
+def loeschen(pfad):
+    try:
+        os.unlink(pfad)
+    except FileNotFoundError:
+        pass
+
+
+def lese_status(uid):
+    try:
+        with open(f"{STATUS_ORDNER}/{uid}.json", encoding="utf-8") as f:
+            daten = json.load(f)
+        return daten if isinstance(daten, dict) else {}
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def schreibe_status(uid, daten):
+    sicherer_ordner(STATUS_ORDNER, 0o755)
+    schreibe_atomar(f"{STATUS_ORDNER}/{uid}.json", json.dumps(daten).encode(), 0o644)
+
+
+def aktuelle_schwelle():
+    try:
+        return float(konfig_wert(lese_konfig(), "schwelle") or 0)
+    except ValueError:
+        return 0.0
+
+
+# ------------------------------------------------------------------ Prüfdienst
+
+def verbinde(op, uid, dauer):
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    try:
+        s.connect(SOCKET)
+    except OSError:
+        fertig(False, fehler="Der Prüfdienst läuft nicht (winky.socket)")
+    cred = s.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i"))
+    if struct.unpack("3i", cred)[1] != 0:
+        fertig(False, fehler="Prüfdienst gehört nicht root")
+    s.send(struct.pack("IIII", MAGIC, op, uid, dauer))
+    return s
+
+
+def zeichne_rahmen(rgb, w, h, rahmen, farbe):
+    x1, y1, x2, y2 = (max(0, min(int(v), grenze - 1)) for v, grenze in
+                      zip(rahmen, (w, h, w, h)))
+    for dicke in range(2):
+        for y in (y1 + dicke, y2 - dicke):
+            a = (y * w + x1) * 3
+            rgb[a:a + (x2 - x1 + 1) * 3] = bytes(farbe) * (x2 - x1 + 1)
+        for y in range(y1, y2 + 1):
+            for x in (x1 + dicke, x2 - dicke):
+                a = (y * w + x) * 3
+                rgb[a:a + 3] = bytes(farbe)
+
+
+def strom(s):
+    """Leitet Stand und Vorschau an die Oberfläche weiter. Liefert (antwort, vektoren)."""
+    rahmen, gut = None, False
+    vektoren = None
+    fehlertext = None
+    letzter = {}
+    stdin_offen = True
+    while True:
+        lesbar = [s] + ([sys.stdin] if stdin_offen else [])
+        bereit, _, _ = select.select(lesbar, [], [], 70)
+        if not bereit:
+            raise Abbruch("Zeitüberschreitung")
+        if sys.stdin in bereit:
+            if not os.read(sys.stdin.fileno(), 4096):
+                stdin_offen = False
+                s.close()
+                raise Abbruch("abgebrochen")
+        if s not in bereit:
+            continue
+        try:
+            msg = s.recv(262144)
+        except OSError:
+            msg = b""
+        if not msg:
+            raise Abbruch("fehlgeschlagen: Der Prüfdienst hat die Verbindung beendet. "
+                          "Details: journalctl -t winky")
+        art, inhalt = chr(msg[0]), msg[1:]
+        if art == "S":
+            st = json.loads(inhalt.decode())
+            letzter = st
+            rahmen, gut = st.get("rahmen"), st.get("grund") == "ok"
+            fehlertext = st.get("fehler") or fehlertext
+            ausgabe("STATUS", st)
+        elif art == "B" and len(inhalt) >= 4:
+            w, h = struct.unpack("HH", inhalt[:4])
+            grau = inhalt[4:]
+            if len(grau) != w * h:
+                continue
+            rgb = bytearray(w * h * 3)
+            rgb[0::3] = grau
+            rgb[1::3] = grau
+            rgb[2::3] = grau
+            if rahmen:
+                zeichne_rahmen(rgb, w, h, rahmen, (60, 220, 90) if gut else (245, 170, 30))
+            sys.stdout.buffer.write(f"BILD {w} {h} {len(rgb)}\n".encode() + bytes(rgb))
+            sys.stdout.buffer.flush()
+        elif art == "V":
+            vektoren = inhalt
+        elif art == "E" and len(inhalt) == 16:
+            _, status, wert, dauer = struct.unpack("IIfI", inhalt)
+            antwort = {"status": STATUS_TEXT.get(status, "fehler"), "wert": round(wert, 3),
+                       "dauer_ms": dauer}
+            if fehlertext:
+                antwort["fehler"] = fehlertext
+            if "gesicht_erkannt" in letzter:
+                antwort["gesicht_erkannt"] = bool(letzter.get("gesicht_erkannt"))
+            return antwort, vektoren
+
+
+def pruefe_vektoren(roh):
+    if roh is None or len(roh) < 72:
+        fertig(False, fehler="Keine Vorlagen vom Prüfdienst erhalten")
+    anzahl, dim = struct.unpack("II", roh[:8])
+    modell = roh[8:72]
+    floats = roh[72:]
+    if modell != MODELL_SHA or dim != MODELL_DIM or not 8 <= anzahl <= 64 or \
+            len(floats) != anzahl * dim * 4:
+        fertig(False, fehler="Vorlagen vom Prüfdienst sind ungültig")
+    werte = struct.unpack(f"{anzahl * dim}f", floats)
+    for i in range(anzahl):
+        v = werte[i * dim:(i + 1) * dim]
+        if not all(math.isfinite(x) for x in v) or abs(math.sqrt(sum(x * x for x in v)) - 1) > 1e-3:
+            fertig(False, fehler="Vorlagen vom Prüfdienst sind ungültig")
+    return anzahl, dim, floats
+
+
+# ------------------------------------------------------------------ Befehle
+
+def befehl_einlernen(uid, _name):
+    s = verbinde(OP_EINLERNEN, uid, 25)
+    try:
+        antwort, vektoren = strom(s)
+    except Abbruch as e:
+        fertig(False, fehler=f"Einlernen {e}", abgebrochen=True)
+    if antwort["status"] != "ok":
+        hinweis = {"kein_gesicht": "Zu wenige brauchbare Bilder. Bitte gerade in die Kamera "
+                                   "schauen und den Kopf nur leicht bewegen."}
+        fertig(False, fehler=hinweis.get(antwort["status"]) or antwort.get("fehler") or
+               "Einlernen fehlgeschlagen. Details: journalctl -t winky")
+    anzahl, dim, floats = pruefe_vektoren(vektoren)
+    gid = grp.getgrnam(GRUPPE).gr_gid
+    sicherer_ordner(BASIS, 0o755)
+    sicherer_ordner(f"{BASIS}/{uid}", 0o750, gid)
+    kopf = b"WNKV" + struct.pack("III", 1, dim, anzahl) + MODELL_SHA + struct.pack("q", int(time.time()))
+    schreibe_atomar(vorlagen_pfad(uid), kopf + floats, 0o640, gid)
+    loeschen(geste_pfad(uid))  # neue Vorlagen: ✌-Test bitte neu
+    schreibe_status(uid, {"vorlagen": anzahl, "eingelernt": int(time.time())})
+    fertig(True, vorlagen=anzahl)
+
+
+def befehl_testen(uid, _name):
+    s = verbinde(OP_TESTEN, uid, 15)
+    try:
+        antwort, _ = strom(s)
+    except Abbruch as e:
+        fertig(False, fehler=f"Test {e}", abgebrochen=True)
+    if antwort["status"] == "fehler" and not antwort.get("fehler"):
+        antwort["fehler"] = "Test fehlgeschlagen. Details: journalctl -t winky"
+    if antwort["status"] == "treffer":
+        status = lese_status(uid)
+        status.update(test_ok=int(time.time()), test_wert=antwort["wert"])
+        schreibe_status(uid, status)
+    fertig(antwort["status"] == "treffer", **antwort)
+
+
+def countdown(sekunden):
+    """Zeit nach der Passworteingabe, um aus dem Bild zu gehen. Abbruch über die
+    geschlossene Eingabe wie beim Kamerastrom."""
+    for rest in range(sekunden, 0, -1):
+        ausgabe("STATUS", {"modus": "countdown", "rest": rest})
+        bereit, _, _ = select.select([sys.stdin], [], [], 1)
+        if bereit and not os.read(sys.stdin.fileno(), 4096):
+            fertig(False, fehler="Gegenprobe abgebrochen", abgebrochen=True)
+
+
+def befehl_gegenprobe(uid, _name):
+    """Eine andere Person schaut 10 s in die Kamera. Sie darf nicht erkannt werden
+    und soll deutlich unter der Schwelle bleiben."""
+    if not os.path.exists(vorlagen_pfad(uid)):
+        fertig(False, fehler="Zuerst das eigene Gesicht einlernen")
+    countdown(GEGENPROBE_COUNTDOWN)
+    s = verbinde(OP_TESTEN, uid, 10)
+    try:
+        antwort, _ = strom(s)
+    except Abbruch as e:
+        fertig(False, fehler=f"Gegenprobe {e}", abgebrochen=True)
+    if antwort["status"] in ("kein_gesicht",):
+        fertig(False, fehler="Kein Gesicht gesehen. Die andere Person soll gerade in die "
+                             "Kamera schauen.", **antwort)
+    if antwort["status"] not in ("treffer", "kein_treffer"):
+        fertig(False, fehler=antwort.get("fehler") or "Gegenprobe fehlgeschlagen", **antwort)
+    schwelle = aktuelle_schwelle()
+    wert = antwort["wert"]
+    erkannt = antwort["status"] == "treffer"
+    zu_nah = wert >= schwelle - GEGENPROBE_ABSTAND
+    status = lese_status(uid)
+    status.update(gegenprobe_zeit=int(time.time()), gegenprobe_wert=wert,
+                  gegenprobe_ok=not erkannt and not zu_nah)
+    schreibe_status(uid, status)
+    if erkannt:
+        fertig(False, fehler="Die andere Person wurde als du erkannt. Die Schwelle muss höher.",
+               **antwort)
+    if zu_nah:
+        fertig(False, fehler=f"Die andere Person kam bis auf {wert:.2f} an die Schwelle "
+                             f"{schwelle:.2f} heran. Bitte die Schwelle erhöhen.", **antwort)
+    fertig(True, **antwort)
+
+
+def befehl_geste_testen(uid, _name):
+    """Gesicht und ✌ wie bei sudo, aber mit Vorschau und mehr Zeit. Gelingt es, gibt das
+    die sudo-Bestätigung für diese Person frei (Datei geste-ok)."""
+    if not os.path.exists(vorlagen_pfad(uid)):
+        fertig(False, fehler="Zuerst das eigene Gesicht einlernen")
+    s = verbinde(OP_GESTE_TESTEN, uid, 12)
+    try:
+        antwort, _ = strom(s)
+    except Abbruch as e:
+        fertig(False, fehler=f"Test {e}", abgebrochen=True)
+    if antwort["status"] == "treffer":
+        gid = grp.getgrnam(GRUPPE).gr_gid
+        jetzt = int(time.time())
+        schreibe_atomar(geste_pfad(uid), f"{jetzt}\n".encode(), 0o640, gid)
+        status = lese_status(uid)
+        status.update(geste_ok=jetzt)
+        schreibe_status(uid, status)
+        fertig(True, **antwort)
+    if antwort["status"] == "kein_treffer" and antwort.get("gesicht_erkannt"):
+        antwort["fehler"] = ("Dein Gesicht wurde erkannt, das ✌ aber nicht. Zeig Zeige- und "
+                             "Mittelfinger als V, Handfläche zur Kamera, neben dem Gesicht.")
+    elif antwort["status"] in ("kein_treffer", "kein_gesicht") and not antwort.get("fehler"):
+        antwort["fehler"] = "Dein Gesicht wurde nicht erkannt. Bitte gerade in die Kamera schauen."
+    elif not antwort.get("fehler"):
+        antwort["fehler"] = "Test fehlgeschlagen. Details: journalctl -t winky"
+    fertig(False, **antwort)
+
+
+def kamerasuche(uid):
+    s = verbinde(OP_KAMERAS, uid, 0)
+    liste = None
+    while True:
+        bereit, _, _ = select.select([s], [], [], 30)
+        if not bereit:
+            fertig(False, fehler="Kamerasuche dauert zu lange")
+        msg = s.recv(262144)
+        if not msg:
+            break
+        if chr(msg[0]) == "S":
+            try:
+                liste = json.loads(msg[1:].decode()).get("kameras")
+            except ValueError:
+                pass
+        elif chr(msg[0]) == "E":
+            break
+    if not isinstance(liste, list):
+        fertig(False, fehler="Kamerasuche fehlgeschlagen")
+    return [k for k in liste if isinstance(k, dict) and isinstance(k.get("pfad"), str)]
+
+
+def beste_kamera(liste):
+    nutzbar = [k for k in liste if not k.get("fehler")]
+    nutzbar.sort(key=lambda k: (k.get("hell", 0) >= 10, bool(k.get("blinkt")), k.get("hell", 0)),
+                 reverse=True)
+    return nutzbar[0] if nutzbar else None
+
+
+def befehl_kameras(uid, _name):
+    liste = kamerasuche(uid)
+    beste = beste_kamera(liste)
+    fertig(True, kameras=liste, empfohlen=beste["pfad"] if beste else None)
+
+
+def befehl_kamera(uid, _name, wahl=None):
+    liste = kamerasuche(uid)
+    if wahl == "auto":
+        kamera = beste_kamera(liste)
+    else:
+        kamera = next((k for k in liste if wahl in (k.get("pfad"), k.get("geraet"))), None)
+    if kamera is None:
+        fertig(False, fehler="Keine passende IR-Kamera gefunden. Gesucht werden Kameras mit "
+                             "Graustufenbild (IR).", kameras=liste)
+    if kamera.get("fehler"):
+        fertig(False, fehler=f"Kamera lässt sich nicht öffnen: {kamera['fehler']}")
+    pfad = kamera["pfad"]
+    if not pfad.startswith("/dev/") or ".." in pfad or any(c in pfad for c in "\n\r#= "):
+        fertig(False, fehler="Ungültiger Kamerapfad")
+    setze_konfig("kamera", pfad)
+    setze_konfig("blinkpruefung", "ja" if kamera.get("blinkt") else "nein")
+    hinweis = None
+    if kamera.get("hell", 0) < 10:
+        hinweis = ("Das IR-Bild bleibt dunkel. Bei manchen Laptops muss der IR-Strahler erst "
+                   "freigeschaltet werden (zum Beispiel mit linux-enable-ir-emitter).")
+    fertig(True, kamera=kamera, hinweis=hinweis)
+
+
+def befehl_entfernen(uid, _name):
+    for pfad in (vorlagen_pfad(uid), geste_pfad(uid), f"{STATUS_ORDNER}/{uid}.json"):
+        try:
+            os.unlink(pfad)
+        except FileNotFoundError:
+            pass
+    try:
+        os.rmdir(f"{BASIS}/{uid}")
+    except OSError:
+        pass
+    fertig(True)
+
+
+def befehl_schwelle(_uid, _name, wert=None):
+    try:
+        w = round(float(wert), 2)
+    except (TypeError, ValueError):
+        fertig(False, fehler="Schwelle fehlt oder ist keine Zahl")
+    if not 0.40 <= w <= 0.95:
+        fertig(False, fehler="Schwelle muss zwischen 0,40 und 0,95 liegen")
+    setze_konfig("schwelle", f"{w:.2f}")
+    fertig(True, schwelle=w)
+
+
+def pam_aktiv():
+    try:
+        with open(COMMON_AUTH, encoding="utf-8") as f:
+            return any("pam_winky.so" in z and not z.lstrip().startswith("#") for z in f)
+    except FileNotFoundError:
+        return False
+
+
+def befehl_aktivieren(uid, _name):
+    if not konfig_wert(lese_konfig(), "kamera"):
+        fertig(False, fehler="Zuerst die Kamera einrichten")
+    if not os.path.exists(vorlagen_pfad(uid)):
+        fertig(False, fehler="Zuerst das Gesicht einlernen")
+    schwelle = aktuelle_schwelle()
+    if schwelle <= 0:
+        fertig(False, fehler="Zuerst eine Schwelle festlegen")
+    status = lese_status(uid)
+    if status.get("test_ok", 0) < status.get("eingelernt", 0) or not status.get("test_ok"):
+        fertig(False, fehler="Zuerst die Erkennung erfolgreich testen")
+    if "gegenprobe_wert" in status and status["gegenprobe_wert"] >= schwelle - GEGENPROBE_ABSTAND:
+        fertig(False, fehler="Die Gegenprobe kam zu nah an die Schwelle. Schwelle erhöhen und "
+                             "Gegenprobe wiederholen.")
+    subprocess.run(["systemctl", "enable", "--now", "winky.socket"], check=False,
+                   capture_output=True)
+    sicherer_ordner(SICHERUNG, 0o700)
+    with open(COMMON_AUTH, "rb") as f:
+        schreibe_atomar(f"{SICHERUNG}/common-auth.{time.strftime('%Y%m%d-%H%M%S')}", f.read(), 0o600)
+    r = subprocess.run(["pam-auth-update", "--enable", "winky"], capture_output=True, text=True,
+                       env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+                            "DEBIAN_FRONTEND": "noninteractive"})
+    if r.returncode != 0 or not pam_aktiv():
+        fertig(False, fehler="pam-auth-update hat das Profil nicht eingetragen",
+               ausgabe=(r.stdout + r.stderr)[-500:])
+    fertig(True)
+
+
+def keepassxc_mit_geste():
+    """KeePassXC nur mit Gesicht und ✌ (Vorgabe, wenn der Schlüssel fehlt)."""
+    return konfig_wert(lese_konfig(), "keepassxc_geste") != "nein"
+
+
+def befehl_keepassxc(uid, _name, wahl=None):
+    """Polkit-Regel für das Schnellentsperren von KeePassXC ein- oder ausschalten;
+    geste-an/geste-aus: zusätzlich das Handzeichen ✌ verlangen (Vorgabe) oder nicht."""
+    if wahl == "geste-an":
+        setze_konfig("keepassxc_geste", "ja")
+        fertig(True)
+    if wahl == "geste-aus":
+        setze_konfig("keepassxc_geste", "nein")
+        fertig(True, hinweis="KeePassXC öffnet sich jetzt schon mit dem Gesicht allein")
+    if wahl == "an":
+        if not konfig_wert(lese_konfig(), "kamera"):
+            fertig(False, fehler="Zuerst die Kamera einrichten")
+        status = lese_status(uid)
+        if not os.path.exists(vorlagen_pfad(uid)):
+            fertig(False, fehler="Zuerst das Gesicht einlernen")
+        if status.get("test_ok", 0) < status.get("eingelernt", 0) or not status.get("test_ok"):
+            fertig(False, fehler="Zuerst die Erkennung erfolgreich testen")
+        if keepassxc_mit_geste() and not os.path.exists(geste_pfad(uid)):
+            fertig(False, fehler="Zuerst Gesicht und ✌ testen")
+        with open(KEEPASSXC_REGEL_VORLAGE, "rb") as f:
+            regel = f.read()
+        ordner = os.path.dirname(KEEPASSXC_REGEL)
+        if not os.path.isdir(ordner) or os.path.islink(ordner):
+            fertig(False, fehler="Polkit-Regelordner fehlt")
+        setze_konfig("keepassxc", "ja")
+        schreibe_atomar(KEEPASSXC_REGEL, regel, 0o644)
+        subprocess.run(["systemctl", "enable", "--now", "winky-polkit.socket"], check=False,
+                       capture_output=True)
+        fertig(True)
+    if wahl == "aus":
+        try:
+            os.unlink(KEEPASSXC_REGEL)
+        except FileNotFoundError:
+            pass
+        setze_konfig("keepassxc", "nein")
+        subprocess.run(["systemctl", "disable", "--now", "winky-polkit.socket"], check=False,
+                       capture_output=True)
+        fertig(True)
+    fertig(False, fehler="Aufruf: keepassxc an|aus|geste-an|geste-aus")
+
+
+def befehl_sudo(uid, _name, wahl=None):
+    """sudo mit Gesicht und ✌ bestätigen: Schalter in der Konfiguration (Prüfdienst) und
+    /etc/winky/sudo-ein (PAM-Modul). Nur mit aktiver Gesichtsentsperrung und bestandenem
+    ✌-Test des Aufrufers; jede weitere Person braucht ihren eigenen ✌-Test."""
+    if wahl == "an":
+        if not pam_aktiv():
+            fertig(False, fehler="Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten")
+        if not os.path.exists(geste_pfad(uid)):
+            fertig(False, fehler="Zuerst Gesicht und ✌ erfolgreich testen")
+        setze_konfig("sudo", "ja")
+        sicherer_ordner("/etc/winky", 0o755)
+        schreibe_atomar(SUDO_SCHALTER, b"sudo mit Gesicht und Handzeichen bestaetigen\n", 0o644)
+        fertig(True)
+    if wahl == "aus":
+        loeschen(SUDO_SCHALTER)
+        setze_konfig("sudo", "nein")
+        fertig(True)
+    fertig(False, fehler="Aufruf: sudo an|aus")
+
+
+def befehl_deaktivieren(_uid, _name):
+    # sudo per ✌ hängt am Profil: mit ausschalten
+    loeschen(SUDO_SCHALTER)
+    if konfig_wert(lese_konfig(), "sudo") == "ja":
+        setze_konfig("sudo", "nein")
+    r = subprocess.run(["pam-auth-update", "--disable", "winky"], capture_output=True, text=True,
+                       env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+                            "DEBIAN_FRONTEND": "noninteractive"})
+    if r.returncode != 0 or pam_aktiv():
+        fertig(False, fehler="Profil konnte nicht entfernt werden", ausgabe=(r.stdout + r.stderr)[-500:])
+    fertig(True)
+
+
+def befehl_pausieren(_uid, _name):
+    sicherer_ordner("/etc/winky", 0o755)
+    schreibe_atomar(NOTSCHALTER, b"Gesichtsentsperrung pausiert\n", 0o644)
+    fertig(True)
+
+
+def befehl_fortsetzen(_uid, _name):
+    try:
+        os.unlink(NOTSCHALTER)
+    except FileNotFoundError:
+        pass
+    fertig(True)
+
+
+def befehl_status(uid, name):
+    status = lese_status(uid)
+    socket_aktiv = subprocess.run(["systemctl", "is-active", "--quiet", "winky.socket"]).returncode == 0
+    fertig(True, benutzer=name, eingelernt=os.path.exists(vorlagen_pfad(uid)),
+           vorlagen=status.get("vorlagen"), schwelle=konfig_wert(lese_konfig(), "schwelle"),
+           kamera=konfig_wert(lese_konfig(), "kamera"), test_ok=status.get("test_ok"),
+           keepassxc=os.path.exists(KEEPASSXC_REGEL), keepassxc_geste=keepassxc_mit_geste(),
+           sudo=os.path.exists(SUDO_SCHALTER),
+           geste_ok=os.path.exists(geste_pfad(uid)),
+           gegenprobe_ok=status.get("gegenprobe_ok"),
+           aktiv=pam_aktiv(), pausiert=os.path.exists(NOTSCHALTER), dienst=socket_aktiv)
+
+
+BEFEHLE = {
+    "status": befehl_status, "einlernen": befehl_einlernen, "testen": befehl_testen,
+    "gegenprobe": befehl_gegenprobe, "kameras": befehl_kameras, "kamera": befehl_kamera,
+    "entfernen": befehl_entfernen, "schwelle": befehl_schwelle,
+    "aktivieren": befehl_aktivieren, "deaktivieren": befehl_deaktivieren,
+    "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
+    "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
+}
+
+
+def main(argv):
+    os.umask(0o022)
+    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo"}
+    if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
+            or len(argv) > 3:
+        fertig(False, fehler="Aufruf: winky-verwalten " + "|".join(BEFEHLE) + " [WERT]")
+    if os.path.basename(argv[0]) == "winky-gesicht" and argv[1] not in GESICHT_BEFEHLE:
+        fertig(False, fehler="Dafür ist das Administratorpasswort nötig (winky-verwalten)")
+    uid, name = aufrufer()
+    if argv[1] == "schwelle":
+        befehl_schwelle(uid, name, argv[2])
+    if argv[1] == "kamera":
+        befehl_kamera(uid, name, argv[2])
+    if argv[1] == "keepassxc":
+        befehl_keepassxc(uid, name, argv[2])
+    if argv[1] == "sudo":
+        befehl_sudo(uid, name, argv[2])
+    BEFEHLE[argv[1]](uid, name)
+
+
+if __name__ == "__main__":
+    main(sys.argv)

@@ -1,0 +1,25 @@
+// Offene sudo-Anfragen für den Desktop-Hinweis: /run/winky/anfrage/<uid>.json
+//   {"zeit": <unix>, "stand": "wartet|bestaetigt|nicht_bestaetigt|abgebrochen",
+//    "befehl": "...", "terminal": "..."}
+// Lesbar für alle (der Befehl steht ohnehin in der Prozessliste). Das Hinweisprogramm
+// in der Sitzung des Benutzers zeigt daraus eine Meldung, damit eine unerwartete
+// Anfrage sofort auffällt.
+#pragma once
+
+#include <sys/types.h>
+
+#include <string>
+
+namespace winky {
+
+constexpr const char* kAnfrageBasis = "/run/winky/anfrage";
+
+// zweck: "sudo" oder "keepassxc" (bestimmt die Texte der Desktop-Meldung)
+void schreibeAnfrage(const std::string& basis, uid_t uid, const std::string& stand,
+                     const std::string& befehl, const std::string& terminal, long zeit,
+                     const std::string& zweck = "sudo");
+
+// Nur druckbare Zeichen, höchstens max Bytes (UTF-8 bleibt erhalten)
+std::string saeubern(const std::string& s, size_t max);
+
+}  // namespace winky

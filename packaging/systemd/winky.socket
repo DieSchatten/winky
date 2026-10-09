@@ -1,0 +1,13 @@
+[Unit]
+Description=Gesichtsentsperrung: Prüfdienst-Socket
+
+[Socket]
+ListenSequentialPacket=/run/winky.sock
+SocketUser=root
+SocketGroup=root
+SocketMode=0600
+Accept=yes
+MaxConnections=2
+
+[Install]
+WantedBy=sockets.target

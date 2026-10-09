@@ -1,0 +1,13 @@
+[Unit]
+Description=Gesichtsentsperrung: Zugang für KeePassXC über Polkit
+
+[Socket]
+ListenSequentialPacket=/run/winky-polkit.sock
+SocketUser=root
+SocketGroup=polkitd
+SocketMode=0660
+Accept=yes
+MaxConnections=2
+
+[Install]
+WantedBy=sockets.target

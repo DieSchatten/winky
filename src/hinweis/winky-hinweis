@@ -1,0 +1,249 @@
+#!/usr/bin/python3 -I
+"""winky-hinweis: zeigt offene Anfragen (sudo, KeePassXC) als Desktop-Meldung.
+
+Läuft in der Sitzung jedes Benutzers (Autostart) und ohne besondere Rechte. Der
+Prüfdienst schreibt zu jeder Anfrage mit ✌ /run/winky/anfrage/<uid>.json mit Zweck,
+Befehl und Stand. Startet ein Programm heimlich sudo, fällt das hier sofort auf: Wer den Befehl
+nicht selbst eingegeben hat, zeigt einfach kein ✌, dann passiert nichts.
+"""
+
+import json
+import os
+import subprocess
+import time
+
+from gi.repository import Gio, GLib
+
+BASIS = os.environ.get("WINKY_ANFRAGE_ORDNER", "/run/winky/anfrage")  # Umgebung nur für Tests
+DATEI = f"{os.getuid()}.json"
+ALT = 120  # ältere Anfragen (etwa nach dem Anmelden) nicht mehr melden
+
+TEXTE = {
+    "sudo": {
+        "wartet": ("critical", "sudo wartet auf ✌",
+                   "{befehl}\nZum Bestätigen ✌ in die Kamera zeigen. Nicht von dir? Dann kein "
+                   "Zeichen zeigen, es passiert nichts."),
+        "bestaetigt": ("normal", "✓ sudo bestätigt", "{befehl}"),
+        "nicht_bestaetigt": ("low", "sudo nicht per ✌ bestätigt", "{befehl}"),
+        "abgebrochen": ("critical", "sudo abgebrochen",
+                        "Zwei Anfragen gleichzeitig, beide wurden abgebrochen. Wenn du nur eine "
+                        "gestartet hast, prüfe, welches Programm die andere gestellt hat.\n"
+                        "{befehl}"),
+        "begrenzt": ("normal", "Bestätigen per ✌ pausiert",
+                     "Nach drei unbestätigten Anfragen gilt 10 Minuten nur das Passwort."),
+    },
+    "keepassxc": {
+        "wartet": ("critical", "KeePassXC wartet auf ✌",
+                   "Zum Entsperren der Passwort-Datenbank ✌ in die Kamera zeigen. Nicht von "
+                   "dir? Dann kein Zeichen zeigen, es passiert nichts."),
+        "bestaetigt": ("normal", "✓ KeePassXC entsperrt", ""),
+        "nicht_bestaetigt": ("low", "KeePassXC nicht per ✌ bestätigt",
+                             "Es gilt das Passwort."),
+        "abgebrochen": ("critical", "KeePassXC-Entsperren abgebrochen",
+                        "Zwei Anfragen gleichzeitig, beide wurden abgebrochen. Wenn du nur eine "
+                        "gestartet hast, prüfe, welches Programm die andere gestellt hat."),
+        "begrenzt": ("normal", "Bestätigen per ✌ pausiert",
+                     "Nach drei unbestätigten Anfragen gilt 10 Minuten nur das Passwort."),
+    },
+}
+
+
+# Großes ✌ auf dem Bildschirm, solange eine Anfrage auf das Zeichen wartet. Eine
+# Benachrichtigung allein übersieht man leicht, und größer darstellen lässt GNOME sie nicht.
+FENSTER_TITEL = {"sudo": "sudo bestätigen", "keepassxc": "KeePassXC entsperren"}
+FENSTER_DAUER = 8.0   # so lange wartet der Prüfdienst (sudo_ms) auf das Zeichen
+FENSTER_CSS = b"""
+window { background-color: transparent; }
+.karte { background-color: rgba(28, 28, 32, 0.92); border-radius: 26px; padding: 14px 34px 22px; }
+.zeichen { font-size: 104px; }
+.zeichen.ok { color: #57e389; }
+.titel { color: #ffffff; font-size: 20px; font-weight: bold; }
+.unter { color: #c0c0c8; font-size: 13px; }
+progressbar trough { min-height: 6px; background-color: rgba(255, 255, 255, 0.18); border-radius: 3px; }
+progressbar progress { min-height: 6px; background-color: #62a0ea; border-radius: 3px; }
+"""
+
+
+class Fenster:
+    """Hinweisfenster oben in der Bildschirmmitte. Läuft als Popup über XWayland (GTK 3): Es
+    bekommt nie den Fokus und nimmt keine Tastatureingaben weg. Schlägt das ✌ fehl, landet
+    das Passwort also weiter im Terminal bzw. in KeePassXC. Ohne X-Anzeige gibt es nur die
+    Benachrichtigung."""
+
+    def __init__(self):
+        self.gtk = None
+        self.fenster = None
+        self.takt = None
+        if not os.environ.get("DISPLAY"):
+            return
+        os.environ["GDK_BACKEND"] = "x11"
+        try:
+            import gi
+            gi.require_version("Gtk", "3.0")
+            gi.require_version("Gdk", "3.0")
+            from gi.repository import Gdk, Gtk
+            if not Gtk.init_check(None)[0]:
+                return
+        except (ImportError, ValueError, RuntimeError):
+            return
+        self.gtk, self.gdk = Gtk, Gdk
+        css = Gtk.CssProvider()
+        css.load_from_data(FENSTER_CSS)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+    def inhalt(self, zweck, befehl):
+        """Karte mit großem ✌, Titel, Befehl und Restzeit (auch für Tests)."""
+        Gtk = self.gtk
+        karte = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        karte.get_style_context().add_class("karte")
+        karte.set_size_request(300, -1)
+        self.zeichen = Gtk.Label(label="\u270c\ufe0f")
+        self.zeichen.get_style_context().add_class("zeichen")
+        self.titel = Gtk.Label(label=FENSTER_TITEL.get(zweck, "Bestätigen"))
+        self.titel.get_style_context().add_class("titel")
+        unter = Gtk.Label(label=befehl, max_width_chars=44, ellipsize=3)  # Pango.EllipsizeMode.END
+        unter.get_style_context().add_class("unter")
+        self.balken = Gtk.ProgressBar(fraction=1.0)
+        self.balken.set_margin_top(8)
+        for w in (self.zeichen, self.titel, unter, self.balken):
+            karte.pack_start(w, False, False, 0)
+        unter.set_visible(bool(befehl))
+        return karte
+
+    def zeigen(self, zweck, befehl, beginn):
+        if not self.gtk:
+            return False
+        self.schliessen()
+        Gtk = self.gtk
+        w = Gtk.Window(type=Gtk.WindowType.POPUP)
+        w.set_app_paintable(True)
+        visual = w.get_screen().get_rgba_visual()
+        if visual is not None:
+            w.set_visual(visual)
+        w.set_accept_focus(False)
+        w.set_focus_on_map(False)
+        w.add(self.inhalt(zweck, befehl))
+        w.add_events(self.gdk.EventMask.BUTTON_PRESS_MASK)
+        w.connect("button-press-event", lambda *_: self.schliessen())
+        w.show_all()
+        anzeige = self.gdk.Display.get_default()
+        bildschirm = anzeige.get_primary_monitor() or anzeige.get_monitor(0)
+        g = bildschirm.get_geometry()
+        breite, _ = w.get_size()
+        w.move(g.x + (g.width - breite) // 2, g.y + 56)
+        self.fenster, self.beginn = w, beginn
+        self.takt = GLib.timeout_add(100, self._ticken)
+        return True
+
+    def _ticken(self):
+        if not self.fenster:
+            return False
+        rest = FENSTER_DAUER - (time.time() - self.beginn)
+        self.balken.set_fraction(max(0.0, rest / FENSTER_DAUER))
+        if rest < -2:
+            self.schliessen()
+            return False
+        return True
+
+    def bestaetigt(self):
+        """Kurz ein grünes ✓, dann zu."""
+        if not self.fenster:
+            return False
+        self.zeichen.set_label("\u2713")
+        self.zeichen.get_style_context().add_class("ok")
+        self.titel.set_label("Bestätigt")
+        self.balken.set_visible(False)
+        GLib.timeout_add(1200, lambda: self.schliessen() and False)
+        return True
+
+    def schliessen(self):
+        if self.takt:
+            GLib.source_remove(self.takt)
+            self.takt = None
+        if self.fenster:
+            self.fenster.destroy()
+            self.fenster = None
+
+
+class Hinweis:
+    def __init__(self):
+        self.meldung = None   # Kennung für notify-send --replace-id
+        self.letzte = None
+        self.monitor = None
+        self.ordner = Gio.File.new_for_path(BASIS)
+        self.fenster = Fenster()
+        self._beobachten()
+
+    def _beobachten(self):
+        if not os.path.isdir(BASIS):
+            GLib.timeout_add_seconds(60, self._spaeter)
+            return
+        self.monitor = self.ordner.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        self.monitor.connect("changed", self._geaendert)
+
+    def _spaeter(self):
+        self._beobachten()
+        return False
+
+    def _geaendert(self, _monitor, datei, andere, ereignis):
+        namen = {d.get_basename() for d in (datei, andere) if d is not None}
+        if DATEI in namen and ereignis in (Gio.FileMonitorEvent.CHANGES_DONE_HINT,
+                                            Gio.FileMonitorEvent.CREATED,
+                                            Gio.FileMonitorEvent.MOVED_IN,
+                                            Gio.FileMonitorEvent.RENAMED):
+            self._lesen()
+
+    def _lesen(self):
+        try:
+            with open(f"{BASIS}/{DATEI}", encoding="utf-8") as f:
+                daten = json.load(f)
+        except (OSError, ValueError):
+            return
+        if not isinstance(daten, dict):
+            return
+        stand, zeit = daten.get("stand"), daten.get("zeit", 0)
+        texte = TEXTE.get(daten.get("zweck", "sudo"), TEXTE["sudo"])
+        if stand not in texte or not isinstance(zeit, int) or time.time() - zeit > ALT:
+            return
+        if (zeit, stand) == self.letzte:
+            return
+        self.letzte = (zeit, stand)
+        dringlich, titel, text = texte[stand]
+        befehl = str(daten.get("befehl", "sudo"))[:240]
+        zweck = daten.get("zweck", "sudo")
+        # Großes Fenster während des Wartens; die Benachrichtigung bleibt für Fehlschläge,
+        # Abbrüche und ohne X-Anzeige
+        if stand == "wartet":
+            if self.fenster.zeigen(zweck, befehl if zweck == "sudo" else "", zeit):
+                return
+        elif stand == "bestaetigt":
+            if self.fenster.bestaetigt():
+                return
+        else:
+            self.fenster.schliessen()
+        befehl += f" ({daten['terminal']})" if daten.get("terminal") else ""
+        args = ["notify-send", "--app-name=Winky", "--icon=io.github.dieschatten.Winky",
+                f"--urgency={dringlich}", "--print-id"]
+        if stand in ("bestaetigt", "nicht_bestaetigt"):
+            args.append("--expire-time=4000")
+        if self.meldung:
+            args.append(f"--replace-id={self.meldung}")
+        args += [titel, text.format(befehl=befehl)]
+        try:
+            r = subprocess.run(args, capture_output=True, text=True, timeout=5)
+            if r.stdout.strip().isdigit():
+                self.meldung = r.stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+
+
+def main():
+    if os.getuid() < 1000:
+        return
+    Hinweis()
+    GLib.MainLoop().run()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Winky-Hinweise
+Comment=Zeigt sudo-Anfragen, die auf das Handzeichen warten
+TryExec=/usr/libexec/winky/winky-hinweis
+Exec=/usr/libexec/winky/winky-hinweis
+Icon=io.github.dieschatten.Winky
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Applications

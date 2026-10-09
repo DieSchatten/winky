@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Winky
+GenericName=Gesichtsentsperrung
+Comment=Den Sperrbildschirm mit dem Gesicht entsperren
+Exec=winky
+Icon=io.github.dieschatten.Winky
+Terminal=false
+Categories=Settings;Security;
+Keywords=Gesicht;Gesichtsentsperrung;Entsperren;Kamera;Windows Hello;

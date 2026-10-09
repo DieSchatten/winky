@@ -1,0 +1,9 @@
+# Geladene Fremdpakete und Modelle (scripts/abhaengigkeiten.sh)
+/vendor/
+# Bauergebnisse
+/bau/
+# Messdaten und eingelernte Merkmalsvektoren: bleiben nur auf diesem Rechner
+/messungen/
+*.neu
+# Python-Zwischendateien
+__pycache__/

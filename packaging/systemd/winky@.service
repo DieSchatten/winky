@@ -1,0 +1,47 @@
+[Unit]
+Description=Gesichtsentsperrung: Prüfung (Verbindung %i)
+Documentation=file:/usr/share/doc/winky/README.md
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/winky/winky-matcher
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=winky
+User=_winky
+Group=_winky
+SupplementaryGroups=video
+UMask=0077
+
+# Sandbox: kein Netz, kein Home, nur Videogeräte, nur Lesezugriff aufs System
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateUsers=no
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+DevicePolicy=closed
+DeviceAllow=char-video4linux rw
+ReadWritePaths=/run/winky/sperre /run/winky/anfrage
+RuntimeMaxSec=90
+MemoryMax=1G
+TasksMax=32

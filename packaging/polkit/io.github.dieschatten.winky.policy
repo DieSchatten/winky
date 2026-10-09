@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>Winky</vendor>
+  <action id="io.github.dieschatten.winky.verwalten">
+    <description>Gesichtsentsperrung für alle Benutzer einrichten</description>
+    <message>Für Kamera, Schwelle und Ein/Aus der Gesichtsentsperrung ist ein Administratorpasswort nötig</message>
+    <icon_name>io.github.dieschatten.Winky</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/winky/winky-verwalten</annotate>
+  </action>
+  <action id="io.github.dieschatten.winky.gesicht">
+    <description>Eigenes Gesicht für die Entsperrung einlernen und testen</description>
+    <message>Zum Einlernen deines Gesichts ist dein Passwort nötig</message>
+    <icon_name>io.github.dieschatten.Winky</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_self_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/winky/winky-gesicht</annotate>
+  </action>
+</policyconfig>

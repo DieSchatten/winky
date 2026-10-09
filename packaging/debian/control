@@ -1,0 +1,22 @@
+Package: winky
+Version: @VERSION@
+Architecture: amd64
+Maintainer: @HERAUSGEBER@
+Homepage: https://github.com/DieSchatten/winky
+Section: admin
+Priority: optional
+Depends: libc6 (>= 2.39), libstdc++6, libgcc-s1, libpam0g, libpam-runtime, libsystemd0, systemd, polkitd, pkexec, python3, python3-gi, gir1.2-gtk-4.0, gir1.2-gtk-3.0, gir1.2-adw-1, libnotify-bin, procps
+Description: Winky: die Bildschirmsperre mit dem Gesicht öffnen
+ Winky öffnet die GNOME-Bildschirmsperre mit einem Blick in die
+ Infrarot-Kamera, ähnlich wie Windows Hello. Das Gesicht gilt nur für die
+ Sperre einer laufenden Sitzung; die Anmeldung nach dem Start, su, SSH, die
+ Konsole und Administrator-Dialoge verlangen weiter das Passwort. Wahlweise
+ bestätigt man sudo im Terminal mit Gesicht und dem Handzeichen ✌. Die
+ Prüfung läuft in einem abgeschotteten Dienst ohne Netz und ohne Zugriff auf
+ das Home-Verzeichnis. Nach der Installation ist nichts aktiv; die App führt
+ Schritt für Schritt durch die Einrichtung. Jede Person nimmt ihr eigenes
+ Gesicht mit ihrem eigenen Passwort auf. Erkennung mit YuNet und SFace
+ (OpenCV Zoo), Handzeichen mit Googles MediaPipe.
+ .
+ Bisher nur mit einer Infrarot-Kamera getestet; andere Kameras können sich
+ anders verhalten. Die Nutzung erfolgt auf eigenes Risiko.

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Für die Software-Verwaltung (GNOME Software / Zorin Software): Ohne Beschreibung
+     zeigt sie die App nicht unter „Installiert“ und bietet kein Deinstallieren an. -->
+<component type="desktop-application">
+  <id>io.github.dieschatten.Winky</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <!-- Eigener Code und ONNX Runtime MIT; Modelle: YuNet MIT, SFace und MediaPipe Apache-2.0 -->
+  <project_license>MIT AND Apache-2.0</project_license>
+  <name>Winky</name>
+  <summary>Den Sperrbildschirm mit dem Gesicht öffnen</summary>
+  <developer id="io.github.dieschatten">
+    <name>@HERAUSGEBER_NAME@</name>
+  </developer>
+  <description>
+    <p>
+      Winky öffnet die Bildschirmsperre mit einem Blick in die Kamera, ähnlich wie Windows
+      Hello. Dafür nutzt Winky die Infrarot-Kamera des Laptops; Fotos auf Handy oder
+      Bildschirm sind im Infrarot-Bild unsichtbar.
+    </p>
+    <ul>
+      <li>Ein Assistent führt in wenigen Minuten durch die Einrichtung, ganz ohne Terminal.</li>
+      <li>Das Passwort geht immer. Nach dem Einschalten des Rechners, für su, Fernzugriff und
+        Administrator-Dialoge bleibt es ohnehin nötig.</li>
+      <li>Wahlweise bestätigt man sudo im Terminal mit Gesicht und dem Handzeichen ✌ statt mit
+        dem Passwort. Jede Anfrage erscheint als Meldung mit dem Befehl.</li>
+      <li>Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das System lesen kann.
+        Kein Netzwerkzugriff.</li>
+      <li>Jede Person nimmt ihr eigenes Gesicht mit ihrem eigenen Passwort auf.</li>
+    </ul>
+    <p>
+      Winky ist ein Komfort für die Bildschirmsperre, kein Diebstahlschutz und keine
+      Lebenderkennung: Ein im Infrarot sichtbarer Ausdruck oder sehr ähnliche Geschwister
+      können täuschen. Beim Deinstallieren gilt sofort wieder nur das Passwort, und die
+      Gesichtsdaten aller Benutzer werden gelöscht.
+    </p>
+    <p>
+      Bisher nur mit einer Infrarot-Kamera getestet; andere Kameras können sich anders
+      verhalten. Die Nutzung erfolgt auf eigenes Risiko.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/DieSchatten/winky</url>
+  <url type="bugtracker">https://github.com/DieSchatten/winky/issues</url>
+  <url type="vcs-browser">https://github.com/DieSchatten/winky</url>
+  <launchable type="desktop-id">io.github.dieschatten.Winky.desktop</launchable>
+  <icon type="stock">io.github.dieschatten.Winky</icon>
+  <categories>
+    <category>Settings</category>
+    <category>Security</category>
+  </categories>
+  <!-- Bildschirmfotos liegen im Paket; GNOME Software liest file://-Adressen direkt
+       (gs-screenshot-image.c), deshalb keine Webadresse nötig -->
+  <screenshots>
+    <screenshot type="default">
+      <caption>Startseite: Schalter für Bildschirmsperre, sudo, KeePassXC und Pause</caption>
+      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/startseite.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Der Assistent führt Schritt für Schritt durch die Einrichtung</caption>
+      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/einrichtung.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Was Winky kann und was nicht, in einfachen Worten</caption>
+      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/sicherheit.png</image>
+    </screenshot>
+  </screenshots>
+  <provides>
+    <binary>winky</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="@VERSION@" date="@DATUM@"/>
+  </releases>
+</component>
