@@ -48,7 +48,9 @@ appstreamcli refresh-cache --force >/dev/null 2>&1
 pruefe 'appstreamcli get io.github.dieschatten.Winky 2>/dev/null | grep -q "Name: Winky"' "AppStream kennt die App"
 pruefe 'appstreamcli dump io.github.dieschatten.Winky 2>/dev/null | grep -q "<description>"' "mit Beschreibung (Bedingung für „Installiert“)"
 pruefe '[ -f /usr/share/icons/hicolor/scalable/apps/io.github.dieschatten.Winky.svg ]' "Icon installiert"
-pruefe '( for b in $(appstreamcli dump io.github.dieschatten.Winky | sed -n "s|.*file://\([^<]*\)<.*|\1|p"); do [ -f "$b" ] || exit 1; done ) && [ "$(appstreamcli dump io.github.dieschatten.Winky | grep -c "file:///usr/share/winky/bildschirmfotos/")" = 3 ]' "drei Bildschirmfotos, alle vorhanden"
+pruefe '[ "$(appstreamcli dump io.github.dieschatten.Winky | grep -c "https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/")" -ge 3 ]' "drei Bildschirmfotos (GitHub)"
+pruefe 'appstreamcli dump io.github.dieschatten.Winky | grep -q "<keyword>Windows Hello</keyword>"' "Suchbegriff Windows Hello"
+pruefe 'dpkg -L winky | grep -q /usr/share/locale/de/LC_MESSAGES/winky.mo' "deutsche Übersetzung im Paket (Container-Abbilder lassen locale weg)"
 pkcon search file /usr/share/applications/io.github.dieschatten.Winky.desktop > /tmp/suche.log 2>&1
 pruefe 'grep -q "winky-$(dpkg-deb -f /root/neu.deb Version)" /tmp/suche.log' "PackageKit ordnet die App dem Paket zu (Deinstallieren-Knopf)"
 

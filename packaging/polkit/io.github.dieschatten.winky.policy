@@ -4,8 +4,10 @@
 <policyconfig>
   <vendor>Winky</vendor>
   <action id="io.github.dieschatten.winky.verwalten">
-    <description>Gesichtsentsperrung für alle Benutzer einrichten</description>
-    <message>Für Kamera, Schwelle und Ein/Aus der Gesichtsentsperrung ist ein Administratorpasswort nötig</message>
+    <description>Set up face unlock for all users</description>
+    <description xml:lang="de">Gesichtsentsperrung für alle Benutzer einrichten</description>
+    <message>An administrator password is required to change the camera, strictness or on/off of face unlock</message>
+    <message xml:lang="de">Für Kamera, Schwelle und Ein/Aus der Gesichtsentsperrung ist ein Administratorpasswort nötig</message>
     <icon_name>io.github.dieschatten.Winky</icon_name>
     <defaults>
       <allow_any>no</allow_any>
@@ -15,8 +17,10 @@
     <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/winky/winky-verwalten</annotate>
   </action>
   <action id="io.github.dieschatten.winky.gesicht">
-    <description>Eigenes Gesicht für die Entsperrung einlernen und testen</description>
-    <message>Zum Einlernen deines Gesichts ist dein Passwort nötig</message>
+    <description>Record and test your own face for unlocking</description>
+    <description xml:lang="de">Eigenes Gesicht für die Entsperrung einlernen und testen</description>
+    <message>Your password is required to record your face</message>
+    <message xml:lang="de">Zum Einlernen deines Gesichts ist dein Passwort nötig</message>
     <icon_name>io.github.dieschatten.Winky</icon_name>
     <defaults>
       <allow_any>no</allow_any>

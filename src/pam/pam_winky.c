@@ -191,6 +191,16 @@ static void befehlszeile(char *out, size_t max) {
   while (l > 0 && out[l - 1] == ' ') out[--l] = '\0';
 }
 
+/* Sprache der Terminalmeldungen aus der Umgebung des Aufrufers: Deutsch oder Englisch */
+static int deutsch(void) {
+  static const char *const namen[] = {"LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"};
+  for (size_t i = 0; i < sizeof(namen) / sizeof(namen[0]); i++) {
+    const char *w = getenv(namen[i]);
+    if (w && *w) return strncmp(w, "de", 2) == 0;
+  }
+  return 0;
+}
+
 static int schalter_an(const char *pfad) {
   struct stat st;
   return lstat(pfad, &st) == 0 && S_ISREG(st.st_mode) && st.st_uid == 0 &&
@@ -253,14 +263,15 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
     uint32_t status = WINKY_FEHLER;
     int wartete = 0;
     if (frage(WINKY_OP_SUDO, uid, a.geste_timeout_ms, nachricht, len, pamh,
-              "Winky: zum Bestätigen \u270c in die Kamera zeigen (sonst Passwort) \u2026",
+              deutsch() ? "Winky: zum Bestätigen \u270c in die Kamera zeigen (sonst Passwort) \u2026"
+                        : "Winky: show \u270c to the camera to confirm (or type your password) \u2026",
               &wartete, &status) == 0 && status == WINKY_TREFFER) {
-      pam_info(pamh, "Winky: \u2713 bestätigt");
+      pam_info(pamh, deutsch() ? "Winky: \u2713 bestätigt" : "Winky: \u2713 confirmed");
       pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
       pam_syslog(pamh, LOG_INFO, "sudo per Gesicht und Handzeichen bestätigt");
       return PAM_SUCCESS;
     }
-    if (wartete) pam_info(pamh, "Winky: nicht bestätigt");
+    if (wartete) pam_info(pamh, deutsch() ? "Winky: nicht bestätigt" : "Winky: not confirmed");
     return PAM_IGNORE;
   }
   if (!testdienst) {

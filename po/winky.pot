@@ -1,0 +1,1700 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the winky package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: winky\n"
+"Report-Msgid-Bugs-To: https://github.com/DieSchatten/winky/issues\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/app/gesicht_app.py
+msgid "Looks good"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "No face visible. Look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Move a little closer to the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turn your head a little less to the side"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Hold your head a little straighter"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Look straight at the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The face is partly covered"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Move a little further away from the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The face isn’t fully visible"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Record your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Sit at your computer the way you usually do and look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Start recording” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Slowly turn your head a little to the left, right, up and down."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Recording takes 25 seconds. Winky doesn’t save any photos, only numbers that "
+"only the system can read."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start recording"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Record again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try it out"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Try it out” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Just look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The lock screen will open just as quickly later on."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Check with a second person"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Ask someone to join you, ideally someone who looks like you, for example a "
+"family member."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Start check” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Then move out of the picture within 5 seconds. The other person looks at the "
+"camera for 10 seconds."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky must not recognize this person. No picture is saved, only how similar "
+"they look to you for Winky. Optional, but recommended."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start check"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Check again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Test face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Start test” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Look at the camera and show the V sign next to your face: index and middle "
+"finger up, palm facing the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Hold it until “✓” appears."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Everyone who wants to confirm sudo this way does this test for themselves."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start test"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Test again"
+msgstr ""
+
+#: src/app/gesicht_app.py src/app/umgebung.py
+msgid "unknown"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "today at {time}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "yesterday at {time}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "%Y-%m-%d %H:%M"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Cancel"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Make Winky stricter"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky isn’t fully installed."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Set up the camera first."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Record your face first."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start setup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "What Winky unlocks for you"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "To change these, your computer asks for the administrator password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock screen"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlock with a glance at the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "sudo in the terminal"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Set up"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC only with ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Recommended: without your ✌ sign, nobody can open the database, not even "
+"while you’re sitting at the computer"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "<b>Only works with KeePassXC 2.8 or later</b>"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Pause"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is resting, only your password works everywhere"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try out and maintain"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try out recognition"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Look at the camera and see whether Winky recognizes you"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Record your face again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Helps if Winky has trouble recognizing you, for example with new glasses"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Recent activity"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Security and help"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "What Winky can and can’t do, emergency off switch"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Advanced"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera, strictness, delete data, uninstall"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your password keeps working, always."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky doesn’t save any photos of you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Setup takes about two minutes."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "After you turn on your computer, you still need your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Welcome to Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"With Winky, you unlock the lock screen with a glance at the camera, similar "
+"to Windows Hello."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Search for camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Find the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky needs your computer’s infrared camera. That’s the camera Windows uses "
+"to unlock with your face (Windows Hello). When searching, your computer asks "
+"for the administrator password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"None found? Not every computer has an infrared camera. A normal webcam isn’t "
+"enough, because even a photo could fool it."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Check with a second person (optional)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turn on face unlock"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock the screen: Super+L (Windows key and L)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "To unlock, press a key or move the mouse"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Look at the camera, done"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "If it doesn’t work, the password field appears as usual."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turn on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Everything is ready. Turn on face unlock for the lock screen. Your computer "
+"will ask for the administrator password to do this."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "How it works from now on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Confirm sudo with face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Changing this needs the administrator password"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "For the terminal (optional)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Do you use sudo in the terminal? Then you can confirm commands with your "
+"face and the ✌ sign instead of typing your password. If you don’t use the "
+"terminal, just skip this step."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Done!"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky is set up. Try it right away: press Super+L, then any key, and look at "
+"the camera. “Security and help” on the start page explains what to watch out "
+"for."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Back"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Next"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Setup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Step {number} of {total}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Let’s go"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Skip"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Go to start page"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Please wait, something else is still running"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Infrared camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Search again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Choose a different camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "If there’s more than one infrared camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Choose …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Strictness"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"How similar a face must be to yours (threshold). Higher is safer, but Winky "
+"might recognize you less often. Default 0.65; your own face is usually well "
+"above that. The check with a second person shows whether other faces stay "
+"far enough below. Try it out once after every change."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Threshold"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Apply the chosen value"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Save"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Strictness saved"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your measurements"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Only KeePassXC 2.8 or later, installed as a normal package. Older versions "
+"don’t have quick unlock on Linux, and the Flatpak version can’t register it "
+"with the system. There, KeePassXC keeps asking for the master password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC on this computer"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your data"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face data"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Delete …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "About Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Version"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Verification service"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "License"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "MIT. Models: YuNet (MIT), SFace and MediaPipe (Apache-2.0)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Remove"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Uninstall"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"In the Software app under “Installed”. After that, only the password works "
+"everywhere again, and the face data of all users is deleted."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Open"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Without the Software app"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"In the terminal:\n"
+"sudo apt purge winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Asking for your password and starting the camera …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera is starting …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Could not start: {error}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Please step out of the picture … {seconds}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Now the other person sits down in front of the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face recognized ✓"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Checking face …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "show ✌ now"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✌ recognized, hold it briefly"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Hand seen, but no ✌ yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Caution: to Winky, this person looks a lot like you"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Good: Winky doesn’t recognize this person"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Good, keep slowly moving your head"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Canceled"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Recorded"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Your face is recorded. Now try out whether Winky recognizes you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face recorded"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not saved"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Recognized"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "✓ Recognized after {seconds} seconds."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not recognized"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky didn’t recognize you this time. Look straight at the camera and try "
+"again. If it often doesn’t work, record your face again."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Face and ✌ recognized. You can now use them to confirm sudo."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face and ✌ recognized"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Passed"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Passed: Winky didn’t recognize the other person."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Too similar"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"To Winky, this person looks too much like you. Make Winky stricter so that "
+"only you can unlock the screen."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not checked"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"This person looks too much like you. Winky can’t reliably tell you apart, so "
+"it’s better to use only your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid ""
+"Winky is now stricter ({value}). Try it out to see whether it still "
+"recognizes you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Couldn’t open the Software app"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Searching …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera set up"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "No infrared camera found"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Choose camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Cameras found with an infrared image:"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Light flashing"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Light on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Image dark"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Apply"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera selected"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Camera search finished"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Delete your face data?"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"After that, your face won’t unlock anything until you record it again. Your "
+"password keeps working."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Delete"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face data deleted"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turned on. Try it with Super+L."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turned off, only the password works again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC can now be opened with your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC is back to password only"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC now requires face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC now opens with your face alone"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "sudo can now be confirmed with face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "sudo is back to password only"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Paused: only the password works everywhere"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is back"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "First try it out successfully once."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "No strictness set (Advanced)."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"The second person looked too much like you. Make Winky stricter in the "
+"previous step."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Ready to turn on."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is missing something"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Without this part, Winky can’t check anything. Until then, your password "
+"works everywhere."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is paused"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Right now, only your password works everywhere."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Lock the screen with Super+L. To unlock, press a key and look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not set up for you yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky is on for this computer. Record your face so you can use it too."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Almost done"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face is recorded. Finish the setup to turn on Winky."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Unlock the lock screen with a glance at the camera. Setup takes about two "
+"minutes."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Continue setup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Confirm commands with face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turn on the lock screen first"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Test face and ✌ first"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Pass the test above first"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Open the password database with your face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Open the password database with your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Open the password database with your face and ✌ (needs KeePassXC 2.8 or "
+"later, see Advanced)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Open the password database with your face (needs KeePassXC 2.8 or later, see "
+"Advanced)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Older versions and the Flatpak version can’t do this: there, KeePassXC asks "
+"for the master password as usual, and Winky isn’t asked at all."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Found: {found}."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Recommended: checks that Winky only recognizes you"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Passed, Winky only recognizes you"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Too similar. Make it stricter here."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Passed ({date})"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Needed if you want to confirm sudo with ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "✓ Camera is set up: {name}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Camera is set up"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Search one more time"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Turned on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "None set up yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Currently set: {value}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not set yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Similarity: you on your last try {you}, the second person {other}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Similarity: you on your last try {you}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Similarity: the second person {other}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "None yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Recorded {date}, readable only by the system, no photos"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "None"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Found KeePassXC with quick unlock. In KeePassXC, turn on quick unlock under "
+"Settings, Security."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "No KeePassXC found."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"You need KeePassXC 2.8 or later as a normal package, because only that "
+"registers quick unlock with the system. You can already turn it on "
+"beforehand."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "{version} · revision {commit} · built {built}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Ready (starts when needed)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not active"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Can’t read the history"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The system log isn’t accessible for your account."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Nothing has happened yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock the screen with Super+L."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "sudo confirmed: {command}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "sudo not confirmed: {command}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "sudo confirmed"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "sudo not confirmed"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC opened"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "KeePassXC: password needed"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "{date}, after {seconds} s"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "What Winky can do"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlock the lock screen with your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Only the lock of a running session. After you turn on your computer, you "
+"need your password so that your keyring opens too."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Optionally confirm sudo with face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Only in a terminal on the computer itself, only with both together, and only "
+"if you turn it on."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Optionally open KeePassXC"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Only with KeePassXC 2.8 or later as a normal package, after you first open "
+"it with the master password. By default only with face and ✌."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Several people on the same computer"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Each person records their own face with their own password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "What Winky can’t do"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Replace your password"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"The password always works. It’s the only way in after you turn on the "
+"computer, after failed attempts and during a pause."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Reliably tell twins or very similar siblings apart"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"No face recognition can do that. The check with a second person shows "
+"whether it’s a close call."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Work with a normal webcam"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky needs an infrared camera, like the ones built in for Windows Hello."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Tell whether you agree"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Someone could hold the computer up to your face. That’s why sudo also needs "
+"the ✌."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "What to watch out for"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock the screen when you walk away"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Super+L. Winky only protects what is locked."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Do the check with a second person"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Ideally with a family member who looks like you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "If a sudo message appears that you didn’t expect: don’t show ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Then a program asked for administrator rights without you. Just ignore it, "
+"the request ends after a few seconds."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Anyone who looks very much like you shouldn’t be able to use Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "In that case, make Winky stricter (Advanced) or leave it off."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Technical limits"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "A photo on a screen or phone doesn’t fool Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Screens look black in the infrared image. An elaborately made printout or a "
+"mask could, though, just like with Windows Hello without extra protection."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky doesn’t protect against someone taking your computer away"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"For that you need an encrypted hard drive. Winky makes the lock screen more "
+"convenient, it isn’t theft protection."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "A harmful program running as you can trigger a sudo request"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"But nothing happens without your ✌, and every request shows up as a message "
+"with the command. After three unconfirmed requests, only the password works "
+"for 10 minutes."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "If something goes wrong"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The password always works"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"If Winky doesn’t recognize you, the password field appears after three "
+"seconds at most."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Pause on the start page"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Turns everything off right away, without deleting anything."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Emergency off switch without this app"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Ctrl+Alt+F3, sign in with your username and password, then type:\n"
+"sudo touch /etc/winky/disabled"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"In the Software app under “Installed”. After that, only the password works "
+"everywhere again."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Note"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Use at your own risk"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky is a convenience feature. It doesn’t replace a strong password or an "
+"encrypted hard drive."
+msgstr ""
+
+#: src/app/prozess.py
+msgid "Canceled: the password was not entered."
+msgstr ""
+
+#: src/app/prozess.py
+msgid "Not authorized, or the password prompt is not available."
+msgstr ""
+
+#: src/app/prozess.py
+#, python-brace-format
+msgid "Failed (exit code {code})."
+msgstr ""
+
+#: src/app/system.py
+#, python-brace-format
+msgid "Package {version}"
+msgstr ""
+
+#: src/app/system.py
+msgid "unlocked with your face"
+msgstr ""
+
+#: src/app/system.py
+msgid "face not recognized, password needed"
+msgstr ""
+
+#: src/app/system.py
+msgid "no face in front of the camera"
+msgstr ""
+
+#: src/app/system.py
+msgid "not set up"
+msgstr ""
+
+#: src/app/system.py
+msgid "locked after failed attempts, password needed"
+msgstr ""
+
+#: src/app/system.py
+msgid "refused (no local session)"
+msgstr ""
+
+#: src/app/system.py
+msgid "error, password needed"
+msgstr ""
+
+#: src/app/umgebung.py
+msgid "development"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "face recognized well"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "no face in the picture"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "too far away"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "head turned too far to the side"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "head tilted too much"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "face not clearly recognized"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "face partly covered"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "overexposed, a little too close to the camera"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "face incomplete"
+msgstr ""
+
+#: src/app/vorschau.py
+msgid "Camera off"
+msgstr ""
+
+#: src/app/vorschau.py
+#, python-brace-format
+msgid "similarity {value}"
+msgstr ""
+
+#: src/app/vorschau.py
+#, python-brace-format
+msgid "{n} image collected"
+msgid_plural "{n} images collected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app/vorschau.py
+#, python-brace-format
+msgid "{usable} usable out of {lit}"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid ""
+"Two requests at the same time, so both were canceled. If you only started "
+"one, check which program made the other."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Confirming with ✌ is paused"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid ""
+"After three unconfirmed requests, only the password works for 10 minutes."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "sudo is waiting for ✌"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid ""
+"Show ✌ to the camera to confirm. Not you? Then don't show the sign and "
+"nothing happens."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "✓ sudo confirmed"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "sudo not confirmed with ✌"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "sudo canceled"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "KeePassXC is waiting for ✌"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid ""
+"Show ✌ to the camera to unlock the password database. Not you? Then don't "
+"show the sign and nothing happens."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "✓ KeePassXC unlocked"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "KeePassXC not confirmed with ✌"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Use your password instead."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Unlocking KeePassXC canceled"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Confirm sudo"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Unlock KeePassXC"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Confirm"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
+msgid "Confirmed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "{task} timed out"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "{task} canceled"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid ""
+"{task} failed: the verification service closed the connection. Details: "
+"journalctl -t winky"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "winky-verwalten must run as root (pkexec or sudo)"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Could not tell who is calling"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Only for regular user accounts"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "{path} is not a folder"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The verification service is not running (winky.socket)"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The verification service does not belong to root"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "No face data received from the verification service"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The face data from the verification service is invalid"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Recording your face"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Too few usable images. Please look straight into the camera and move your "
+"head only slightly."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Recording your face failed. Details: journalctl -t winky"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Test"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Test failed. Details: journalctl -t winky"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Second-person check"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Record your own face first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "No face seen. The other person should look straight into the camera."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Check with a second person failed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"The other person was recognized as you. The threshold needs to be higher."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid ""
+"The other person reached {value}, close to the threshold of {threshold}. "
+"Please raise the threshold."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Your face was recognized, but the ✌ sign wasn't. Show your index and middle "
+"finger as a V, palm facing the camera, next to your face."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Your face was not recognized. Please look straight into the camera."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The camera search is taking too long"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The camera search failed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"No suitable IR camera found. Winky looks for cameras with a grayscale image "
+"(IR)."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "The camera can't be opened: {error}"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Invalid camera path"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"The IR image stays dark. On some laptops the IR emitter has to be switched "
+"on first (for example with linux-enable-ir-emitter)."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The threshold is missing or not a number"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The threshold must be between 0.40 and 0.95"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Set up the camera first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Record your face first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Set a threshold first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Try out the recognition successfully first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"The check with a second person came too close to the threshold. Raise the "
+"threshold and repeat the check."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "pam-auth-update did not add the profile"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "KeePassXC will now open with just your face"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Test your face and ✌ first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The polkit rules folder is missing"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "Usage: {usage}"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Turn on face unlock for the lock screen first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Test your face and ✌ successfully first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The profile could not be removed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "Usage: winky-verwalten {commands} [VALUE]"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "This needs the administrator password (winky-verwalten)"
+msgstr ""

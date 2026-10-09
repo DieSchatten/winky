@@ -1,7 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Winky-Hinweise
-Comment=Zeigt sudo-Anfragen, die auf das Handzeichen warten
+Name=Winky notices
+Name[de]=Winky-Hinweise
+Comment=Shows sudo requests waiting for the ✌ sign
+Comment[de]=Zeigt sudo-Anfragen, die auf das Handzeichen warten
 TryExec=/usr/libexec/winky/winky-hinweis
 Exec=/usr/libexec/winky/winky-hinweis
 Icon=io.github.dieschatten.Winky

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winky package source</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; color: #1d1d1d; background: #fff; }
+  code, pre { background: #f2f2f2; border-radius: 4px; }
+  pre { padding: .75rem; overflow-x: auto; }
+  @media (prefers-color-scheme: dark) { body { color: #eee; background: #1e1e1e; } code, pre { background: #2c2c2c; } }
+</style>
+</head>
+<body>
+<h1>Winky package source</h1>
+<p>APT package source for <a href="https://github.com/DieSchatten/winky">Winky</a>, face unlock for
+GNOME with an infrared camera. Installing the Winky package sets it up automatically. To set it up by hand:</p>
+<pre>sudo wget -O /usr/share/keyrings/winky-archive-keyring.gpg https://dieschatten.github.io/winky/winky-archive-keyring.gpg
+sudo wget -O /etc/apt/sources.list.d/winky.sources https://dieschatten.github.io/winky/winky.sources
+sudo apt update &amp;&amp; sudo apt install winky</pre>
+<p>Signing key: <code>AC60 2CDB 8464 31CF 6787 2100 A0B2 C5BB 34E5 B149</code></p>
+<p lang="de">Deutsch: Paketquelle für Winky. Anleitung auf <a href="https://github.com/DieSchatten/winky/blob/main/README.de.md">GitHub</a>.</p>
+</body>
+</html>

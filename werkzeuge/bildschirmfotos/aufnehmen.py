@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Bildschirmfotos der App für die Software-Verwaltung, mit Verwaltungs-Attrappe und gezeichnetem
-Kamerabild. Ausgabe: packaging/bildschirmfotos/{startseite,einrichtung,sicherheit}.png
+Kamerabild. Ausgabe: packaging/bildschirmfotos/<sprache>/{startseite,einrichtung,sicherheit}.png
 (WINKY_FOTO_ZIEL=Ordner; WINKY_FOTO_ALLE=1: zusätzlich jeder Assistentenschritt).
 
 Aufruf: scripts/bildschirmfotos.sh (startet einen eigenen Broadway-Bildschirm)

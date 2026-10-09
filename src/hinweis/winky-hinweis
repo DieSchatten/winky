@@ -5,49 +5,57 @@ Läuft ohne Rechte in jeder Sitzung (Autostart) und liest /run/winky/anfrage/<ui
 Prüfdienstes. Ein heimlich gestartetes sudo fällt so sofort auf; ohne ✌ passiert nichts.
 """
 
+import gettext
 import json
 import os
 import subprocess
 import time
+from pathlib import Path
 
 from gi.repository import Gio, GLib
+
+# Übersetzungen (Domäne winky) wie in src/app/sprache.py, das hier nicht importierbar ist
+_HIER = Path(__file__).resolve().parent
+_ORDNER = os.environ.get("WINKY_LOCALEDIR") or (
+    "/usr/share/locale" if _HIER == Path("/usr/libexec/winky")
+    else str(_HIER.parents[1] / "bau/locale"))
+_ = gettext.translation("winky", _ORDNER, fallback=True).gettext
 
 BASIS = os.environ.get("WINKY_ANFRAGE_ORDNER", "/run/winky/anfrage")  # Umgebung nur für Tests
 DATEI = f"{os.getuid()}.json"
 ALT = 120  # ältere Anfragen (etwa nach dem Anmelden) nicht mehr melden
 
+# Titel und Text der Benachrichtigung; {befehl} wird erst danach eingesetzt, steht also nicht
+# in den übersetzten Texten
+_GLEICHZEITIG = _("Two requests at the same time, so both were canceled. If you only started "
+                  "one, check which program made the other.")
+_BEGRENZT = ("normal", _("Confirming with ✌ is paused"),
+             _("After three unconfirmed requests, only the password works for 10 minutes."))
 TEXTE = {
     "sudo": {
-        "wartet": ("critical", "sudo wartet auf ✌",
-                   "{befehl}\nZum Bestätigen ✌ in die Kamera zeigen. Nicht von dir? Dann kein "
-                   "Zeichen zeigen, es passiert nichts."),
-        "bestaetigt": ("normal", "✓ sudo bestätigt", "{befehl}"),
-        "nicht_bestaetigt": ("low", "sudo nicht per ✌ bestätigt", "{befehl}"),
-        "abgebrochen": ("critical", "sudo abgebrochen",
-                        "Zwei Anfragen gleichzeitig, beide wurden abgebrochen. Wenn du nur eine "
-                        "gestartet hast, prüfe, welches Programm die andere gestellt hat.\n"
-                        "{befehl}"),
-        "begrenzt": ("normal", "Bestätigen per ✌ pausiert",
-                     "Nach drei unbestätigten Anfragen gilt 10 Minuten nur das Passwort."),
+        "wartet": ("critical", _("sudo is waiting for ✌"),
+                   "{befehl}\n" + _("Show ✌ to the camera to confirm. Not you? Then don't show "
+                                    "the sign and nothing happens.")),
+        "bestaetigt": ("normal", _("✓ sudo confirmed"), "{befehl}"),
+        "nicht_bestaetigt": ("low", _("sudo not confirmed with ✌"), "{befehl}"),
+        "abgebrochen": ("critical", _("sudo canceled"), _GLEICHZEITIG + "\n{befehl}"),
+        "begrenzt": _BEGRENZT,
     },
     "keepassxc": {
-        "wartet": ("critical", "KeePassXC wartet auf ✌",
-                   "Zum Entsperren der Passwort-Datenbank ✌ in die Kamera zeigen. Nicht von "
-                   "dir? Dann kein Zeichen zeigen, es passiert nichts."),
-        "bestaetigt": ("normal", "✓ KeePassXC entsperrt", ""),
-        "nicht_bestaetigt": ("low", "KeePassXC nicht per ✌ bestätigt",
-                             "Es gilt das Passwort."),
-        "abgebrochen": ("critical", "KeePassXC-Entsperren abgebrochen",
-                        "Zwei Anfragen gleichzeitig, beide wurden abgebrochen. Wenn du nur eine "
-                        "gestartet hast, prüfe, welches Programm die andere gestellt hat."),
-        "begrenzt": ("normal", "Bestätigen per ✌ pausiert",
-                     "Nach drei unbestätigten Anfragen gilt 10 Minuten nur das Passwort."),
+        "wartet": ("critical", _("KeePassXC is waiting for ✌"),
+                   _("Show ✌ to the camera to unlock the password database. Not you? Then "
+                     "don't show the sign and nothing happens.")),
+        "bestaetigt": ("normal", _("✓ KeePassXC unlocked"), ""),
+        "nicht_bestaetigt": ("low", _("KeePassXC not confirmed with ✌"),
+                             _("Use your password instead.")),
+        "abgebrochen": ("critical", _("Unlocking KeePassXC canceled"), _GLEICHZEITIG),
+        "begrenzt": _BEGRENZT,
     },
 }
 
 
 # Großes ✌ während einer Anfrage, weil GNOME Benachrichtigungen nicht größer darstellt
-FENSTER_TITEL = {"sudo": "sudo bestätigen", "keepassxc": "KeePassXC entsperren"}
+FENSTER_TITEL = {"sudo": _("Confirm sudo"), "keepassxc": _("Unlock KeePassXC")}
 FENSTER_DAUER = 8.0   # so lange wartet der Prüfdienst (sudo_ms) auf das Zeichen
 FENSTER_CSS = b"""
 window { background-color: transparent; }
@@ -95,7 +103,7 @@ class Fenster:
         karte.set_size_request(300, -1)
         self.zeichen = Gtk.Label(label="\u270c\ufe0f")
         self.zeichen.get_style_context().add_class("zeichen")
-        self.titel = Gtk.Label(label=FENSTER_TITEL.get(zweck, "Bestätigen"))
+        self.titel = Gtk.Label(label=FENSTER_TITEL.get(zweck, _("Confirm")))
         self.titel.get_style_context().add_class("titel")
         unter = Gtk.Label(label=befehl, max_width_chars=44, ellipsize=3)  # Pango.EllipsizeMode.END
         unter.get_style_context().add_class("unter")
@@ -125,7 +133,7 @@ class Fenster:
         anzeige = self.gdk.Display.get_default()
         bildschirm = anzeige.get_primary_monitor() or anzeige.get_monitor(0)
         g = bildschirm.get_geometry()
-        breite, _ = w.get_size()
+        breite = w.get_size()[0]
         w.move(g.x + (g.width - breite) // 2, g.y + 56)
         self.fenster, self.beginn = w, beginn
         self.takt = GLib.timeout_add(100, self._ticken)
@@ -147,7 +155,7 @@ class Fenster:
             return False
         self.zeichen.set_label("\u2713")
         self.zeichen.get_style_context().add_class("ok")
-        self.titel.set_label("Bestätigt")
+        self.titel.set_label(_("Confirmed"))
         self.balken.set_visible(False)
         GLib.timeout_add(1200, lambda: self.schliessen() and False)
         return True

@@ -18,6 +18,7 @@ from pathlib import Path
 
 ORDNER = tempfile.mkdtemp(prefix="winky-hinweis-")
 os.environ["WINKY_ANFRAGE_ORDNER"] = ORDNER
+os.environ["LANGUAGE"] = "de"   # die Prüfungen vergleichen deutsche Texte (bau/locale)
 PROJEKT = Path(__file__).resolve().parents[2]
 lader = importlib.machinery.SourceFileLoader("hinweis", str(PROJEKT / "src/hinweis/winky-hinweis"))
 spec = importlib.util.spec_from_loader("hinweis", lader)

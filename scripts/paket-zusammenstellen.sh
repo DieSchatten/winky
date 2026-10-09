@@ -34,16 +34,13 @@ install -Dm0755 packaging/winky "$P"/usr/bin/winky
 install -Dm0644 packaging/io.github.dieschatten.Winky.desktop "$P"/usr/share/applications/io.github.dieschatten.Winky.desktop
 install -Dm0644 packaging/icons/io.github.dieschatten.Winky.svg \
   "$P"/usr/share/icons/hicolor/scalable/apps/io.github.dieschatten.Winky.svg
-for f in packaging/bildschirmfotos/*.png; do
-  install -Dm0644 "$f" "$P/usr/share/winky/bildschirmfotos/$(basename "$f")"
+for mo in bau/locale/*/LC_MESSAGES/winky.mo; do
+  install -Dm0644 "$mo" "$P/usr/share/locale/${mo#bau/locale/}"
 done
 # Metainfo: nötig für „Installiert“ und Deinstallieren in der Software-Verwaltung
 mkdir -p "$P"/usr/share/metainfo
 sed "s/@VERSION@/$VERSION/;s/@DATUM@/${GEBAUT%% *}/;s|@HERAUSGEBER_NAME@|$HERAUSGEBER_NAME|" packaging/io.github.dieschatten.Winky.metainfo.xml \
   > "$P"/usr/share/metainfo/io.github.dieschatten.Winky.metainfo.xml
-for bild in $(sed -n 's|.*file://\([^<]*\)<.*|\1|p' "$P"/usr/share/metainfo/io.github.dieschatten.Winky.metainfo.xml); do
-  [[ -f "$P$bild" ]] || { echo "Bildschirmfoto fehlt im Paket: $bild" >&2; exit 1; }
-done
 install -Dm0644 packaging/systemd/winky.socket "$P"/usr/lib/systemd/system/winky.socket
 install -Dm0644 packaging/systemd/winky@.service "$P"/usr/lib/systemd/system/winky@.service
 install -Dm0644 packaging/systemd/winky-polkit.socket "$P"/usr/lib/systemd/system/winky-polkit.socket
@@ -53,9 +50,13 @@ install -Dm0644 packaging/sysusers.conf "$P"/usr/lib/sysusers.d/winky.conf
 install -Dm0644 packaging/tmpfiles.conf "$P"/usr/lib/tmpfiles.d/winky.conf
 install -Dm0644 packaging/pam-config "$P"/usr/share/pam-configs/winky
 install -Dm0644 packaging/polkit/io.github.dieschatten.winky.policy "$P"/usr/share/polkit-1/actions/io.github.dieschatten.winky.policy
+# Eigene Paketquelle: Updates und Suche über die Software-Verwaltung
+install -Dm0644 packaging/winky-archive-keyring.gpg "$P"/usr/share/keyrings/winky-archive-keyring.gpg
+install -Dm0644 packaging/winky.sources "$P"/etc/apt/sources.list.d/winky.sources
 # Vorgabe der Einstellungen; postinst legt /etc/winky/winky.conf nur an, wenn sie fehlt
 install -Dm0644 packaging/winky.conf "$P"/usr/share/winky/winky.conf
 install -Dm0644 README.md "$P"/usr/share/doc/winky/README.md
+install -Dm0644 README.de.md "$P"/usr/share/doc/winky/README.de.md
 install -Dm0644 NOTICE "$P"/usr/share/doc/winky/copyright
 install -Dm0644 LICENSE "$P"/usr/share/doc/winky/LICENSE
 install -Dm0644 vendor/onnxruntime/ThirdPartyNotices.txt "$P"/usr/share/doc/winky/onnxruntime-ThirdPartyNotices.txt

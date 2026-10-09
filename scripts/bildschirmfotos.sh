@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Erzeugt packaging/bildschirmfotos/*.png neu (braucht gtk4-broadwayd, ohne Kamera und root).
+# Erzeugt packaging/bildschirmfotos/{en,de}/*.png neu (braucht gtk4-broadwayd, ohne Kamera und
+# root, und die Übersetzungen in bau/locale aus scripts/paket-bauen.sh).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 WURZEL=$(mktemp -d)
@@ -8,5 +9,10 @@ BROADWAY=$!
 trap 'kill $BROADWAY 2>/dev/null; rm -rf "$WURZEL"' EXIT
 sleep 1
 # Standarddesign (libadwaita hell): Desktop-Einstellungen wie das Zorin-Design ausblenden
-ADW_DISABLE_PORTAL=1 GDK_DEBUG=no-portals GSETTINGS_BACKEND=memory WINKY_ATTRAPPE=1 WINKY_TESTWURZEL="$WURZEL" GDK_BACKEND=broadway BROADWAY_DISPLAY=:17 \
-  python3 werkzeuge/bildschirmfotos/aufnehmen.py
+for sprache in en:C.UTF-8 de:de_DE.UTF-8; do
+  mkdir -p "packaging/bildschirmfotos/${sprache%%:*}"
+  ADW_DISABLE_PORTAL=1 GDK_DEBUG=no-portals GSETTINGS_BACKEND=memory WINKY_ATTRAPPE=1 \
+    WINKY_TESTWURZEL="$WURZEL" GDK_BACKEND=broadway BROADWAY_DISPLAY=:17 \
+    LANGUAGE=${sprache%%:*} LANG=${sprache#*:} WINKY_FOTO_ZIEL="packaging/bildschirmfotos/${sprache%%:*}" \
+    python3 werkzeuge/bildschirmfotos/aufnehmen.py
+done

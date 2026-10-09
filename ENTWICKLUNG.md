@@ -15,6 +15,38 @@ bricht bei einem Fehler ab, bevor es `bau/winky_<version>_amd64.deb` zusammenste
 und Bauzeit landen in `/usr/share/winky/version.json` und erscheinen in der App unter
 „Erweitert“.
 
+## Übersetzungen
+
+Grundsprache ist Englisch, Übersetzungen liegen in `po/<sprache>.po` (gettext, Domäne
+`winky`). Der Paketbau erzeugt die Vorlage `po/winky.pot` aus App, Hinweisen und
+Verwaltungshelfer und bricht ab, wenn eine Sprache unvollständig ist. Neue Texte in eine
+.po-Datei übernehmen und eine neue Sprache anfangen:
+
+```bash
+podman run --rm -v "$PWD":/src:Z -w /src localhost/winky-bau:2 ./scripts/uebersetzungen.sh aktualisieren
+cp po/winky.pot po/fr.po   # neue Sprache, dann Kopf und Übersetzungen ausfüllen
+```
+
+Das PAM-Modul (drei Terminalmeldungen), die Polkit-Aktionen, die Desktop-Dateien und die
+Store-Beschreibung tragen Englisch und Deutsch direkt in sich.
+
+## Veröffentlichen
+
+1. Version in `CMakeLists.txt` erhöhen, `CHANGELOG.md` ergänzen, `./scripts/paket-bauen.sh`
+   und die Systemtests.
+2. Release auf GitHub mit der .deb-Datei.
+3. Paketquelle (APT, GitHub Pages, Zweig `gh-pages`) bauen und unterschreiben; gpg fragt nach
+   dem Passwort des Signaturschlüssels:
+
+   ```bash
+   ./scripts/paketquelle.sh
+   ```
+
+   Der Inhalt von `bau/paketquelle` ersetzt den Zweig `gh-pages` (ein Commit, ohne alte
+   Versionen). Die Quelle enthält AppStream-Daten (DEP-11) samt Symbolen; damit findet die
+   Software-Verwaltung Winky mit Beschreibung und Suchbegriffen. Das Paket bringt Quelle und
+   Schlüssel (`packaging/winky.sources`, `packaging/winky-archive-keyring.gpg`) selbst mit.
+
 ## Aufbau
 
 | Teil | Ort | Aufgabe |
@@ -45,7 +77,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Komponenten** (`tests/test_dienst.cc`, 71 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
-- **PAM** (`tests/pam_test.py`, 37 Prüfungen): echtes libpam mit pamtester und
+- **PAM** (`tests/pam_test.py`, 38 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
 - **App** (`werkzeuge/test/gui_logik_test.py`, 62 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
@@ -59,7 +91,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 
 - **Hinweise** (`werkzeuge/test/hinweis_test.py`, 9 Prüfungen): welcher Stand der
   Anfragedatei zu welchem Hinweis führt (Fenster, ✓, Benachrichtigung, alte Anfragen).
-- **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 27 Prüfungen): Aktualisieren,
+- **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
 - **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 34 Prüfungen): echter Prüfdienst, echte

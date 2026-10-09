@@ -1,5 +1,7 @@
 # Sicherheit von Winky
 
+**Deutsch** · [English](SECURITY.md)
+
 Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes Passwort und
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.

@@ -207,14 +207,17 @@ def main():
     z = a.zusatz[-1]
     pruefe(z.startswith(b"C/dev/pts/7\x00") and b"pamtester" in z and z.endswith(b"\x00"),
            "Terminal und Befehlszeile werden mitgeschickt")
-    pruefe("Kamera zeigen" in pam.ausgabe and "bestätigt" in pam.ausgabe,
-           "Aufforderung und Bestätigung erscheinen im Terminal")
+    pruefe("to the camera" in pam.ausgabe and "\u2713 confirmed" in pam.ausgabe,
+           "Aufforderung und Bestätigung erscheinen im Terminal (Englisch)")
+    ok, _ = pam("winky-test-geste", items=tty, env={"LANG": "de_DE.UTF-8"})
+    pruefe(ok and "Kamera zeigen" in pam.ausgabe and "\u2713 bestätigt" in pam.ausgabe,
+           "mit deutscher Systemsprache auf Deutsch")
     a.modus = "geste-kein"
     ok, _ = pam("winky-test-geste", items=tty)
-    pruefe(not ok and "nicht bestätigt" in pam.ausgabe, "ohne ✌: nicht bestätigt, weiter mit Passwort")
+    pruefe(not ok and "not confirmed" in pam.ausgabe, "ohne ✌: nicht bestätigt, weiter mit Passwort")
     a.modus = "geste-ablehnen"
     ok, dauer = pam("winky-test-geste", items=tty)
-    pruefe(not ok and "Kamera zeigen" not in pam.ausgabe and dauer < 1,
+    pruefe(not ok and "to the camera" not in pam.ausgabe and dauer < 1,
            "lehnt der Dienst ab, erscheint keine Aufforderung und es geht sofort weiter")
     a.modus = "geste-haengt"
     ok, dauer = pam("winky-test-geste", items=tty)

@@ -12,6 +12,8 @@ import threading
 
 from gi.repository import GLib
 
+from sprache import _
+
 
 class Prozess:
     def __init__(self, befehl, bei_bild=None, bei_status=None, bei_ende=None,
@@ -44,8 +46,7 @@ class Prozess:
                 break
             if zeile.startswith(b"BILD "):
                 try:
-                    _, w, h, n = zeile.split()
-                    w, h, n = int(w), int(h), int(n)
+                    w, h, n = (int(t) for t in zeile.split()[1:])
                 except ValueError:
                     break
                 daten = f.read(n)
@@ -102,8 +103,8 @@ class Prozess:
         if self.ergebnis and self.ergebnis.get("fehler"):
             return self.ergebnis["fehler"]
         if rc == 126:
-            return "Abgebrochen: Das Passwort wurde nicht eingegeben."
+            return _("Canceled: the password was not entered.")
         if rc == 127:
-            return "Nicht berechtigt oder Passwortabfrage nicht verfügbar."
+            return _("Not authorized, or the password prompt is not available.")
         text = "\n".join(z for z in self.fehlertext[-6:] if z.strip())
-        return text or f"Fehlgeschlagen (Rückgabewert {rc})."
+        return text or _("Failed (exit code {code}).").format(code=rc)

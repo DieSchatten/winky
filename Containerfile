@@ -10,7 +10,7 @@ RUN apt-get update \
       g++ cmake ninja-build pkg-config make \
       libpam0g-dev libsystemd-dev \
       libpam-wrapper libpamtest0-dev pamtester \
-      python3 strace file binutils ca-certificates v4l-utils \
+      python3 strace file binutils ca-certificates v4l-utils gettext \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src

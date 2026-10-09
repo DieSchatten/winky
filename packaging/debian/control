@@ -6,17 +6,17 @@ Homepage: https://github.com/DieSchatten/winky
 Section: admin
 Priority: optional
 Depends: libc6 (>= 2.39), libstdc++6, libgcc-s1, libpam0g, libpam-runtime, libsystemd0, systemd, polkitd, pkexec, python3, python3-gi, gir1.2-gtk-4.0, gir1.2-gtk-3.0, gir1.2-adw-1, libnotify-bin, procps
-Description: Winky: die Bildschirmsperre mit dem Gesicht öffnen
- Winky öffnet die GNOME-Bildschirmsperre mit einem Blick in die
- Infrarot-Kamera, ähnlich wie Windows Hello. Das Gesicht gilt nur für die
- Sperre einer laufenden Sitzung; die Anmeldung nach dem Start, su, SSH, die
- Konsole und Administrator-Dialoge verlangen weiter das Passwort. Wahlweise
- bestätigt man sudo im Terminal mit Gesicht und dem Handzeichen ✌. Die
- Prüfung läuft in einem abgeschotteten Dienst ohne Netz und ohne Zugriff auf
- das Home-Verzeichnis. Nach der Installation ist nichts aktiv; die App führt
- Schritt für Schritt durch die Einrichtung. Jede Person nimmt ihr eigenes
- Gesicht mit ihrem eigenen Passwort auf. Erkennung mit YuNet und SFace
- (OpenCV Zoo), Handzeichen mit Googles MediaPipe.
+Description: Winky: unlock the screen with your face, like Windows Hello
+ Winky unlocks the GNOME lock screen with a glance at the infrared camera,
+ similar to Windows Hello. The face only applies to the lock screen of a
+ running session; login after boot, su, SSH, the console and administrator
+ dialogs still require the password. Optionally, sudo in the terminal and
+ KeePassXC (from 2.8) can be confirmed with the face and the ✌ sign. The
+ check runs in an isolated service without network and without access to
+ home directories. Nothing is active after installation; the app guides
+ through the setup step by step. Everyone records their own face with their
+ own password. Recognition with YuNet and SFace (OpenCV Zoo), hand sign with
+ Google MediaPipe. The app speaks English and German.
  .
- Bisher nur mit einer Infrarot-Kamera getestet; andere Kameras können sich
- anders verhalten. Die Nutzung erfolgt auf eigenes Risiko.
+ So far tested with only one infrared camera; other cameras may behave
+ differently. Use at your own risk.

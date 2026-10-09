@@ -26,7 +26,7 @@ def _ir_kamera():
 
 
 BYPATH = _ir_kamera()
-ABBILD = "localhost/winky-bau:1"
+ABBILD = "localhost/winky-bau:2"
 APP = PROJEKT / "src" / "app"
 
 

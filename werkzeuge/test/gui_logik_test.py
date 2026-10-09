@@ -15,6 +15,7 @@ import traceback
 from pathlib import Path
 
 assert os.environ.get("WINKY_ATTRAPPE") == "1", "nur mit Attrappe ausführen"
+os.environ["LANGUAGE"] = "de"   # die Prüfungen vergleichen deutsche Texte (bau/locale)
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "app"))
 
 import gesicht_app  # noqa: E402

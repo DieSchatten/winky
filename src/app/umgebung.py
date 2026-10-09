@@ -8,6 +8,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from sprache import _
+
 APP = Path(__file__).resolve().parent
 INSTALLIERT = APP == Path("/usr/share/winky/app")
 PROJEKT = None if INSTALLIERT else APP.parent.parent
@@ -40,8 +42,8 @@ def version():
                            capture_output=True, text=True)
         if r.returncode == 0 and r.stdout.strip():
             commit, datum = r.stdout.strip().split(" ", 1)
-            return {"version": "Entwicklung", "commit": commit, "gebaut": datum[:16]}
-    return {"version": "unbekannt", "commit": "", "gebaut": ""}
+            return {"version": _("development"), "commit": commit, "gebaut": datum[:16]}
+    return {"version": _("unknown"), "commit": "", "gebaut": ""}
 
 
 def verwalten_befehl(args, admin=False):

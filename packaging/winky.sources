@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://dieschatten.github.io/winky
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: /usr/share/keyrings/winky-archive-keyring.gpg

@@ -9,6 +9,7 @@ import subprocess
 from dataclasses import dataclass
 
 import umgebung
+from sprache import _
 
 
 @dataclass
@@ -110,7 +111,8 @@ def keepassxc_info():
         r = subprocess.run(["dpkg-query", "-W", "-f=${Version}", "keepassxc"],
                            capture_output=True, text=True, timeout=5)
         if r.returncode == 0 and r.stdout.strip():
-            gefunden.append(f"Paket {r.stdout.strip().split('+')[0].split('-')[0]}")
+            version = r.stdout.strip().split('+')[0].split('-')[0]
+            gefunden.append(_("Package {version}").format(version=version))
     except (OSError, subprocess.TimeoutExpired):
         pass
     try:
@@ -176,11 +178,11 @@ def verlauf(anzahl=8, uid=None):
 
 
 STATUS_TEXTE = {
-    "treffer": "per Gesicht entsperrt",
-    "kein_treffer": "Gesicht nicht erkannt, Passwort nötig",
-    "kein_gesicht": "kein Gesicht vor der Kamera",
-    "nicht_eingerichtet": "nicht eingerichtet",
-    "gesperrt": "nach Fehlversuchen gesperrt, Passwort nötig",
-    "abgelehnt": "abgelehnt (keine lokale Sitzung)",
-    "fehler": "Fehler, Passwort nötig",
+    "treffer": _("unlocked with your face"),
+    "kein_treffer": _("face not recognized, password needed"),
+    "kein_gesicht": _("no face in front of the camera"),
+    "nicht_eingerichtet": _("not set up"),
+    "gesperrt": _("locked after failed attempts, password needed"),
+    "abgelehnt": _("refused (no local session)"),
+    "fehler": _("error, password needed"),
 }

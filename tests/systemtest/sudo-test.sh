@@ -46,9 +46,9 @@ mkdir -p /var/lib/winky/status
 echo '{"vorlagen": 10, "eingelernt": 1, "test_ok": 2}' > /var/lib/winky/status/1000.json
 printf "auth [success=done default=ignore] pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=10000\nauth requisite pam_deny.so\n" > /etc/pam.d/sudo-nurgeste
 
-pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "Gesichtsentsperrung"' "sudo an verlangt aktive Gesichtsentsperrung"
+pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face unlock"' "sudo an verlangt aktive Gesichtsentsperrung"
 SUDO_UID=1000 $V aktivieren </dev/null >/dev/null
-pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "Gesicht und"' "sudo an verlangt bestandenen ✌-Test"
+pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face and"' "sudo an verlangt bestandenen ✌-Test"
 install -m0640 -g _winky /dev/null /var/lib/winky/1000/geste-ok   # Test ersetzt hier den ✌-Test
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "\"ok\": true"' "sudo an mit Administratorrechten"
 pruefe '[ -f /etc/winky/sudo-ein ] && grep -q "^sudo = ja" /etc/winky/winky.conf' "Schalter und Konfiguration gesetzt"
@@ -57,7 +57,7 @@ pruefe 'grep -q "pam_winky.so services=gdm-password,sudo geste=sudo" /etc/pam.d/
 # 1. Anfrage ohne Handzeichen: Aufforderung, dann nicht bestätigt, Hinweisdatei, Zähler
 cp /etc/pam.d/sudo-nurgeste /etc/pam.d/sudo
 t0=$(date +%s%N); AUS=$(sudo_pam sudo ubuntu authenticate); t=$(( ($(date +%s%N)-t0)/1000000 ))
-pruefe 'echo "$AUS" | grep -q "Kamera zeigen" && echo "$AUS" | grep -q "nicht bestätigt"' "Aufforderung erscheint, ohne ✌ nicht bestätigt (${t} ms)"
+pruefe 'echo "$AUS" | grep -q "to the camera" && echo "$AUS" | grep -q "not confirmed"' "Aufforderung erscheint, ohne ✌ nicht bestätigt (${t} ms)"
 pruefe '[ $t -lt 10500 ]' "innerhalb des Zeitlimits von 10 s"
 pruefe '[ "$(anfrage)" = nicht_bestaetigt ]' "Hinweisdatei: nicht bestätigt"
 pruefe 'grep -q pamtester /run/winky/anfrage/1000.json && grep -q "/dev/pts/0" /run/winky/anfrage/1000.json' "Hinweisdatei nennt Befehl und Terminal"
@@ -70,14 +70,14 @@ pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=sudo" | tail -1 | gr
 sleep 2
 t0=$(date +%s%N); sudo_pam sudo ubuntu authenticate > /root/zweite.txt; t=$(( ($(date +%s%N)-t0)/1000000 ))
 wait
-pruefe '[ $t -lt 1500 ] && ! grep -q "Kamera zeigen" /root/zweite.txt' "zweite gleichzeitige Anfrage sofort abgelehnt (${t} ms)"
-pruefe 'grep -q "nicht bestätigt" /root/erste.txt' "erste Anfrage wurde abgebrochen"
+pruefe '[ $t -lt 1500 ] && ! grep -q "to the camera" /root/zweite.txt' "zweite gleichzeitige Anfrage sofort abgelehnt (${t} ms)"
+pruefe 'grep -q "not confirmed" /root/erste.txt' "erste Anfrage wurde abgebrochen"
 pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=sudo" | tail -2 | grep -c "grund=gleichzeitig" | grep -q 2' "beide mit Grund gleichzeitig im Journal"
 
 # 3. Begrenzung: nach drei unbestätigten gilt nur das Passwort
 pruefe '[ "$(cut -d" " -f1 /run/winky/sperre/sudo-1000)" -ge 3 ]' "drei unbestätigte Anfragen gezählt"
 t0=$(date +%s%N); AUS=$(sudo_pam sudo ubuntu authenticate); t=$(( ($(date +%s%N)-t0)/1000000 ))
-pruefe '! echo "$AUS" | grep -q "Kamera zeigen" && [ $t -lt 1500 ]' "vierte Anfrage: keine Kamera, sofort Passwort (${t} ms)"
+pruefe '! echo "$AUS" | grep -q "to the camera" && [ $t -lt 1500 ]' "vierte Anfrage: keine Kamera, sofort Passwort (${t} ms)"
 pruefe '[ "$(anfrage)" = begrenzt ]' "Hinweisdatei meldet die Pause"
 
 # 4. Passwortanmeldung setzt zurück (Stapel: Gesicht, sonst pam_permit als Passwort)
@@ -121,7 +121,7 @@ t0=$(date +%s%N); /usr/libexec/winky/winky-polkit-pruefung ubuntu; t=$(( ($(date
 pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=keepassxc" | tail -1 | grep -vq "geste=1" && [ $t -lt 4500 ]' "ohne ✌-Pflicht nur Gesicht, wie bisher (${t} ms)"
 SUDO_UID=1000 $V keepassxc geste-an </dev/null >/dev/null
 rm -f /var/lib/winky/1000/geste-ok; SUDO_UID=1000 $V keepassxc aus </dev/null >/dev/null
-pruefe 'SUDO_UID=1000 $V keepassxc an </dev/null | erg | grep -q "Gesicht und"' "KeePassXC mit ✌ verlangt bestandenen ✌-Test"
+pruefe 'SUDO_UID=1000 $V keepassxc an </dev/null | erg | grep -q "face and"' "KeePassXC mit ✌ verlangt bestandenen ✌-Test"
 install -m0640 -g _winky /dev/null /var/lib/winky/1000/geste-ok
 
 # 8. Rückbau

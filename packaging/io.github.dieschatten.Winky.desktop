@@ -1,10 +1,13 @@
 [Desktop Entry]
 Type=Application
 Name=Winky
-GenericName=Gesichtsentsperrung
-Comment=Den Sperrbildschirm mit dem Gesicht entsperren
+GenericName=Face Unlock
+GenericName[de]=Gesichtsentsperrung
+Comment=Unlock the lock screen with your face
+Comment[de]=Den Sperrbildschirm mit dem Gesicht entsperren
 Exec=winky
 Icon=io.github.dieschatten.Winky
 Terminal=false
 Categories=Settings;Security;
-Keywords=Gesicht;Gesichtsentsperrung;Entsperren;Kamera;Windows Hello;
+Keywords=face;face unlock;face recognition;Windows Hello;Howdy;unlock;lock screen;camera;infrared;IR;biometric;login;sudo;
+Keywords[de]=Gesicht;Gesichtsentsperrung;Gesichtserkennung;Entsperren;Sperrbildschirm;Kamera;Infrarot;Windows Hello;biometrisch;Anmeldung;sudo;

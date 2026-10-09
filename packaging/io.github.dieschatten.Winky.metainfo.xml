@@ -7,35 +7,66 @@
   <!-- Eigener Code und ONNX Runtime MIT; Modelle: YuNet MIT, SFace und MediaPipe Apache-2.0 -->
   <project_license>MIT AND Apache-2.0</project_license>
   <name>Winky</name>
-  <summary>Den Sperrbildschirm mit dem Gesicht öffnen</summary>
+  <summary>Unlock your screen with your face, like Windows Hello</summary>
+  <summary xml:lang="de">Den Sperrbildschirm mit dem Gesicht öffnen, wie Windows Hello</summary>
   <developer id="io.github.dieschatten">
     <name>@HERAUSGEBER_NAME@</name>
   </developer>
   <description>
     <p>
-      Winky öffnet die Bildschirmsperre mit einem Blick in die Kamera, ähnlich wie Windows
-      Hello. Dafür nutzt Winky die Infrarot-Kamera des Laptops; Fotos auf Handy oder
+      Winky unlocks the GNOME lock screen with a glance at the camera, similar to Windows
+      Hello. It uses the laptop's infrared camera; photos on a phone or screen are invisible
+      in the infrared image.
+    </p>
+    <p xml:lang="de">
+      Winky öffnet die GNOME-Bildschirmsperre mit einem Blick in die Kamera, ähnlich wie
+      Windows Hello. Dafür nutzt Winky die Infrarot-Kamera des Laptops; Fotos auf Handy oder
       Bildschirm sind im Infrarot-Bild unsichtbar.
     </p>
     <ul>
-      <li>Ein Assistent führt in wenigen Minuten durch die Einrichtung, ganz ohne Terminal.</li>
-      <li>Das Passwort geht immer. Nach dem Einschalten des Rechners, für su, Fernzugriff und
-        Administrator-Dialoge bleibt es ohnehin nötig.</li>
-      <li>Wahlweise bestätigt man sudo im Terminal mit Gesicht und dem Handzeichen ✌ statt mit
-        dem Passwort. Jede Anfrage erscheint als Meldung mit dem Befehl.</li>
-      <li>Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das System lesen kann.
-        Kein Netzwerkzugriff.</li>
-      <li>Jede Person nimmt ihr eigenes Gesicht mit ihrem eigenen Passwort auf.</li>
+      <li>A setup assistant guides you through everything in a few minutes, no terminal
+        needed.</li>
+      <li xml:lang="de">Ein Assistent führt in wenigen Minuten durch die Einrichtung, ganz ohne
+        Terminal.</li>
+      <li>Your password always works. After switching on the computer, for su, remote access
+        and administrator dialogs it is required anyway.</li>
+      <li xml:lang="de">Das Passwort geht immer. Nach dem Einschalten des Rechners, für su,
+        Fernzugriff und Administrator-Dialoge bleibt es ohnehin nötig.</li>
+      <li>Optional: confirm sudo in the terminal with your face and the ✌ sign instead of
+        your password. A large ✌ notice shows the command.</li>
+      <li xml:lang="de">Wahlweise bestätigt man sudo im Terminal mit Gesicht und dem
+        Handzeichen ✌ statt mit dem Passwort. Ein großer ✌-Hinweis zeigt den Befehl.</li>
+      <li>Optional: unlock KeePassXC (from version 2.8) with your face and ✌.</li>
+      <li xml:lang="de">Wahlweise KeePassXC (ab Version 2.8) mit Gesicht und ✌ entsperren.</li>
+      <li>No images are stored, only face features that only the system can read. No network
+        access.</li>
+      <li xml:lang="de">Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das
+        System lesen kann. Kein Netzwerkzugriff.</li>
+      <li>Everyone records their own face with their own password.</li>
+      <li xml:lang="de">Jede Person nimmt ihr eigenes Gesicht mit ihrem eigenen Passwort
+        auf.</li>
     </ul>
     <p>
+      Winky is a convenience for the lock screen, not theft protection and no liveness
+      detection: a printout visible in infrared or very similar siblings can fool it. When
+      uninstalled, only the password applies again, and the face data of all users is
+      deleted.
+    </p>
+    <p xml:lang="de">
       Winky ist ein Komfort für die Bildschirmsperre, kein Diebstahlschutz und keine
       Lebenderkennung: Ein im Infrarot sichtbarer Ausdruck oder sehr ähnliche Geschwister
       können täuschen. Beim Deinstallieren gilt sofort wieder nur das Passwort, und die
       Gesichtsdaten aller Benutzer werden gelöscht.
     </p>
     <p>
-      Bisher nur mit einer Infrarot-Kamera getestet; andere Kameras können sich anders
-      verhalten. Die Nutzung erfolgt auf eigenes Risiko.
+      Requires an infrared camera (Windows Hello camera) and GNOME with GDM, for example
+      Zorin OS 18 or Ubuntu 24.04. So far tested with only one infrared camera; other cameras
+      may behave differently. Use at your own risk.
+    </p>
+    <p xml:lang="de">
+      Braucht eine Infrarot-Kamera (Windows-Hello-Kamera) und GNOME mit GDM, zum Beispiel
+      Zorin OS 18 oder Ubuntu 24.04. Bisher nur mit einer Infrarot-Kamera getestet; andere
+      Kameras können sich anders verhalten. Die Nutzung erfolgt auf eigenes Risiko.
     </p>
   </description>
   <url type="homepage">https://github.com/DieSchatten/winky</url>
@@ -47,22 +78,57 @@
     <category>Settings</category>
     <category>Security</category>
   </categories>
-  <!-- Bildschirmfotos liegen im Paket; GNOME Software liest file://-Adressen direkt
-       (gs-screenshot-image.c), deshalb keine Webadresse nötig -->
+  <keywords>
+    <keyword>Windows Hello</keyword>
+    <keyword>face unlock</keyword>
+    <keyword>face recognition</keyword>
+    <keyword>facial recognition</keyword>
+    <keyword>Howdy</keyword>
+    <keyword>unlock</keyword>
+    <keyword>lock screen</keyword>
+    <keyword>login</keyword>
+    <keyword>biometric</keyword>
+    <keyword>infrared camera</keyword>
+    <keyword>IR camera</keyword>
+    <keyword>sudo</keyword>
+    <keyword>KeePassXC</keyword>
+    <keyword xml:lang="de">Windows Hello</keyword>
+    <keyword xml:lang="de">Gesichtserkennung</keyword>
+    <keyword xml:lang="de">Gesichtsentsperrung</keyword>
+    <keyword xml:lang="de">Gesicht</keyword>
+    <keyword xml:lang="de">entsperren</keyword>
+    <keyword xml:lang="de">Sperrbildschirm</keyword>
+    <keyword xml:lang="de">Anmeldung</keyword>
+    <keyword xml:lang="de">biometrisch</keyword>
+    <keyword xml:lang="de">Infrarot-Kamera</keyword>
+    <keyword xml:lang="de">IR-Kamera</keyword>
+    <keyword xml:lang="de">sudo</keyword>
+    <keyword xml:lang="de">KeePassXC</keyword>
+  </keywords>
   <screenshots>
     <screenshot type="default">
-      <caption>Startseite: Schalter für Bildschirmsperre, sudo, KeePassXC und Pause</caption>
-      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/startseite.png</image>
+      <caption>Home page: switches for lock screen, sudo, KeePassXC and pause</caption>
+      <caption xml:lang="de">Startseite: Schalter für Bildschirmsperre, sudo, KeePassXC und Pause</caption>
+      <image type="source" width="900" height="768">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/startseite.png</image>
+      <image type="source" width="900" height="768" xml:lang="de">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/de/startseite.png</image>
     </screenshot>
     <screenshot>
-      <caption>Der Assistent führt Schritt für Schritt durch die Einrichtung</caption>
-      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/einrichtung.png</image>
+      <caption>The setup assistant guides you step by step</caption>
+      <caption xml:lang="de">Der Assistent führt Schritt für Schritt durch die Einrichtung</caption>
+      <image type="source" width="900" height="768">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/einrichtung.png</image>
+      <image type="source" width="900" height="768" xml:lang="de">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/de/einrichtung.png</image>
     </screenshot>
     <screenshot>
-      <caption>Was Winky kann und was nicht, in einfachen Worten</caption>
-      <image type="source" width="900" height="768">file:///usr/share/winky/bildschirmfotos/sicherheit.png</image>
+      <caption>What Winky can and cannot do, in plain words</caption>
+      <caption xml:lang="de">Was Winky kann und was nicht, in einfachen Worten</caption>
+      <image type="source" width="900" height="768">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/sicherheit.png</image>
+      <image type="source" width="900" height="768" xml:lang="de">https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/de/sicherheit.png</image>
     </screenshot>
   </screenshots>
+  <branding>
+    <color type="primary" scheme_preference="light">#99c1f1</color>
+    <color type="primary" scheme_preference="dark">#1a5fb4</color>
+  </branding>
   <provides>
     <binary>winky</binary>
   </provides>
