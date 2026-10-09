@@ -99,8 +99,8 @@ apt-ftparchive \
   -o "APT::FTPArchive::Release::Description=Winky face unlock" \
   release "$Q/dists/stable" > "$T/Release"
 mv "$T/Release" "$Q/dists/stable/Release"
-gpg --yes --local-user "$SCHLUESSEL" --clearsign -o "$Q/dists/stable/InRelease" "$Q/dists/stable/Release"
-gpg --yes --local-user "$SCHLUESSEL" -abs -o "$Q/dists/stable/Release.gpg" "$Q/dists/stable/Release"
+gpg --yes --pinentry-mode loopback --local-user "$SCHLUESSEL" --clearsign -o "$Q/dists/stable/InRelease" "$Q/dists/stable/Release"
+gpg --yes --pinentry-mode loopback --local-user "$SCHLUESSEL" -abs -o "$Q/dists/stable/Release.gpg" "$Q/dists/stable/Release"
 gpgv --keyring "$(realpath "$RING")" "$Q/dists/stable/InRelease" 2>&1 | tail -1
 touch "$Q/.nojekyll"
 echo "== Paketquelle: $Q (Winky $VERSION, Schlüssel ${SCHLUESSEL: -16})"
