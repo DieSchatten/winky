@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(winky VERSION 0.8.0 LANGUAGES C CXX)
+project(winky VERSION 0.8.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -68,8 +68,7 @@ set_target_properties(pam_winky PROPERTIES PREFIX "" C_VISIBILITY_PRESET hidden)
 add_executable(winky-polkit-pruefung src/polkit/winky_polkit_pruefung.c)
 target_include_directories(winky-polkit-pruefung PRIVATE src/protokoll)
 
-# Messwerkzeug für die Entwicklung (läuft als normaler Benutzer, nicht im Paket). Das
-# Augenmodell (face_mesh) gehört nur zur verworfenen Zwinker-Messung.
+# Messwerkzeug für die Entwicklung (läuft als normaler Benutzer, nicht im Paket)
 add_executable(winky-messung werkzeuge/messung/main.cc)
 target_link_libraries(winky-messung PRIVATE winky_core winky_capture pthread)
 set_target_properties(winky-messung PROPERTIES INSTALL_RPATH "/usr/lib/winky"

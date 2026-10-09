@@ -4,7 +4,7 @@ Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes 
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.
 
-Stand: Version 0.8.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
+Stand: Version 0.8.1. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
 Windows-Hello-Kamera gemessen, mit dem aktuellen Erkennungsmodell bisher nur mit einer
 Person.
@@ -122,7 +122,7 @@ Das lässt sich durch Bedienung nicht abstellen:
    Benutzer desselben Rechners können ihn lesen. Über die Prozessliste sehen sie laufende
    sudo-Befehle ohnehin, und sudo protokolliert Befehle selbst auch.
 9. **Biometrische Daten.** Gespeichert werden keine Bilder, sondern Merkmalsvektoren
-   (je Person bis zu 64 Zahlenreihen mit je 128 Werten). Sie liegen nur für das System
+   (je Person 30 Zahlenreihen mit je 128 Werten). Sie liegen nur für das System
    lesbar unter `/var/lib/winky/<uid>/` (root:_winky 0640). Auf einer unverschlüsselten
    Festplatte kann sie jeder mit physischem Zugriff lesen. Aus solchen Vektoren lassen sich nach
    Forschungsergebnissen grob gesichtsähnliche Bilder zurückrechnen; als Ersatz für dein

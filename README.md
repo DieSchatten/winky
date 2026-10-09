@@ -93,10 +93,10 @@ anklicken. Die Software-Verwaltung installiert sie nach dem Administratorpasswor
 Terminal:
 
 ```bash
-sudo apt install ./winky_0.8.0_amd64.deb
+sudo apt install ./winky_0.8.1_amd64.deb
 ```
 
-Die Prüfsumme steht auf der Release-Seite (`sha256sum winky_0.8.0_amd64.deb`). Eine neue
+Die Prüfsumme steht auf der Release-Seite (`sha256sum winky_0.8.1_amd64.deb`). Eine neue
 Version installiert man genauso; die Einstellungen und Gesichtsdaten bleiben erhalten.
 
 Selbst bauen (braucht Podman, alles läuft im Container, das Paket landet in `bau/`):

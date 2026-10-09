@@ -1,6 +1,13 @@
 # Änderungen
 
-## 0.8.0
+## 0.8.1
+
+- Beim Aktualisieren fragt apt nicht mehr, ob die Einstellungsdatei ersetzt werden soll. Die
+  Datei gehört jetzt ganz Winky; eigene Einstellungen bleiben immer erhalten. Wer unter 0.8.0
+  die Frage mit „Y“ beantwortet hat, findet die alten Werte in
+  `/etc/winky/winky.conf.dpkg-old` und richtet Winky am einfachsten in der App neu ein.
+
+## 0.8.0 (09.10.2026)
 
 - Erste öffentliche Version.
 - Eigenständig: Gesichtssuche und Gesichtsvergleich mit freien Modellen aus dem OpenCV Zoo,

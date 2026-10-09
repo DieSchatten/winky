@@ -15,6 +15,10 @@ until systemctl is-system-running 2>/dev/null | grep -qE 'running|degraded'; do 
 # Ausgangslage wie auf einem eingerichteten Rechner (ältere Version, aktiv, Gesicht eingelernt)
 rm -rf /root/alt && dpkg-deb -R /root/neu.deb /root/alt
 sed -i 's/^Version: .*/Version: 0.0.1/' /root/alt/DEBIAN/control
+# Bis 0.8.0 war winky.conf eine dpkg-Konfigurationsdatei, mit anderer Vorgabe als heute
+install -Dm0644 /root/alt/usr/share/winky/winky.conf /root/alt/etc/winky/winky.conf
+sed -i '1i # Vorgabe einer älteren Version' /root/alt/etc/winky/winky.conf
+echo /etc/winky/winky.conf > /root/alt/DEBIAN/conffiles
 dpkg-deb --root-owner-group -b /root/alt /root/alt.deb >/dev/null
 dpkg -i /root/alt.deb >/dev/null 2>&1
 pam-auth-update --package --enable winky
@@ -36,6 +40,7 @@ pruefe '[ -f /var/lib/winky/1000/vorlagen.bin ] && [ -f /var/lib/winky/status/10
 pruefe '[ ! -e /var/lib/winky/1001/vorlagen.bin ] && [ ! -e /var/lib/winky/1001/geste-ok ] && [ ! -e /var/lib/winky/status/1001.json ]' "Gesichtsdaten im alten Format werden gelöscht"
 pruefe 'grep -q pam_winky /etc/pam.d/common-auth' "Aktualisieren lässt die Anmeldung eingeschaltet"
 pruefe 'grep -q "schwelle = 0.70" /etc/winky/winky.conf' "Aktualisieren behält die Einstellungen"
+pruefe '! dpkg-deb -I /root/neu.deb conffiles >/dev/null 2>&1 && [ ! -e /etc/winky/winky.conf.dpkg-new ] && [ ! -e /etc/winky/winky.conf.dpkg-old ]' "Einstellungen ohne dpkg-Rückfrage (keine Konfigurationsdatei mehr)"
 pruefe 'systemctl is-active -q winky.socket' "Prüfdienst-Socket nach dem Aktualisieren aktiv"
 
 # 2. Store-Anzeige: Beschreibung vorhanden, Paket über die Desktop-Datei auffindbar
@@ -68,4 +73,5 @@ pk install-local /root/neu.deb
 pruefe 'systemctl is-active -q winky.socket' "Neuinstallation: Socket aktiv"
 pruefe '! grep -q pam_winky /etc/pam.d/common-auth' "Neuinstallation: nichts aktiv"
 pruefe 'id _winky >/dev/null 2>&1' "Systembenutzer angelegt"
+pruefe 'cmp -s /etc/winky/winky.conf /usr/share/winky/winky.conf' "Neuinstallation legt die Einstellungsdatei an"
 echo; echo "$F Fehler"

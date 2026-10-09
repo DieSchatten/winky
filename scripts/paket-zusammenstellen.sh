@@ -4,12 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 P=bau/paket
-# Herausgeber aus AUTHORS (erste Zeile ohne #), für control und Software-Verwaltung
+# Herausgeber aus AUTHORS, für control und Software-Verwaltung
 HERAUSGEBER=$(grep -v '^#' AUTHORS | grep -m1 .)
 HERAUSGEBER_NAME=${HERAUSGEBER% <*}
-case "$HERAUSGEBER" in *HERAUSGEBER*|*example.org*)
-  echo "Hinweis: AUTHORS enthält noch den Platzhalter für den Herausgeber" >&2 ;;
-esac
 rm -rf "$P" bau/*.deb
 mkdir -p "$P"
 
@@ -57,7 +54,8 @@ install -Dm0644 packaging/sysusers.conf "$P"/usr/lib/sysusers.d/winky.conf
 install -Dm0644 packaging/tmpfiles.conf "$P"/usr/lib/tmpfiles.d/winky.conf
 install -Dm0644 packaging/pam-config "$P"/usr/share/pam-configs/winky
 install -Dm0644 packaging/polkit/io.github.dieschatten.winky.policy "$P"/usr/share/polkit-1/actions/io.github.dieschatten.winky.policy
-install -Dm0644 packaging/winky.conf "$P"/etc/winky/winky.conf
+# Vorgabe der Einstellungen; postinst legt /etc/winky/winky.conf nur an, wenn sie fehlt
+install -Dm0644 packaging/winky.conf "$P"/usr/share/winky/winky.conf
 install -Dm0644 README.md "$P"/usr/share/doc/winky/README.md
 install -Dm0644 NOTICE "$P"/usr/share/doc/winky/copyright
 install -Dm0644 LICENSE "$P"/usr/share/doc/winky/LICENSE
@@ -68,7 +66,6 @@ printf '{"version": "%s", "commit": "%s", "gebaut": "%s"}\n' "$VERSION" "$COMMIT
 mkdir -p "$P"/DEBIAN
 sed "s/@VERSION@/$VERSION/;s|@HERAUSGEBER@|$HERAUSGEBER|" packaging/debian/control > "$P"/DEBIAN/control
 echo "Installed-Size: $(du -sk --exclude=DEBIAN "$P" | cut -f1)" >> "$P"/DEBIAN/control
-install -m0644 packaging/debian/conffiles "$P"/DEBIAN/conffiles
 install -m0755 packaging/debian/postinst packaging/debian/prerm packaging/debian/postrm "$P"/DEBIAN/
 ( cd "$P" && find . -type f ! -path './DEBIAN/*' -printf '%P\0' | sort -z | xargs -0 md5sum ) \
   > "$P"/DEBIAN/md5sums

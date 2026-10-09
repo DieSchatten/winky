@@ -11,7 +11,8 @@ if [ "$1" = "remove" ]; then
 fi
 if [ "$1" = "purge" ]; then
     rm -rf /var/lib/winky /run/winky
-    rm -f /etc/winky/disabled /etc/winky/sudo-ein
+    rm -f /etc/winky/disabled /etc/winky/sudo-ein /etc/winky/winky.conf \
+        /etc/winky/winky.conf.dpkg-old /etc/winky/winky.conf.dpkg-dist
     rmdir /etc/winky 2>/dev/null || true
 fi
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then

@@ -1,4 +1,1 @@
-# Winky-Autoren. Die erste Zeile ohne # nennt die Person, die Winky herausgibt; sie
-# erscheint als Maintainer im Debian-Paket und als Entwickler in der Software-Verwaltung.
-# Der Paketbau warnt, solange hier der Platzhalter steht.
 DieSchatten <43169081+DieSchatten@users.noreply.github.com>
