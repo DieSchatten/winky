@@ -59,7 +59,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 
 - **Hinweise** (`werkzeuge/test/hinweis_test.py`, 9 Prüfungen): welcher Stand der
   Anfragedatei zu welchem Hinweis führt (Fenster, ✓, Benachrichtigung, alte Anfragen).
-- **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 25 Prüfungen): Aktualisieren,
+- **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 27 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
 - **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 34 Prüfungen): echter Prüfdienst, echte
