@@ -1,6 +1,5 @@
-// Komponententests für Konfiguration, Vorlagen, Entscheidungsregel und
-// Sperrzähler. Läuft im Bau-Container als (Namensraum-)root, damit sich
-// root-eigene Testdateien anlegen lassen.
+// Komponententests für Konfiguration, Vorlagen, Entscheidungsregel und Sperrzähler.
+// Läuft im Bau-Container als (Namensraum-)root, um root-eigene Testdateien anzulegen.
 
 #include <fcntl.h>
 #include <sys/stat.h>

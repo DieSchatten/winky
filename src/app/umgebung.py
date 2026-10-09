@@ -1,9 +1,5 @@
-"""Pfade und Betriebsart der App.
-
-Installiert liegt die App unter /usr/share/winky/app und nutzt die Programme
-aus /usr/libexec/winky.
-
-Tests ohne Kamera und ohne root: WINKY_ATTRAPPE=1 (Attrappe des
+"""Pfade und Betriebsart der App; installiert unter /usr/share/winky/app mit Programmen aus
+/usr/libexec/winky. Tests ohne Kamera und root: WINKY_ATTRAPPE=1 (Attrappe des
 Verwaltungshelfers), WINKY_TESTWURZEL=Ordner (statt / für Systemdateien).
 """
 
@@ -47,8 +43,6 @@ def version():
             return {"version": "Entwicklung", "commit": commit, "gebaut": datum[:16]}
     return {"version": "unbekannt", "commit": "", "gebaut": ""}
 
-
-# ---------------------------------------------------------------- Verwaltung
 
 def verwalten_befehl(args, admin=False):
     """Eigenes Gesicht: winky-gesicht (eigenes Passwort).

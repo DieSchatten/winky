@@ -1,17 +1,7 @@
-// Hand und Handzeichen über MediaPipe Gesture Recognizer (Google, Apache-2.0), nach ONNX
-// umgewandelt. Ablauf wie in MediaPipe (hand_detector_graph, hand_landmarks_detector_graph,
-// hand_gesture_recognizer_graph):
-//   1. Handfläche suchen (192 x 192, Ankerraster wie SsdAnchorsCalculator)
-//   2. gedrehter Ausschnitt um die Handfläche (2,6-fach, um eine halbe Höhe zu den Fingern
-//      verschoben), 224 x 224 -> 21 Handpunkte, Händigkeit, Handwahrscheinlichkeit
-//   3. Gesten-Merkmal aus den Punkten (am Handgelenk ausgerichtet und auf Größe 1
-//      normiert) und Klassifikator mit 8 Klassen, darunter Thumb_Up.
-// Wie die MediaPipe-Bibliothek selbst wird das Bild nicht gespiegelt (abgeglichen mit
-// MediaPipe 0.10.14 an Googles Testbildern). Die Handflächensuche liefert ihren besten
-// Wert immer; Handpunkte und Geste gibt es ab min_palm (MediaPipe: 0,5).
-// Video wie MediaPipe im Videomodus: Ist eine Hand sicher erkannt (presence >= 0,5),
-// kommt der nächste Ausschnitt aus ihren Punkten (Handgelenk, Daumen, Fingeransätze;
-// 2,0-fach, leicht zu den Fingern verschoben) statt aus einer neuen Handflächensuche.
+// Handzeichen mit MediaPipe Gesture Recognizer (Google, Apache-2.0, nach ONNX umgewandelt), Ablauf
+// wie dort: Handfläche (192 x 192) -> gedrehter Ausschnitt (224 x 224) -> 21 Punkte, Händigkeit,
+// Präsenz -> Gestenklassifikator (8 Klassen). Bild ungespiegelt wie in MediaPipe; im Videomodus
+// folgt der Ausschnitt den Handpunkten, solange presence >= 0,5.
 #pragma once
 
 #include <array>
@@ -32,7 +22,7 @@ enum HandGesture { kGestureNone, kClosedFist, kOpenPalm, kPointingUp, kThumbDown
 struct HandResult {
   bool found = false;                        // Hand gefunden und Punkte berechnet
   bool tracked = false;                      // Ausschnitt aus dem vorigen Bild
-  float palm_score = 0;                      // bester Wert der Handflächensuche (auch darunter)
+  float palm_score = 0;                      // bester Wert der Handflächensuche (auch < min_palm)
   float presence = 0;                        // Hand im Ausschnitt laut Punktenetz
   float right_hand = 0;                      // Wahrscheinlichkeit rechte Hand
   std::array<float, kHandPoints * 2> pts{};  // x, y im Originalbild

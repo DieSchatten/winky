@@ -1,7 +1,5 @@
-"""Umgebung des Kalibrierwerkzeugs (Entwicklung, nicht Teil des Pakets).
-
-Misst mit dem Messwerkzeug als normaler Benutzer: installiert unter
-/usr/libexec/winky oder aus dem Bau-Container des Projekts.
+"""Umgebung des Kalibrierwerkzeugs (Entwicklung, nicht Teil des Pakets): misst als normaler
+Benutzer mit dem Messwerkzeug aus /usr/libexec/winky oder dem Bau-Container des Projekts.
 """
 
 import os
@@ -39,8 +37,6 @@ def _daten_ordner():
 
 MESSUNGEN = Path(os.environ.get("WINKY_MESSUNGEN") or _daten_ordner() / "messungen").resolve()
 
-
-# ---------------------------------------------------------------- Messwerkzeug
 
 def messwerkzeug_modus():
     if ATTRAPPE:

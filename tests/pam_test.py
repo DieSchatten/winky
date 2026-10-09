@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Test des PAM-Moduls mit echtem libpam, pamtester und nachgebautem Prüfdienst.
-
-Läuft nur im Wegwerf-Container als (Namensraum-)root, weil er /etc/pam.d,
-/run/winky.sock und /etc/winky/disabled anlegt.
+"""Test des PAM-Moduls mit echtem libpam, pamtester und nachgebautem Prüfdienst. Nur im
+Wegwerf-Container als (Namensraum-)root, weil er /etc/pam.d, /run/winky.sock und
+/etc/winky/disabled anlegt.
 """
 
 import os
@@ -187,7 +186,7 @@ def main():
     ok, dauer = pam("gdm-nurgesicht", env=reauth)
     pruefe(not ok, "ohne Prüfdienst kein Erfolg per Gesicht")
 
-    # ---------------------------------------------------------------- sudo mit ✌
+    # sudo mit ✌
     a = Attrappe()
     geste = (f"auth [success=done default=ignore] {modul} services=winky-test-geste,gdm-password "
              f"geste=winky-test-geste timeout_ms=1500 geste_timeout_ms=3000")

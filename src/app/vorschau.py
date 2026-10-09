@@ -17,8 +17,7 @@ def css_laden():
     global _css_geladen
     if _css_geladen:
         return
-    # Nur im Testweg über GTK-Broadway fehlt die Schrift-DPI; libadwaita rechnet
-    # Seitenbreiten damit um und würde sonst alles sehr schmal darstellen.
+    # Unter GTK-Broadway (Tests) fehlt die Schrift-DPI, libadwaita zeigte sonst alles sehr schmal
     anzeige = Gdk.Display.get_default()
     if "Broadway" in anzeige.__gtype__.name:
         einstellungen = Gtk.Settings.get_default()

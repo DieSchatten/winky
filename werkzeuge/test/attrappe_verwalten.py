@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Attrappe von winky-verwalten / winky-gesicht für Oberflächentests.
+"""Attrappe von winky-verwalten / winky-gesicht für Oberflächentests: ohne root und Kamera,
+schreibt nach WINKY_TESTWURZEL statt ins System, gleiches Protokoll.
 
-Ohne root und ohne Kamera. Schreibt statt ins System nach WINKY_TESTWURZEL und
-spricht dasselbe Protokoll. Aufruf: attrappe_verwalten.py --rolle gesicht|verwalten BEFEHL [WERT]
-Steuerung über Umgebung: WINKY_ATTRAPPE_PASSWORT=abbrechen (wie abgebrochene
-Passwortabfrage), WINKY_ATTRAPPE_FREMD=WERT (höchster Wert der Gegenprobe),
-WINKY_ATTRAPPE_BILD=DATEI (Kamerabild aus werkzeuge/bildschirmfotos/illustration.py),
-WINKY_ATTRAPPE_DAUER=SEKUNDEN (Laufzeit von Einlernen und Testen).
+Aufruf: attrappe_verwalten.py --rolle gesicht|verwalten BEFEHL [WERT]
+Umgebung: WINKY_ATTRAPPE_PASSWORT=abbrechen (abgebrochene Passwortabfrage),
+WINKY_ATTRAPPE_FREMD=WERT (höchster Wert der Gegenprobe), WINKY_ATTRAPPE_BILD=DATEI (Kamerabild
+aus werkzeuge/bildschirmfotos/illustration.py), WINKY_ATTRAPPE_DAUER=SEKUNDEN (Einlernen, Testen).
 """
 
 import json

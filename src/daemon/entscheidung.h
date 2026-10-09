@@ -1,11 +1,6 @@
-// Entscheidungsregel für eine Entsperrprüfung, ohne Kamera und ohne Modelle
-// (rein rechnerisch, damit sie sich mit erfundenen Daten testen lässt).
-//
-// Erfolg erst, wenn mindest_treffer beleuchtete Bilder mit brauchbarem Gesicht
-// über der Schwelle liegen, im selben Gesichtsverlauf (Rahmen überlappen) und
-// mit plausiblem Blinkmuster: Im vorherigen, unbeleuchteten Bild muss der
-// Gesichtsbereich deutlich dunkler sein. Ein Bildschirm oder eine
-// eingespielte Aufnahme ohne Strahler fällt damit heraus.
+// Entscheidungsregel ohne Kamera und Modelle (mit erfundenen Daten testbar). Treffer erst nach
+// mindest_treffer beleuchteten Bildern über der Schwelle im selben Gesichtsverlauf, jedes mit
+// deutlich dunklerem Gesicht im Dunkelbild davor (weist Bildschirme/Aufnahmen ohne Strahler ab).
 #pragma once
 
 namespace winky {
@@ -20,8 +15,8 @@ struct Beobachtung {
   bool brauchbar = false;    // Qualitätsprüfung bestanden
   float wert = -1;           // Ähnlichkeit (nur wenn brauchbar)
   Rahmen rahmen;
-  float hell_gesicht = 0;    // Gesichtsbereich in diesem (beleuchteten) Bild
-  float dunkel_gesicht = -1; // derselbe Bereich im vorherigen dunklen Bild, -1 = keins
+  float hell_gesicht = 0;    // Gesichtshelligkeit in diesem hellen Bild
+  float dunkel_gesicht = -1; // dieselbe im Dunkelbild davor, -1 = keins
 };
 
 struct Regeln {
@@ -58,27 +53,23 @@ class Entscheidung {
 
 float ueberlappung(const Rahmen& a, const Rahmen& b);
 
-// sudo bestätigen: Gesicht erkannt (Regel wie oben) und Handzeichen ✌ in mehreren
-// beleuchteten Bildern hintereinander. Ein Bild zählt für das Zeichen nur, wenn genau ein
-// Gesicht zu sehen ist, die Hand nah an diesem Gesicht ist und das Gesicht dasselbe ist,
-// das erkannt wurde (Rahmen überlappen). So kann niemand neben einem zufällig in die
-// Kamera schauenden Besitzer ein Zeichen zeigen.
+// Gestenregel: erkanntes Gesicht plus ✌ in mehreren Bildern in Folge, jeweils bei genau einem
+// Gesicht, Hand nahe daran und Gesicht = erkanntes (kein Fremdzeichen neben dem Besitzer).
 struct HandBeobachtung {
-  bool zeichen = false;  // ✌ sicher erkannt (Hand sicher, wahrscheinlichste Geste, >= 0,5)
-  float x = 0, y = 0;    // Mitte der Hand im Bild
+  bool zeichen = false;  // ✌ sicher erkannt
+  float x = 0, y = 0;    // Handmitte in Bildpixeln
 };
 
 struct GestenRegeln {
-  int bilder = 3;        // so viele Bilder in Folge mit Zeichen
-  float naehe_x = 2.5f;  // Hand höchstens so viele Gesichtsbreiten seitlich vom Gesicht
-  float naehe_y = 2.0f;  // und so viele Gesichtshöhen darüber oder darunter
+  int bilder = 3;        // Bilder in Folge mit Zeichen
+  float naehe_x = 2.5f;  // max. seitlicher Abstand zur Gesichtsmitte in Gesichtsbreiten
+  float naehe_y = 2.0f;  // max. senkrechter Abstand in Gesichtshöhen
 };
 
 class GestenEntscheidung {
  public:
   GestenEntscheidung(const Regeln& gesicht, const GestenRegeln& g) : gesicht_(gesicht), r_(g) {}
 
-  // gesichter: Anzahl der Gesichter im Bild
   Ergebnis neu(const Beobachtung& b, int gesichter, const HandBeobachtung& h);
   Ergebnis zeit(double t_ms);
 

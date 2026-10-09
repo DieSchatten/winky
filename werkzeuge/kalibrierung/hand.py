@@ -1,8 +1,7 @@
 """Seite „Handzeichen ✌“: Messung des Victory-Zeichens als Bestätigung für sudo und KeePassXC.
 
-Wie im echten Einsatz mit Rückmeldung: Sobald die Regel greift, steht „✓ Erkannt“ im Bild,
-man hält also, bis es bestätigt ist. Dazu Dunkel, Abstand und die Schritte ohne Zeichen
-(Tippen, Alltag), die keinen einzigen Fehlalarm auslösen dürfen. Regeln in auswerten_hand.py.
+Mit Rückmeldung wie im Einsatz („✓ Erkannt“ im Bild); dazu Dunkel, Abstand und Schritte ohne
+Zeichen (Tippen, Alltag), die keinen Fehlalarm auslösen dürfen. Regeln in auswerten_hand.py.
 """
 
 from gi.repository import GLib

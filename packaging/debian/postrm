@@ -1,9 +1,8 @@
 #!/bin/sh
 set -e
 if [ "$1" = "remove" ]; then
-    # Die Gesichtsdaten gehören zum Programm und gehen mit. Die Software-Verwaltung
-    # kennt kein purge, ein Deinstallieren dort soll trotzdem keine Gesichter
-    # zurücklassen. Es bleiben die Einstellungsdatei und die PAM-Sicherungen.
+    # Gesichtsdaten schon bei remove löschen, denn die Software-Verwaltung kennt kein purge.
+    # Einstellungsdatei und PAM-Sicherungen bleiben.
     find /var/lib/winky -mindepth 1 -maxdepth 1 ! -name sicherung -exec rm -rf {} + 2>/dev/null || true
     rm -rf /run/winky
     # sudo mit ✌ muss nach einer Neuinstallation ausdrücklich wieder eingeschaltet werden

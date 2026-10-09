@@ -1,6 +1,5 @@
-// Direkter Zugriff auf die IR-Kamera über V4L2 (Graustufen, mmap).
-// Bewusst ohne libcamera: weniger Code im Anmeldepfad, schnellerer Start, und
-// die Einstellungen der Farbkamera bleiben für andere Programme unverändert.
+// IR-Kamera direkt über V4L2 (Graustufen, mmap). Ohne libcamera: weniger Code im Anmeldepfad,
+// schnellerer Start, die Farbkamera bleibt für andere Programme unberührt.
 #pragma once
 
 #include <cstddef>
@@ -17,7 +16,7 @@ struct IrFrame {
   GrayImage image;
   uint32_t sequence = 0;
   int64_t timestamp_us = 0;  // Kamerazeit (monoton)
-  float mean = 0;            // mittlere Helligkeit
+  float mean = 0;
 };
 
 class V4l2IrCamera {
@@ -52,8 +51,7 @@ class V4l2IrCamera {
   std::vector<Buffer> buffers_;
 };
 
-// Erkennt im Blinkbetrieb, ob ein Bild beleuchtet ist. Der IR-Strahler dieser
-// Kamera wechselt jedes Bild zwischen an und aus (gemessen: 74, 0, 74, 0 ...).
+// Erkennt, ob ein Bild beleuchtet ist; der IR-Strahler blinkt bildweise (Helligkeit etwa 74 / 0).
 class StrobeTracker {
  public:
   struct Result {

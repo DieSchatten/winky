@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Lädt die Fremd-Abhängigkeiten nach vendor/ und prüft jede per SHA-256 und Größe.
-# Stimmt eine Prüfsumme nicht, bricht das Skript ab und löscht die Datei.
-# ONNX Runtime: Wert aus dem "digest"-Feld der GitHub-Release-API (06.10.2026).
-# Gesichtsmodelle aus dem OpenCV Zoo (github.com/opencv/opencv_zoo): YuNet (MIT) und
-# SFace (Apache-2.0), Prüfsummen beim ersten Laden am 09.10.2026 festgeschrieben.
+# Lädt die Fremd-Abhängigkeiten nach vendor/ und prüft jede per SHA-256 und Größe (bei
+# Abweichung: Datei löschen, Abbruch). ONNX Runtime: Prüfsumme aus der GitHub-Release-API;
+# YuNet (MIT) und SFace (Apache-2.0) aus dem OpenCV Zoo (github.com/opencv/opencv_zoo).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -36,8 +34,7 @@ for eintrag in "${DATEIEN[@]}"; do
   echo "ok  $name"
 done
 
-# MediaPipe-Modelle für das Handzeichen (Apache-2.0): liegen geprüft im Repo,
-# Herkunft und Umwandlung in modelle/HERKUNFT.md
+# MediaPipe-Handmodelle (Apache-2.0) liegen im Repo; Herkunft in modelle/HERKUNFT.md
 for eintrag in \
   "hand_detector.onnx|c2f2712a853c66c4676034bb908db2182aa39047662a62260d2633daf61ddcda" \
   "hand_landmarks_detector.onnx|0b2553f58f580d12a2f28abef6ac4f70a9cb1318d0e0fdba62c40ceb99a800e7" \
@@ -53,7 +50,6 @@ for eintrag in \
   echo "ok  $name"
 done
 
-# ONNX Runtime entpacken (nur einmal)
 if [[ ! -d "vendor/onnxruntime" ]]; then
   tmp=$(mktemp -d vendor/ort.XXXXXX)
   tar -xzf "vendor/onnxruntime-linux-x64-${ORT_VERSION}.tgz" -C "$tmp"

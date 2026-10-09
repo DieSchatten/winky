@@ -1,20 +1,5 @@
-// winky-matcher: Prüfdienst für die Gesichtsentsperrung.
-//
-// systemd startet je Verbindung auf /run/winky.sock eine Instanz
-// (winky@.service, StandardInput=socket). Der Dienst läuft als _winky in
-// einer Sandbox ohne Netz, ohne Home und nur mit Zugriff auf Videogeräte.
-// Er liest nur root-eigene Dateien und schreibt nur den Fehlversuchszähler.
-//
-// Optionen (nur über die Unit-Datei, also root-kontrolliert):
-//   --konfig PFAD  --vorlagen-basis PFAD  --sperre-basis PFAD  --modelle ORDNER
-//   --polkit   Zugang über /run/winky-polkit.sock: Aufrufer root oder polkitd,
-//              nur die Operation KEEPASSXC
-//   --anfrage-basis PFAD  Ordner für Hinweisdateien offener sudo-Anfragen
-//
-// SUDO (sudo bestätigen) braucht zusätzlich: Schalter sudo = ja in der Konfiguration
-// und /etc/winky/sudo-ein (root), einen erfolgreichen ✌-Test des Benutzers
-// (/var/lib/winky/<uid>/geste-ok), ein Terminal ohne entfernte Sitzung. Erkannt ist es
-// erst bei Gesicht UND Handzeichen ✌ neben demselben Gesicht.
+// winky-matcher: Prüfdienst. systemd startet je Verbindung auf /run/winky.sock eine Instanz
+// (winky@.service) als _winky ohne Netz und Home. Optionen nur per Unit; liest nur root-Dateien.
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -65,7 +50,7 @@ double msSeit(Clock::time_point t0) {
   return std::chrono::duration<double, std::milli>(Clock::now() - t0).count();
 }
 
-// Ausgabe ins Journal mit Priorität (sd-daemon-Präfix)
+// Journalzeile mit sd-daemon-Priorität
 void log(int prio, const char* fmt, ...) {
   std::fprintf(stderr, "<%d>", prio);
   va_list ap;
@@ -99,7 +84,6 @@ const char* statusText(uint32_t s) {
   }
 }
 
-// Vorschau höchstens WINKY_VORSCHAU_MAX_BREITE breit (ganzzahlig verkleinert)
 int vorschauFaktor(int breite) {
   return std::max(1, (breite + WINKY_VORSCHAU_MAX_BREITE - 1) / WINKY_VORSCHAU_MAX_BREITE);
 }
@@ -117,9 +101,7 @@ std::string jsonText(const std::string& s) {
   return o + "\"";
 }
 
-// --------------------------------------------------------------------------
 // Verbindung zum Aufrufer (fd 0, SOCK_SEQPACKET)
-// --------------------------------------------------------------------------
 
 class Verbindung {
  public:
@@ -176,16 +158,14 @@ class Verbindung {
   int fd_;
 };
 
-// --------------------------------------------------------------------------
 // Kamera und Modelle
-// --------------------------------------------------------------------------
 
 struct Laufzeit {
   Ort::Env env{ORT_LOGGING_LEVEL_ERROR, "winky"};
   std::unique_ptr<winky::FaceDetector> detektor;
   std::unique_ptr<winky::FaceEmbedder> erkennung;
   std::unique_ptr<winky::V4l2IrCamera> kamera;
-  std::unique_ptr<winky::HandGestureRecognizer> hand;  // nur für SUDO und GESTE_TESTEN
+  std::unique_ptr<winky::HandGestureRecognizer> hand;  // nur für Gestenprüfungen
   std::string fehler;
 };
 
@@ -268,15 +248,13 @@ std::string statusJson(const char* modus, double t, int dauer, const Bildanalyse
   return s + "}";
 }
 
-// --------------------------------------------------------------------------
 // Prüfung (AUTH und TESTEN)
-// --------------------------------------------------------------------------
 
 struct Pruefergebnis {
   uint32_t status = WINKY_FEHLER;
   float wert = -1;
   bool gesicht_gesehen = false;
-  bool gesicht_erkannt = false;  // nur Geste: Gesicht passte, Zeichen fehlte womöglich
+  bool gesicht_erkannt = false;  // nur Geste: Gesicht passte
   bool abgebrochen = false;
 };
 
@@ -327,7 +305,7 @@ Pruefergebnis pruefe(Laufzeit& l, const winky::Vorlagen& v, const winky::Regeln&
     if (b.brauchbar) b.wert = winky::bewerte(a.merkmal, v);
     vorher_dunkel = false;
     stand = e.neu(b);
-    if (strom) {  // erst der Stand (mit Rahmen), dann das Bild dazu
+    if (strom) {  // erst Stand mit Rahmen, dann Bild
       strom->status(statusJson("testen", b.t_ms, dauer_s, a, b.wert, -1, bild.image.width));
       strom->bild(bild.image);
     }
@@ -340,9 +318,7 @@ Pruefergebnis pruefe(Laufzeit& l, const winky::Vorlagen& v, const winky::Regeln&
   return erg;
 }
 
-// --------------------------------------------------------------------------
-// Prüfung mit Handzeichen (SUDO und GESTE_TESTEN)
-// --------------------------------------------------------------------------
+// Prüfung mit Handzeichen (SUDO, KEEPASSXC, GESTE_TESTEN)
 
 const char* kGesten[winky::kGestureCount] = {"keine", "Faust", "offene Hand", "Zeigefinger hoch",
                                            "Daumen runter", "Daumen hoch", "Victory", "I love you"};
@@ -394,8 +370,7 @@ Pruefergebnis pruefeGeste(Laufzeit& l, const winky::Vorlagen& v, const winky::Re
     }
     if (b.brauchbar) b.wert = winky::bewerte(a.merkmal, v);
     vorher_dunkel = false;
-    // Handzeichen: wie in der Messung (auswerten_hand.py) ✌ als wahrscheinlichste Geste
-    // ab 0,5 bei sicher erkannter Hand
+    // ✌: wahrscheinlichste Geste ab 0,5, Hand sicher erkannt (wie auswerten_hand.py)
     const winky::HandResult h = l.hand->analyse(bild.image);
     int top = 0;
     for (int i = 1; i < winky::kGestureCount; ++i)
@@ -430,7 +405,7 @@ Pruefergebnis pruefeGeste(Laufzeit& l, const winky::Vorlagen& v, const winky::Re
   return erg;
 }
 
-// Datei root-eigen und regulär (keine Verknüpfung)? Für Schalter und Freigaben.
+// Schalterdatei: regulär, root-eigen, keine Verknüpfung (lstat)
 bool rootDatei(const std::string& pfad) {
   struct stat st {};
   return ::lstat(pfad.c_str(), &st) == 0 && S_ISREG(st.st_mode) && st.st_uid == 0 &&
@@ -449,9 +424,7 @@ bool gesteFreigegeben(const std::string& basis, uid_t uid) {
   return ok;
 }
 
-// --------------------------------------------------------------------------
 // Einlernen
-// --------------------------------------------------------------------------
 
 int einlernen(Laufzeit& l, Verbindung& c, int dauer_s, Clock::time_point t0) {
   struct Probe {
@@ -521,10 +494,7 @@ int einlernen(Laufzeit& l, Verbindung& c, int dauer_s, Clock::time_point t0) {
   return 0;
 }
 
-// --------------------------------------------------------------------------
-// Kamerasuche: alle Videogeräte mit Graustufenformat kurz anlaufen lassen und
-// prüfen, ob ein IR-Strahler leuchtet und ob er blinkt.
-// --------------------------------------------------------------------------
+// Kamerasuche: Graustufen-Videogeräte kurz starten; leuchtet/blinkt ein IR-Strahler?
 
 bool hatGraustufen(const std::string& geraet, std::string& name) {
   const int fd = ::open(geraet.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -648,7 +618,7 @@ int main(int argc, char** argv) {
   Verbindung c(0);
   ucred cred{};
   socklen_t len = sizeof(cred);
-  // Hauptzugang: nur root. Polkit-Zugang: root oder der Systembenutzer polkitd.
+  // Hauptzugang nur root, Polkit-Zugang root oder polkitd
   uid_t polkitd = static_cast<uid_t>(-1);
   if (o.polkit) {
     passwd ppw{}, *pp = nullptr;
@@ -708,9 +678,7 @@ int main(int argc, char** argv) {
   }
 
   if (q.op == WINKY_OP_KEEPASSXC && k.keepassxc && k.keepassxc_geste) {
-    // KeePassXC nur mit Gesicht und ✌: dieselben Regeln wie sudo (Freigabe per ✌-Test,
-    // Desktop-Meldung, gleichzeitige Anfragen brechen ab, Begrenzung). Polkit beendet das
-    // Prüfprogramm nach 10 s, das Zeitfenster (sudo_ms) bleibt darunter.
+    // KeePassXC mit ✌: Regeln wie sudo; sudo_ms (bis 9,5 s) bleibt unter Polkits 10-s-Limit
     const std::string befehl = "KeePassXC entsperren";
     const long beginn = static_cast<long>(std::time(nullptr));
     auto ende = [&](uint32_t status, float wert, const char* grund, const char* stand) {
@@ -872,11 +840,10 @@ int main(int argc, char** argv) {
       winky::sudoEntsperren(o.sperre, uid, sperre);
       return ende(WINKY_FEHLER, -1, "start", "nicht_bestaetigt");
     }
-    // Gesicht wie beim Entsperren, aber das ganze Zeitfenster lang (man schaut evtl. erst
-    // auf das Terminal und dann in die Kamera)
+    // Gesichtsfrist = ganzes Fenster (Blick oft erst zum Terminal, dann zur Kamera)
     const winky::Regeln r{k.schwelle, k.mindest_treffer, static_cast<double>(k.sudo_ms),
                         static_cast<double>(k.sudo_ms), k.blink_abstand, k.blinkpruefung};
-    c.senden("W", 1);  // Kamera läuft: das PAM-Modul zeigt jetzt die Aufforderung
+    c.senden("W", 1);  // Kamera läuft: PAM zeigt jetzt die Aufforderung
     const Pruefergebnis erg = pruefeGeste(l, v, r, t0, nullptr, 0, [&] {
       return winky::sudoAbbruchGesetzt(o.sperre, uid);
     });
@@ -893,7 +860,7 @@ int main(int argc, char** argv) {
       return ende(WINKY_TREFFER, erg.wert, nullptr, "bestaetigt");
     }
     winky::erhoeheSudoOffen(o.sperre, uid, jetzt);
-    // Ein fremdes Gesicht zählt wie beim Entsperren als Fehlversuch, fehlendes Zeichen nicht
+    // Fremdes Gesicht zählt als Fehlversuch, fehlendes Zeichen nicht
     if (erg.status == WINKY_KEIN_TREFFER && !erg.gesicht_erkannt)
       winky::schreibeFehlversuche(o.sperre, uid, winky::leseFehlversuche(o.sperre, uid) + 1);
     return ende(erg.status, erg.wert, erg.gesicht_erkannt ? "kein_zeichen" : nullptr,
@@ -944,7 +911,7 @@ int main(int argc, char** argv) {
       c.antwort(WINKY_NICHT_EINGERICHTET, -1, msSeit(t0), true);
       return 1;
     }
-    // Probelauf: gleiche Regel wie beim Entsperren, aber mehr Zeit und ohne Sperrzähler
+    // Probelauf: Regel wie beim Entsperren, mehr Zeit, ohne Sperrzähler
     const float schwelle = k.schwelle > 0 ? k.schwelle : 0.65f;
     const auto start = Clock::now();
     const winky::Regeln r{schwelle, k.mindest_treffer, dauer_s * 1000.0, dauer_s * 1000.0,

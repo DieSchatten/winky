@@ -1,7 +1,5 @@
-// Ausrichtung eines Gesichts für den Vergleich: Die 5 Gesichtspunkte (Augen, Nase,
-// Mundwinkel) werden durch Drehen, Skalieren und Verschieben auf feste Sollpositionen in
-// einem 112 x 112-Bild gelegt. Die Sollpositionen sind die übliche Vorlage für
-// Gesichtsvergleichsnetze dieser Größe, mit der auch SFace trainiert wurde.
+// Gesichtsausrichtung: die 5 Gesichtspunkte per Ähnlichkeitsabbildung auf feste Sollpositionen
+// im 112 x 112-Bild (übliche Vorlage dieser Netzgröße, mit der auch SFace trainiert wurde).
 #pragma once
 
 #include <array>
@@ -13,16 +11,13 @@ namespace winky {
 
 constexpr int kAlignedFaceSize = 112;
 
-// Reihenfolge wie die Gesichtssuche: Auge links im Bild, Auge rechts im Bild, Nasenspitze,
-// Mundwinkel links, Mundwinkel rechts (je x, y).
+// Wie YuNet: Auge links/rechts im Bild, Nasenspitze, Mundwinkel links/rechts (je x, y).
 constexpr std::array<float, 10> kSollPunkte = {38.2946f, 51.6963f, 73.5318f, 51.5014f,
                                                56.0252f, 71.7366f, 41.5493f, 92.3655f,
                                                70.7299f, 92.2041f};
 
-// Ähnlichkeitsabbildung ziel = s * R * quelle + t, als (a, b, tx, ty) mit a = s*cos,
-// b = s*sin. Bestimmt nach kleinsten Quadraten über die Schwerpunkte: Mit den
-// schwerpunktfreien Punkten q (Quelle) und z (Ziel) gilt a = Σ(q·z) / Σ|q|² und
-// b = Σ(q×z) / Σ|q|². Liefert false bei zusammenfallenden Punkten.
+// Ähnlichkeitsabbildung ziel = s·R·quelle + t als (a, b, tx, ty), a = s·cos, b = s·sin;
+// kleinste Quadrate mit schwerpunktfreien q, z: a = Σ(q·z) / Σ|q|², b = Σ(q×z) / Σ|q|².
 struct Aehnlichkeit {
   double a = 1, b = 0, tx = 0, ty = 0;
 };
@@ -55,9 +50,7 @@ inline bool schaetzeAehnlichkeit(const std::array<float, 10>& quelle,
   return std::isfinite(s) && s > 1e-6;
 }
 
-// 112 x 112-Ausschnitt mit den Gesichtspunkten auf den Sollpositionen. Jedes Zielpixel
-// holt seinen Wert über die Umkehrabbildung aus dem Kamerabild. Leer, wenn die Punkte
-// keine Abbildung ergeben.
+// Ausgerichteter 112 x 112-Ausschnitt, abgetastet über die Umkehrabbildung; leer ohne Abbildung.
 inline GrayImage alignFace(const GrayImage& src, const std::array<float, 10>& punkte) {
   Aehnlichkeit t;
   if (src.empty() || !schaetzeAehnlichkeit(punkte, kSollPunkte, t)) return {};

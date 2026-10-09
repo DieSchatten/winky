@@ -14,8 +14,7 @@ constexpr int kPalmInput = 192;
 constexpr int kHandInput = 224;
 constexpr int kPalmValues = 18;   // Rahmen (4) + 7 Punkte (x, y)
 constexpr float kNormalizeZ = 0.4f;  // wie hand_landmarks_detector_graph (kLandmarksNormalizeZ)
-// Punkte für den nächsten Ausschnitt: Handgelenk, Daumen und Fingeransätze ohne Spitzen
-// (hand_landmarks_to_rect_calculator, kPartialLandmarkIndices)
+// Punkte für den Folgeausschnitt, ohne Fingerspitzen (MediaPipe kPartialLandmarkIndices)
 constexpr int kRahmenPunkte[] = {0, 1, 2, 3, 5, 6, 9, 10, 13, 14, 17, 18};
 
 double msSince(std::chrono::steady_clock::time_point t0) {
@@ -55,8 +54,7 @@ void fuellen(const GrayImage& img, const Ausschnitt& a, int netz, std::vector<fl
   }
 }
 
-// Am Handgelenk (Punkt 0) ausrichten und auf Spannweite 1 bringen, wie
-// LandmarksToMatrixCalculator mit object_normalization
+// Auf Handgelenk (Punkt 0) und Spannweite 1 normieren (LandmarksToMatrixCalculator)
 void normieren(std::vector<float>& p) {
   const float x0 = p[0], y0 = p[1], z0 = p[2];
   float min_x = 1e30f, max_x = -1e30f, min_y = 1e30f, max_y = -1e30f;
@@ -94,8 +92,7 @@ HandGestureRecognizer::HandGestureRecognizer(Ort::Env& env, const std::string& d
       embedder_.inputName(1) != "handedness" || embedder_.inputName(2) != "world_hand") {
     throw std::runtime_error("unerwartete Eingaben des Gestenmodells");
   }
-  // Ankerraster wie SsdAnchorsCalculator: Schrittweiten 8, 16, 16, 16, je Ebene zwei Anker
-  // (Seitenverhältnis 1 und Zwischenskala), gleiche Schrittweiten zusammengefasst
+  // Ankerraster wie SsdAnchorsCalculator: 2 Anker je Ebene, gleiche Schrittweiten zusammengefasst
   const int strides[4] = {8, 16, 16, 16};
   for (int ebene = 0; ebene < 4;) {
     int bis = ebene, je_ort = 0;
@@ -124,7 +121,6 @@ HandResult HandGestureRecognizer::analyse(const GrayImage& img, bool verfolgen) 
     return r;
   }
   punkteUndGeste(img, r, mx, my, seite, drehung);
-  // Nächsten Ausschnitt aus den Punkten, solange die Hand sicher erkannt ist
   spur_ = verfolgen && r.found && r.presence >= 0.5f;
   if (spur_) {
     const auto& p = r.pts;
@@ -184,7 +180,7 @@ bool HandGestureRecognizer::handflaeche(const GrayImage& img, HandResult& r, dou
   const double k0x = bild_x(b[4] / kPalmInput + an.x), k0y = bild_y(b[5] / kPalmInput + an.y);
   const double k2x = bild_x(b[8] / kPalmInput + an.x), k2y = bild_y(b[9] / kPalmInput + an.y);
 
-  // 2. Ausschnitt: Drehung Handgelenk -> Mittelfinger-Ansatz auf 90°, 2,6-fach, nach oben verschoben
+  // 2. Ausschnitt: Handgelenk -> Mittelfinger-Ansatz auf 90° drehen, 2,6-fach, nach oben schieben
   drehung = M_PI / 2 - std::atan2(-(k2y - k0y), k2x - k0x);
   drehung = drehung - 2 * M_PI * std::floor((drehung + M_PI) / (2 * M_PI));
   mx = cx + 0.5 * bh * std::sin(drehung);

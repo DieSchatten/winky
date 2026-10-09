@@ -1,13 +1,6 @@
-/* winky-polkit-pruefung BENUTZER
- *
- * Wird von der Polkit-Regel 50-winky-keepassxc.rules über polkit.spawn()
- * als Systembenutzer polkitd gestartet, nur für die Aktion
- * org.keepassxc.KeePassXC.unlockDatabase. Fragt den Prüfdienst über
- * /run/winky-polkit.sock (root:polkitd 0660), ob vor der Kamera das
- * eingelernte Gesicht dieses Benutzers ist (und, wenn eingeschaltet, daneben ✌).
- *
- * Rückgabe 0: erkannt (Polkit erlaubt ohne Passwort). Alles andere: nicht
- * erkannt, Polkit fragt wie gewohnt nach dem Passwort.
+/* winky-polkit-pruefung BENUTZER: von 50-winky-keepassxc.rules per polkit.spawn() als polkitd
+ * gestartet; fragt den Prüfdienst über /run/winky-polkit.sock nach Gesicht (ggf. mit ✌).
+ * Rückgabe 0 = erkannt (ohne Passwort), alles andere: Polkit fragt nach dem Passwort.
  */
 #define _GNU_SOURCE
 #include <errno.h>
@@ -22,8 +15,7 @@
 
 #include "protokoll.h"
 
-/* Polkit beendet mit polkit.spawn() gestartete Programme nach 10 s. Mit ✌ wartet der
- * Prüfdienst bis zu 9,5 s (sudo_ms), ohne ✌ höchstens 3 s. */
+/* Unter dem 10-s-Limit von polkit.spawn(), über der längsten Prüfung (sudo_ms bis 9,5 s) */
 #define FRIST_MS 9800
 
 static long ms_seit(const struct timespec *start) {

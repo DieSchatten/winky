@@ -1,10 +1,8 @@
 #!/usr/bin/python3 -I
 """winky-hinweis: zeigt offene Anfragen (sudo, KeePassXC) als Desktop-Meldung.
 
-Läuft in der Sitzung jedes Benutzers (Autostart) und ohne besondere Rechte. Der
-Prüfdienst schreibt zu jeder Anfrage mit ✌ /run/winky/anfrage/<uid>.json mit Zweck,
-Befehl und Stand. Startet ein Programm heimlich sudo, fällt das hier sofort auf: Wer den Befehl
-nicht selbst eingegeben hat, zeigt einfach kein ✌, dann passiert nichts.
+Läuft ohne Rechte in jeder Sitzung (Autostart) und liest /run/winky/anfrage/<uid>.json des
+Prüfdienstes. Ein heimlich gestartetes sudo fällt so sofort auf; ohne ✌ passiert nichts.
 """
 
 import json
@@ -48,8 +46,7 @@ TEXTE = {
 }
 
 
-# Großes ✌ auf dem Bildschirm, solange eine Anfrage auf das Zeichen wartet. Eine
-# Benachrichtigung allein übersieht man leicht, und größer darstellen lässt GNOME sie nicht.
+# Großes ✌ während einer Anfrage, weil GNOME Benachrichtigungen nicht größer darstellt
 FENSTER_TITEL = {"sudo": "sudo bestätigen", "keepassxc": "KeePassXC entsperren"}
 FENSTER_DAUER = 8.0   # so lange wartet der Prüfdienst (sudo_ms) auf das Zeichen
 FENSTER_CSS = b"""
@@ -65,10 +62,8 @@ progressbar progress { min-height: 6px; background-color: #62a0ea; border-radius
 
 
 class Fenster:
-    """Hinweisfenster oben in der Bildschirmmitte. Läuft als Popup über XWayland (GTK 3): Es
-    bekommt nie den Fokus und nimmt keine Tastatureingaben weg. Schlägt das ✌ fehl, landet
-    das Passwort also weiter im Terminal bzw. in KeePassXC. Ohne X-Anzeige gibt es nur die
-    Benachrichtigung."""
+    """Hinweis-Popup oben mittig über XWayland (GTK 3); nimmt nie den Fokus, Passworteingaben in
+    Terminal oder KeePassXC bleiben also möglich. Ohne X-Anzeige nur die Benachrichtigung."""
 
     def __init__(self):
         self.gtk = None
@@ -212,8 +207,7 @@ class Hinweis:
         dringlich, titel, text = texte[stand]
         befehl = str(daten.get("befehl", "sudo"))[:240]
         zweck = daten.get("zweck", "sudo")
-        # Großes Fenster während des Wartens; die Benachrichtigung bleibt für Fehlschläge,
-        # Abbrüche und ohne X-Anzeige
+        # Warten: großes Fenster; Fehlschlag, Abbruch, ohne X-Anzeige: Benachrichtigung
         if stand == "wartet":
             if self.fenster.zeigen(zweck, befehl if zweck == "sudo" else "", zeit):
                 return

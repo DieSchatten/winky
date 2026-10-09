@@ -1,21 +1,9 @@
 #!/usr/bin/env python3
 """Winky: Einrichtung und Verwaltung der Gesichtsentsperrung.
 
-Gedacht für Menschen ohne Technikwissen. Ein Assistent führt Schritt für Schritt durch die
-Einrichtung, danach zeigt die Startseite nur noch Schalter und „Ausprobieren“. Zahlen und
-Technik (Kamerapfad, Schwelle, Version) stehen unter „Erweitert“.
-
-Seiten (Adw.NavigationView):
-  start         Zustand in einem Satz, Schalter, Ausprobieren, letzte Ereignisse
-  einrichtung   Assistent: Willkommen, Kamera, Aufnehmen, Ausprobieren, zweite Person
-                (freiwillig), Einschalten, sudo mit ✌ (freiwillig), Fertig
-  kamera        ein Kameraablauf, von der Startseite aus geöffnet
-  sicherheit    was Winky kann und was nicht, Risiken, Notausschalter
-  erweitert     Kamera, Strenge (Schwelle), Daten löschen, Version, Deinstallieren
-
-Das eigene Gesicht verwaltet jeder Benutzer mit seinem eigenen Passwort. Systemweite
-Einstellungen (Kamera, Strenge, Ein/Aus, Pause) brauchen ein Administratorpasswort.
-Die App selbst läuft ohne besondere Rechte.
+Ein Assistent führt Menschen ohne Technikwissen durch die Einrichtung; Technik steht unter
+„Erweitert“. Das eigene Gesicht verwaltet jeder Benutzer mit seinem Passwort, systemweite
+Einstellungen brauchen das Administratorpasswort. Die App selbst läuft ohne besondere Rechte.
 """
 
 import math
@@ -195,8 +183,7 @@ class KameraAblauf(Gtk.Box):
         self.append(self.anleitung)
         self.hinweis = text("", "dim-label")
         self.append(self.hinweis)
-        # Bild etwas kleiner als die Kamera (640 x 360), damit Knopf und Ergebnis ohne
-        # Blättern zu sehen sind
+        # Kleiner als die Kamera (640 x 360), damit Knopf und Ergebnis ohne Blättern sichtbar sind
         self.vorschau = Vorschau(512, 288)
         self.vorschau.set_halign(Gtk.Align.CENTER)
         self.append(self.vorschau)
@@ -306,7 +293,7 @@ class Fenster(Adw.ApplicationWindow):
     def beschaeftigt(self):
         return self.aktion is not None or self.gesicht_lauf is not None
 
-    # ------------------------------------------------------------ Startseite
+    # Startseite
 
     def _baue_start(self):
         s = Adw.PreferencesPage()
@@ -335,8 +322,7 @@ class Fenster(Adw.ApplicationWindow):
         self.r_aktiv.add_prefix(Gtk.Image(icon_name="system-lock-screen-symbolic"))
         self.r_aktiv.connect("notify::active", self._aktiv_umgeschaltet)
         self.g_schalter.add(self.r_aktiv)
-        # Kein SwitchRow: Der Knopf „Einrichten“ muss bedienbar sein, solange der Schalter
-        # noch gesperrt ist
+        # Kein SwitchRow: „Einrichten“ muss bedienbar sein, solange der Schalter gesperrt ist
         self.r_sudo = Adw.ActionRow(title="sudo im Terminal")
         self.r_sudo.add_prefix(Gtk.Image(icon_name="utilities-terminal-symbolic"))
         self.k_sudo_einrichten = knopf("Einrichten", lambda: self.kamera_oeffnen("geste-testen"))
@@ -408,7 +394,7 @@ class Fenster(Adw.ApplicationWindow):
         s.set_vexpand(True)
         return seite("Winky", "start", box)
 
-    # ------------------------------------------------------------ Assistent
+    # Assistent
 
     def _baue_einrichtung(self):
         self.w_stapel = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT,
@@ -569,7 +555,7 @@ class Fenster(Adw.ApplicationWindow):
         self.w_weiter.set_sensitive(darf and not laeuft)
         self.w_zurueck.set_sensitive(not laeuft)
 
-    # ------------------------------------------------------------ Kamera, Sicherheit, Erweitert
+    # Kamera, Sicherheit, Erweitert
 
     def _baue_kamera(self):
         self.k_ansicht = KameraAblauf(self, "testen")
@@ -673,7 +659,7 @@ class Fenster(Adw.ApplicationWindow):
         s.add(rueckbau)
         return seite("Erweitert", "erweitert", s)
 
-    # ------------------------------------------------------------ Kameraabläufe
+    # Kameraabläufe
 
     def lauf_starten(self, ansicht):
         if self.beschaeftigt():
@@ -813,7 +799,7 @@ class Fenster(Adw.ApplicationWindow):
         if self.gesicht_lauf and page.get_tag() in ("einrichtung", "kamera"):
             self.gesicht_lauf.abbrechen()
 
-    # ------------------------------------------------------------ Verwaltung
+    # Verwaltung
 
     def _store_oeffnen(self):
         try:
@@ -963,7 +949,7 @@ class Fenster(Adw.ApplicationWindow):
                         "Pause: Es gilt überall nur das Passwort" if zeile.get_active()
                         else "Winky ist wieder da", admin=True)
 
-    # ------------------------------------------------------------ Anzeige
+    # Anzeige
 
     def _darf_aktivieren(self):
         z, s = self.zustand, stand(self.zustand)
@@ -1175,8 +1161,7 @@ class Fenster(Adw.ApplicationWindow):
         return False
 
 
-# Seite „Sicherheit und Hilfe“: kurz und ohne Fachbegriffe. Die ausführliche Fassung steht in
-# SICHERHEIT.md im Projekt.
+# Seite „Sicherheit und Hilfe“ ohne Fachbegriffe; ausführlich in SICHERHEIT.md
 SICHERHEIT = [
     ("Das kann Winky", None, "emblem-ok-symbolic", [
         ("Die Bildschirmsperre mit deinem Gesicht öffnen",

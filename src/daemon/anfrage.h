@@ -1,9 +1,6 @@
-// Offene sudo-Anfragen für den Desktop-Hinweis: /run/winky/anfrage/<uid>.json
-//   {"zeit": <unix>, "stand": "wartet|bestaetigt|nicht_bestaetigt|abgebrochen",
-//    "befehl": "...", "terminal": "..."}
-// Lesbar für alle (der Befehl steht ohnehin in der Prozessliste). Das Hinweisprogramm
-// in der Sitzung des Benutzers zeigt daraus eine Meldung, damit eine unerwartete
-// Anfrage sofort auffällt.
+// Hinweisdatei offener Anfragen für den Desktop-Hinweis: /run/winky/anfrage/<uid>.json mit zeit
+// (Unix), stand (wartet|bestaetigt|nicht_bestaetigt|abgebrochen|begrenzt), befehl, terminal, zweck.
+// Lesbar für alle (Befehl steht ohnehin in der Prozessliste), damit Unerwartetes sofort auffällt.
 #pragma once
 
 #include <sys/types.h>

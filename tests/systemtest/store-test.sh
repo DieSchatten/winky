@@ -15,7 +15,7 @@ until systemctl is-system-running 2>/dev/null | grep -qE 'running|degraded'; do 
 # Ausgangslage wie auf einem eingerichteten Rechner (ältere Version, aktiv, Gesicht eingelernt)
 rm -rf /root/alt && dpkg-deb -R /root/neu.deb /root/alt
 sed -i 's/^Version: .*/Version: 0.0.1/' /root/alt/DEBIAN/control
-# Bis 0.8.0 war winky.conf eine dpkg-Konfigurationsdatei, mit anderer Vorgabe als heute
+# Ältere Fassungen hatten winky.conf als dpkg-Konfigurationsdatei mit anderer Vorgabe
 install -Dm0644 /root/alt/usr/share/winky/winky.conf /root/alt/etc/winky/winky.conf
 sed -i '1i # Vorgabe einer älteren Version' /root/alt/etc/winky/winky.conf
 echo /etc/winky/winky.conf > /root/alt/DEBIAN/conffiles
@@ -24,7 +24,7 @@ dpkg -i /root/alt.deb >/dev/null 2>&1
 pam-auth-update --package --enable winky
 install -d -m0750 -g _winky /var/lib/winky/1000 && echo WNKVx > /var/lib/winky/1000/vorlagen.bin
 echo '{"vorlagen": 30}' > /var/lib/winky/status/1000.json
-# Zweite Person mit Gesichtsdaten im alten Format (vor 0.8.0, anderes Modell)
+# Zweite Person mit Gesichtsdaten eines älteren Modells (ohne Kennung WNKV)
 install -d -m0750 -g _winky /var/lib/winky/1001 && echo BPZVx > /var/lib/winky/1001/vorlagen.bin
 touch /var/lib/winky/1001/geste-ok; echo '{"vorlagen": 30}' > /var/lib/winky/status/1001.json
 echo sicherung > /var/lib/winky/sicherung/common-auth.test

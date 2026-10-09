@@ -1,7 +1,5 @@
-// Konfiguration des Prüfdienstes aus /etc/winky/winky.conf.
-// Die Datei muss root gehören und darf für Gruppe und andere nicht
-// beschreibbar sein. Unbekannte Schlüssel oder Werte außerhalb der Grenzen
-// führen zum Abbruch (der Dienst lehnt dann ab, das Passwort greift).
+// Konfiguration aus /etc/winky/winky.conf (root-eigen, nicht für Gruppe/andere beschreibbar).
+// Unbekannte Schlüssel oder Werte außerhalb der Grenzen: Dienst lehnt ab, das Passwort greift.
 #pragma once
 
 #include <string>
@@ -21,10 +19,10 @@ struct Konfig {
   int threads = 4;
   float blink_abstand = 15.0f;
   bool blinkpruefung = true;  // aus, wenn der IR-Strahler dauerhaft leuchtet
-  bool keepassxc = false;     // Schnellentsperren von KeePassXC per Gesicht erlaubt
-  bool keepassxc_geste = true;  // KeePassXC nur mit Gesicht und ✌ (wie sudo)
-  bool sudo = false;          // sudo mit Gesicht und Handzeichen ✌ bestätigen
-  int sudo_ms = 8000;         // so lange wartet die sudo-Prüfung auf das Zeichen
+  bool keepassxc = false;     // KeePassXC per Gesicht entsperren
+  bool keepassxc_geste = true;  // dabei zusätzlich ✌ verlangen
+  bool sudo = false;          // sudo per Gesicht und ✌ bestätigen
+  int sudo_ms = 8000;         // Zeitfenster der Gestenprüfung (sudo, KeePassXC)
 };
 
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler);

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Startet die App mit Attrappe im GTK-Broadway-Backend (Anzeige im Browser
-# unter http://localhost:8087), für Tests ohne Kamera und ohne Desktop.
+# Startet die App mit Attrappe in GTK-Broadway (Browser: http://localhost:8087), ohne Kamera und Desktop.
 # Aufruf: gui-broadway.sh TESTWURZEL
 set -euo pipefail
 cd "$(dirname "$0")/../.."

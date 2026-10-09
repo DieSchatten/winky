@@ -1,5 +1,4 @@
-// Graustufenbild der Infrarot-Kamera und die Umwandlung in Netzeingaben.
-// Die Kamera liefert einen Kanal; die Netze erwarten drei, die hier gleich belegt werden.
+// Graustufenbild der IR-Kamera und Umwandlung in Netzeingaben (ein Kanal -> drei gleiche).
 #pragma once
 
 #include <algorithm>
@@ -40,8 +39,7 @@ inline float meanBrightness(const GrayImage& img) {
   return n ? static_cast<float>(summe) / static_cast<float>(n) : 0.0f;
 }
 
-// Wert an einer Zwischenposition, gewichtet aus den vier Nachbarpixeln. Außerhalb des
-// Bildes zählt Schwarz.
+// Bilineare Abtastung; außerhalb des Bildes zählt Schwarz.
 inline float sampleBilinear(const GrayImage& img, double sx, double sy) {
   const double fx0 = std::floor(sx), fy0 = std::floor(sy);
   const int x0 = static_cast<int>(fx0), y0 = static_cast<int>(fy0);
@@ -54,14 +52,12 @@ inline float sampleBilinear(const GrayImage& img, double sx, double sy) {
   return static_cast<float>(oben * (1.0 - ay) + unten * ay);
 }
 
-// Wie das Bild in der quadratischen Netzeingabe liegt: um `faktor` verkleinert, oben links
-// angelegt, der Rest schwarz.
+// Lage des Bildes in der Netzeingabe: um `faktor` verkleinert, oben links, Rest schwarz.
 struct Einpassung {
   float faktor = 1.0f;  // Netzpixel je Bildpixel
 };
 
-// Schreibt das Bild als drei gleiche Kanäle (CHW, Werte 0..255) in ein seite x seite großes
-// Feld. Größere Bilder werden seitenverhältnistreu verkleinert, kleinere bleiben 1:1.
+// Drei gleiche Kanäle (CHW, 0..255) in seite x seite; nur größere Bilder werden verkleinert.
 inline Einpassung einpassen(const GrayImage& src, int seite, std::vector<float>& out) {
   Einpassung e;
   const size_t ebene = static_cast<size_t>(seite) * static_cast<size_t>(seite);

@@ -1,16 +1,11 @@
-"""Auswertung der Messung des Handzeichens ✌. Regeln vor der Messung festgelegt (09.10.2026).
+"""Auswertung der Messung des Handzeichens ✌ nach vorab festgelegten Regeln.
 
-Ein beleuchtetes Bild zählt, wenn eine Hand sicher erkannt ist (presence mindestens 0,5; die
-Handflächensuche nutzt MediaPipes Schwelle 0,5) und Googles Klassifikator Victory mit
-mindestens 0,5 als wahrscheinlichste Klasse wählt. Ein Zeichen ist erkannt, wenn das K = 3
-Bilder in Folge so ist (etwa 0,4 s), wie im Prüfdienst.
-
-Gemessen wird wie im echten Einsatz mit Rückmeldung („✓ Erkannt“ im Bild). Treffer: Beginn
-zwischen 0,3 s vor und 5 s nach der Aufforderung. Fehlalarm: jedes erkannte Zeichen in den
-Schritten ohne Handzeichen (Tippen, Alltag).
-
-Machbar: kein einziger Fehlalarm (hart), mindestens 90 % erkannt, Median höchstens 1,5 s,
-alle Schritte gemessen.
+Ein beleuchtetes Bild zählt, wenn die Hand sicher ist (presence >= 0,5, wie MediaPipes
+Handflächensuche) und Googles Klassifikator Victory mit >= 0,5 als wahrscheinlichste Klasse
+wählt; erkannt nach K = 3 solchen Bildern in Folge (etwa 0,4 s), wie im Prüfdienst. Treffer:
+Beginn 0,3 s vor bis 5 s nach der Aufforderung; Fehlalarm: jedes Zeichen in Schritten ohne
+Handzeichen. Machbar: kein Fehlalarm, mindestens 90 % erkannt, Median höchstens 1,5 s, alle
+Schritte gemessen.
 
 Aufruf: python3 auswerten_hand.py ORDNER
 """

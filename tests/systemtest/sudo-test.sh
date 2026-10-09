@@ -1,9 +1,7 @@
 #!/bin/bash
-# sudo mit Gesicht und ✌ im Wegwerf-System: echter Prüfdienst, echte Kamera, echtes libpam.
-# Ein Handzeichen wird nicht gezeigt; geprüft werden Vorbedingungen, Hinweisdatei,
-# Begrenzung, gleichzeitige Anfragen, Zurücksetzen und Rückbau.
-# Aufruf (Kamera durchreichen, Test-Drop-in: _winky darf die Kamera im rootless Container
-# nicht öffnen):
+# sudo mit Gesicht und ✌ im Wegwerf-System (echter Prüfdienst, Kamera, libpam), ohne gezeigtes
+# Handzeichen: Vorbedingungen, Hinweisdatei, Begrenzung, gleichzeitige Anfragen, Zurücksetzen, Rückbau.
+# Aufruf (Kamera durchreichen; Test-Drop-in, da _winky sie im rootless Container nicht öffnen darf):
 #   podman run -d --name winky-sudo --systemd=always --privileged --network=none <systemtest-abbild>
 #   podman cp bau/winky_<version>_amd64.deb winky-sudo:/root/winky.deb
 #   podman cp tests/systemtest/sudo-test.sh winky-sudo:/root/; podman exec -t winky-sudo /root/sudo-test.sh

@@ -1,31 +1,9 @@
-/* pam_winky: Gesichtsentsperrung für den GNOME-Sperrbildschirm.
- *
- * Bewusst klein: nur libc und libpam, kein fork, keine Modelle, keine
- * Dateien aus dem Home. Die eigentliche Prüfung macht der Prüfdienst hinter
- * /run/winky.sock (root, 0600), der in einer Sandbox läuft.
- *
- * Reihenfolge der Prüfungen, jede führt bei Nichterfüllung zu PAM_IGNORE
- * (dann fragt der nächste Eintrag, normalerweise pam_unix, nach dem Passwort):
- *   1. Modulargumente gültig (unbekannte Argumente schalten das Modul ab)
- *   2. Dienst steht in der Freigabeliste services=... (root-kontrolliert)
- *   3. Benutzer gesetzt, nicht root, kein entfernter Rechner (PAM_RHOST)
- *   4. GDM-Wiederanmeldung (GDM_SESSION_FOR_REAUTH=1), also Sperrbildschirm
- *   5. Notschalter /etc/winky/disabled fehlt, Deckel offen
- *   6. Prüfdienst antwortet innerhalb timeout_ms mit TREFFER
- *
- * Argumente: services=dienst1,dienst2  timeout_ms=500..5000
- * Der Testdienst "winky-test" (nur wenn in services aufgeführt) überspringt
- * Prüfung 4, damit sich das Modul mit pamtester prüfen lässt.
- *
- * Gestenweg für sudo (geste=sudo, ebenfalls in services aufgeführt): Statt Prüfung 4
- *   a. Schalter /etc/winky/sudo-ein existiert (root, regulär, keine Verknüpfung)
- *   b. Eingabe ist ein Terminal (nicht sudo -S oder ein Skript) und PAM_TTY ist gesetzt
- *   c. Prüfdienst mit Terminal und Befehlszeile fragen; erst wenn seine Kamera läuft
- *      ('W'), erscheint die Aufforderung zum Handzeichen ✌ im Terminal
- * Erkannt ist es nur mit Gesicht und ✌ zusammen, innerhalb von geste_timeout_ms
- * (3000..15000). Sonst geht es wie immer mit dem Passwort weiter. Der Testdienst
- * "winky-test-geste" überspringt Prüfung b.
- */
+/* pam_winky: Gesichtsentsperrung für GNOME-Sperrbildschirm (GDM-Wiederanmeldung) und sudo (mit ✌).
+ * Bewusst klein (nur libc/libpam, kein fork, nichts aus dem Home); geprüft wird im Prüfdienst.
+ * Jede unerfüllte Vorbedingung und jeder Fehler ergibt PAM_IGNORE, dann fragt pam_unix (Passwort).
+ * Argumente: services=a,b timeout_ms=500..5000 geste=<Dienste, auch in services>
+ * geste_timeout_ms=3000..15000; Unbekanntes schaltet das Modul ab. Testdienste für pamtester:
+ * winky-test (ohne GDM-Prüfung), winky-test-geste (ohne Terminalprüfung). */
 #define PAM_SM_AUTH
 #define _GNU_SOURCE
 
@@ -136,9 +114,8 @@ static long ms_seit(const struct timespec *start) {
   return (jetzt.tv_sec - start->tv_sec) * 1000L + (jetzt.tv_nsec - start->tv_nsec) / 1000000L;
 }
 
-/* Fragt den Prüfdienst. Gibt 0 und den Status zurück, sonst -1. Bei zusatz wird er
- * als zweite Nachricht geschickt; meldet der Dienst 'W' (Kamera läuft), erscheint
- * hinweis über die PAM-Unterhaltung und *wartete wird 1. */
+/* Fragt den Prüfdienst: 0 und *status, sonst -1. zusatz geht als zweite Nachricht; auf 'W'
+ * (Kamera läuft) zeigt PAM einmal hinweis und setzt *wartete. */
 static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, size_t zusatz_len,
                  pam_handle_t *pamh, const char *hinweis, int *wartete, uint32_t *status) {
   struct timespec start;
@@ -220,7 +197,7 @@ static int schalter_an(const char *pfad) {
          !(st.st_mode & (S_IWGRP | S_IWOTH));
 }
 
-/* Gemeinsame Vorprüfung für authenticate und setcred. Liefert die uid. */
+/* Gemeinsame Vorprüfung für authenticate und setcred: liefert timeout_ms (sonst -1) und *uid. */
 static int vorpruefung(pam_handle_t *pamh, int argc, const char **argv, uid_t *uid,
                        int *testdienst, struct argumente *aus) {
   struct argumente a;
@@ -256,7 +233,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   const void *dienst = NULL;
   pam_get_item(pamh, PAM_SERVICE, &dienst);
   if (dienst && in_liste(a.geste, (const char *)dienst)) {
-    /* Gestenweg (sudo) */
+    /* Gestenweg (sudo): nur am echten Terminal, nicht bei sudo -S oder Skripten */
     if (!schalter_an(SUDO_SCHALTER)) return PAM_IGNORE;
     const int test = strcmp((const char *)dienst, TESTDIENST_GESTE) == 0;
     if (!test && !isatty(STDIN_FILENO)) return PAM_IGNORE;
@@ -303,8 +280,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   return PAM_IGNORE;
 }
 
-/* Nach erfolgreicher Anmeldung: War es das Passwort, wird der
- * Fehlversuchszähler des Prüfdienstes zurückgesetzt. */
+/* Nach erfolgreicher Passwortanmeldung die Zähler im Prüfdienst zurücksetzen */
 SICHTBAR int pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv) {
   (void)flags;
   uid_t uid;

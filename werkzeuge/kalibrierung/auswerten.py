@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
-"""Wertet die Mess-CSVs der Erkennungsmessung aus und prüft das Entscheidungskriterium.
+"""Wertet die Mess-CSVs der Erkennungsmessung (SFace) aus und prüft das Entscheidungskriterium.
 
-Gruppen nach Namensanfang der Sitzung:
-  ich-...    echte Versuche der eingelernten Person
-  fremd-...  andere Personen
-  spoof-...  Handyfoto, Ausdruck
-  leer-...   niemand vor der Kamera
-
-Entscheidungsregel wie im späteren Prüfdienst: Erfolg, sobald zwei brauchbare
-beleuchtete Bilder einen Wert (Mittel der 3 besten Vorlagen) >= Schwelle haben.
-Ausgewertet wird das Modell SFace.
+Gruppen nach Namensanfang der Sitzung: ich- (eingelernte Person), fremd- (andere Personen),
+spoof- (Handyfoto, Ausdruck), leer- (niemand vor der Kamera). Erfolg wie im Prüfdienst, sobald
+zwei brauchbare beleuchtete Bilder einen Wert (Mittel der 3 besten Vorlagen) >= Schwelle haben.
 
 Aufruf: auswerten.py [--vorlagen-id ID] ORDNER_ODER_CSV [...]
-Mit --vorlagen-id werden Sitzungen übersprungen, die mit anderen Vorlagen
-gemessen wurden.
+(--vorlagen-id überspringt Sitzungen, die mit anderen Vorlagen gemessen wurden)
 """
 
 import contextlib
@@ -86,8 +79,7 @@ def bewerte(name, spalte, sitzungen):
         return None
     fremd = [w for s in sitzungen if s["gruppe"] == "fremd" for w in werte(s["zeilen"], spalte)]
     eigene = [s for s in sitzungen if s["gruppe"] == "ich"]
-    # Für die Geschwindigkeit zählen nur Sitzungen, in denen man auf den Bildschirm
-    # schaut. "Seitlich" ist absichtlich gedreht und prüft nur die Robustheit.
+    # Für die Geschwindigkeit nur frontale Sitzungen; "seitlich" prüft nur die Robustheit
     frontal = [s for s in eigene if not s["name"].startswith("ich-seitlich")]
     personen = sorted({s["name"].split("-")[1] for s in sitzungen if s["gruppe"] == "fremd"})
     echt_sortiert = sorted(echt)
@@ -106,8 +98,7 @@ def bewerte(name, spalte, sitzungen):
         print("Zeiten unten mit Beispielschwelle 0,60.")
         schwelle = 0.6
     else:
-        # Schwelle mit Abstand zu beiden Seiten: mindestens 0,08 über dem höchsten
-        # Fremdwert, sonst die Mitte zwischen Fremd-Höchstwert und eigenem 5-%-Wert.
+        # Abstand zu beiden Seiten: Fremd-Höchstwert + ABSTAND oder, falls höher, Mitte zum 5-%-Wert
         mitte = (max(fremd) + p05) / 2
         schwelle = max(max(fremd) + ABSTAND, mitte)
         schwelle = math.ceil(schwelle * 100) / 100

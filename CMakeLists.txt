@@ -36,7 +36,6 @@ target_include_directories(winky_core PUBLIC src/core)
 target_link_libraries(winky_core PUBLIC onnxruntime)
 target_compile_options(winky_core PRIVATE -D_GLIBCXX_ASSERTIONS)
 
-# IR-Kamera direkt über V4L2
 add_library(winky_capture STATIC src/capture/v4l2_ir.cc)
 target_include_directories(winky_capture PUBLIC src/capture src/core)
 
@@ -68,19 +67,17 @@ set_target_properties(pam_winky PROPERTIES PREFIX "" C_VISIBILITY_PRESET hidden)
 add_executable(winky-polkit-pruefung src/polkit/winky_polkit_pruefung.c)
 target_include_directories(winky-polkit-pruefung PRIVATE src/protokoll)
 
-# Messwerkzeug für die Entwicklung (läuft als normaler Benutzer, nicht im Paket)
+# Messwerkzeug für die Entwicklung (nicht im Paket)
 add_executable(winky-messung werkzeuge/messung/main.cc)
 target_link_libraries(winky-messung PRIVATE winky_core winky_capture pthread)
 set_target_properties(winky-messung PROPERTIES INSTALL_RPATH "/usr/lib/winky"
                                                  BUILD_RPATH "$ORIGIN;${ORT_ROOT}/lib")
 
-# Tests
 enable_testing()
 add_executable(test_dienst tests/test_dienst.cc)
 target_link_libraries(test_dienst PRIVATE winky_dienst)
 target_compile_options(test_dienst PRIVATE -Wno-unused-result)
 add_test(NAME dienst COMMAND test_dienst)
 
-# Installation (für das Paket, mit DESTDIR)
 install(TARGETS winky-matcher winky-polkit-pruefung RUNTIME DESTINATION libexec/winky)
 install(TARGETS pam_winky LIBRARY DESTINATION lib/x86_64-linux-gnu/security)

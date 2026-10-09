@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Test des Hinweisprogramms (src/hinweis/winky-hinweis) ohne Prüfdienst und ohne root.
 
-Prüft, welcher Stand der Anfragedatei zu welchem Hinweis führt: großes Fenster während des
-Wartens, grünes ✓ nach dem Bestätigen, Benachrichtigung bei Fehlschlag und Abbruch, nichts bei
-alten Anfragen. notify-send und das Fenster werden dabei nur mitgeschrieben. Mit X-Anzeige
-(DISPLAY) wird zusätzlich der Inhalt des Fensters unsichtbar aufgebaut.
+Prüft, welcher Stand der Anfragedatei zu welchem Hinweis führt; notify-send und das Fenster
+werden nur mitgeschrieben, mit DISPLAY wird das Fenster zusätzlich unsichtbar aufgebaut.
 
 Aufruf: python3 werkzeuge/test/hinweis_test.py
 """

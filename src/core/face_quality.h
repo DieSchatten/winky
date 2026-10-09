@@ -1,5 +1,4 @@
-// Qualitätsmaße eines gefundenen Gesichts. Nur Gesichter, die alle Grenzen
-// einhalten, werden verglichen; das filtert Unschärfe, Anschnitt und Profil.
+// Qualitätsgrenzen vor dem Vergleich (gegen Unschärfe, Anschnitt und Profilansicht).
 #pragma once
 
 #include "face_detection.h"

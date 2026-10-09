@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Erzeugt die Bildschirmfotos für die Software-Verwaltung neu
-# (packaging/bildschirmfotos/*.png). Braucht gtk4-broadwayd, läuft ohne Kamera und ohne root.
+# Erzeugt packaging/bildschirmfotos/*.png neu (braucht gtk4-broadwayd, ohne Kamera und root).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 WURZEL=$(mktemp -d)

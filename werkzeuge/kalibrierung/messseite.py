@@ -1,8 +1,6 @@
 """Messseiten des Kalibrierwerkzeugs: Schritte mit Anleitung, Hinweisen im Kamerabild,
-Countdown, automatischem Weiter und Auswertung (Grundlage der Seite „Handzeichen ✌“).
-
-Gespeichert werden nur Zahlen (CSV des Messwerkzeugs) und bei Zeichen-Schritten die
-Zeitpunkte der Hinweise (<schritt>.signale.json).
+Countdown, automatischem Weiter und Auswertung. Gespeichert werden nur Zahlen (CSV des
+Messwerkzeugs) und bei Zeichen-Schritten die Zeitpunkte der Hinweise (<schritt>.signale.json).
 """
 
 import json
@@ -21,11 +19,9 @@ SIGNALE = [3, 7, 11, 15, 19]   # Sekunden nach Messbeginn
 def schritt(id, titel, gruppe, anleitung, dauer=20, countdown=3, optional=False, signal=None,
             signal_dauer=0.8, hinweis=None, aufgaben=None, lesetext=None, tipptext=None,
             signal_zeiten=None):
-    """anleitung: Liste kurzer Sätze. signal: Text, der zu den SIGNALE-Zeiten im Bild
-    erscheint (Zeitpunkte werden gespeichert). hinweis: steht die ganze Messung im Bild.
-    aufgaben: Texte, die nacheinander im Bild erscheinen. lesetext: Text zum Lesen.
-    tipptext: Satz zum Abtippen (mit Eingabefeld; der Text wird nicht gespeichert).
-    signal_zeiten: eigene Zeitpunkte statt SIGNALE."""
+    """anleitung: kurze Sätze. Im Bild: signal zu den Zeiten SIGNALE bzw. signal_zeiten (werden
+    gespeichert), hinweis während der ganzen Messung, aufgaben nacheinander. lesetext: zum Lesen;
+    tipptext: zum Abtippen ins Eingabefeld (wird nicht gespeichert)."""
     return dict(id=id, titel=titel, gruppe=gruppe, anleitung=anleitung, dauer=dauer,
                 countdown=countdown, optional=optional, signal=signal,
                 signale=(signal_zeiten or SIGNALE) if signal else [], signal_dauer=signal_dauer,
@@ -103,7 +99,7 @@ class MessSeite(Gtk.Box):
         self.append(teiler)
         self._liste_aufbauen()
 
-    # ------------------------------------------------------------ Dateien
+    # Dateien
 
     def csv(self, sid):
         return self.ordner / f"{sid}.csv"
@@ -119,7 +115,7 @@ class MessSeite(Gtk.Box):
         self._liste_aufbauen()
         self.melde(f"Neue Messreihe {self.ordner.name}")
 
-    # ------------------------------------------------------------ Seitenleiste
+    # Seitenleiste
 
     def status(self, s):
         pfad = self.csv(s["id"])
@@ -170,7 +166,7 @@ class MessSeite(Gtk.Box):
             self.stapel.set_visible_child_name("schritt")
             self._schrittseite_fuellen()
 
-    # ------------------------------------------------------------ Schrittseite
+    # Schrittseite
 
     def _baue_schrittseite(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=24,
@@ -282,7 +278,7 @@ class MessSeite(Gtk.Box):
         self.k_weiter.set_sensitive(not self.beschaeftigt())
         self.liste.set_sensitive(not messung)
 
-    # ------------------------------------------------------------ Abläufe
+    # Abläufe
 
     def beschaeftigt(self):
         return self.lauf is not None or self.countdown_id is not None
@@ -361,7 +357,7 @@ class MessSeite(Gtk.Box):
         elif self.lauf:
             self.lauf.abbrechen()
 
-    # ------------------------------------------------------------ Hinweise im Bild
+    # Hinweise im Bild
 
     def _hinweise_planen(self, s):
         """Startet Hinweise und Aufforderungen, sobald die Kamera läuft."""
@@ -409,7 +405,7 @@ class MessSeite(Gtk.Box):
                 GLib.source_remove(i)
         self.zeit_ids = []
 
-    # ------------------------------------------------------------ Rückmeldungen
+    # Rückmeldungen
 
     def _bei_bild(self, w, h, daten):
         if self.lauf:
@@ -492,7 +488,7 @@ class MessSeite(Gtk.Box):
                 return
         self._liste_aufbauen(auswahl="auswertung")
 
-    # ------------------------------------------------------------ Auswertung
+    # Auswertung
 
     def _baue_auswertung(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=24,

@@ -3,16 +3,14 @@ set -e
 if [ "$1" = "configure" ]; then
     systemd-sysusers /usr/lib/sysusers.d/winky.conf
     systemd-tmpfiles --create /usr/lib/tmpfiles.d/winky.conf
-    # Die Einstellungsdatei schreiben App und winky-verwalten. Sie ist deshalb keine
-    # dpkg-Konfigurationsdatei: Jede neue Vorgabe löste sonst beim Aktualisieren eine
-    # Rückfrage aus, und ein „Y“ überschriebe die eigenen Einstellungen. Bis 0.8.0 war sie
-    # eine; dpkg lässt sie beim Aktualisieren stehen, sie wird hier nicht angefasst.
+    # Keine dpkg-Konfigurationsdatei, da App und winky-verwalten sie schreiben (sonst Rückfrage
+    # mit Überschreibgefahr bei jeder neuen Vorgabe). Ältere Fassungen hatten sie als solche;
+    # dpkg lässt sie dann beim Aktualisieren stehen.
     if [ ! -e /etc/winky/winky.conf ]; then
         install -D -m0644 /usr/share/winky/winky.conf /etc/winky/winky.conf
     fi
-    # Ab 0.8.0 vergleicht Winky mit einem anderen Modell (SFace, Kennung WNKV). Gesichtsdaten
-    # im alten Format passen nicht mehr und werden gelöscht; die Person nimmt ihr Gesicht in
-    # der App neu auf. Bis dahin gilt überall das Passwort.
+    # Gesichtsdaten ohne Kennung WNKV stammen von einem älteren Erkennungsmodell und passen
+    # nicht mehr: löschen, bis zur Neuaufnahme in der App gilt das Passwort.
     alt=0
     for d in /var/lib/winky/[0-9]*; do
         [ -d "$d" ] && [ ! -L "$d" ] && [ -f "$d/vorlagen.bin" ] || continue
@@ -30,8 +28,7 @@ if [ "$1" = "configure" ]; then
     done
     systemctl daemon-reload >/dev/null 2>&1 || true
     systemctl enable --now winky.socket >/dev/null 2>&1 || true
-    # Profil bekannt machen. "Default: no" lässt es aus, bis es in der App
-    # aktiviert wird; bei Aktualisierungen wird ein aktives Profil erneuert.
+    # "Default: no": Profil bleibt aus, bis die App es einschaltet; ein aktives wird erneuert
     pam-auth-update --package
 fi
 exit 0

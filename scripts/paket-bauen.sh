@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Baut das Debian-Paket bau/winky_<version>_amd64.deb.
-# Reihenfolge: Abhängigkeiten prüfen, bauen, Tests (brechen bei Fehlern ab),
-# paketieren. Alles im Container ohne Netz.
+# Baut bau/winky_<version>_amd64.deb im Container ohne Netz: Abhängigkeiten prüfen, bauen,
+# Tests (brechen bei Fehlern ab), paketieren.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -10,9 +9,8 @@ VERSION=$(sed -n 's/^project(winky VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
 COMMIT=$(git rev-parse --short HEAD)$(git diff --quiet HEAD -- . ':!messungen' || echo "+")
 GEBAUT=$(date '+%Y-%m-%d %H:%M')
 
-# Beschreibung für die Software-Verwaltung prüfen. Die Bildschirmfotos
-# liegen im Paket (file://), das lässt appstreamcli nicht zu; GNOME Software kann es. Sie
-# werden deshalb hier ausgeblendet und beim Zusammenstellen auf Vorhandensein geprüft.
+# Metainfo prüfen; appstreamcli lehnt die Bildschirmfotos im Paket (file://) ab, GNOME Software
+# nicht. Daher hier ausgeblendet und beim Zusammenstellen auf Vorhandensein geprüft.
 if command -v appstreamcli >/dev/null; then
   PRUEF=$(mktemp -d)
   sed "s/@VERSION@/$VERSION/;s/@DATUM@/${GEBAUT%% *}/;s|@HERAUSGEBER_NAME@|Winky|;/<screenshots>/,/<\/screenshots>/d" \

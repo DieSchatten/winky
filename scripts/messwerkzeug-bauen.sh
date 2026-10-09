@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Baut das Messwerkzeug für die Machbarkeitsmessung im Container (ohne Netz) nach bau/.
+# Baut das Messwerkzeug bau/winky-messung im Container ohne Netz.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

@@ -23,7 +23,7 @@ install -Dm0755 src/verwalten/winky-verwalten "$P"/usr/libexec/winky/winky-gesic
 install -Dm0755 src/hinweis/winky-hinweis "$P"/usr/libexec/winky/winky-hinweis
 install -Dm0644 packaging/winky-hinweis.desktop "$P"/etc/xdg/autostart/io.github.dieschatten.Winky.Hinweis.desktop
 install -Dm0644 vendor/onnxruntime/lib/libonnxruntime.so.1.30.0 "$P"/usr/lib/winky/libonnxruntime.so.1
-# Gesichtssuche, Erkennung und Handzeichen (MediaPipe Gesture Recognizer, für sudo mit ✌)
+# Modelle: Gesichtssuche, Erkennung, Handzeichen (MediaPipe)
 for m in face_detection_yunet_2023mar.onnx face_recognition_sface_2021dec.onnx hand_detector.onnx hand_landmarks_detector.onnx \
          gesture_embedder.onnx canned_gesture_classifier.onnx; do
   install -Dm0644 "vendor/$m" "$P/usr/share/winky/models/$m"
@@ -37,11 +37,10 @@ install -Dm0644 packaging/icons/io.github.dieschatten.Winky.svg \
 for f in packaging/bildschirmfotos/*.png; do
   install -Dm0644 "$f" "$P/usr/share/winky/bildschirmfotos/$(basename "$f")"
 done
-# Beschreibung für die Software-Verwaltung (Anzeige unter „Installiert“, Deinstallieren)
+# Metainfo: nötig für „Installiert“ und Deinstallieren in der Software-Verwaltung
 mkdir -p "$P"/usr/share/metainfo
 sed "s/@VERSION@/$VERSION/;s/@DATUM@/${GEBAUT%% *}/;s|@HERAUSGEBER_NAME@|$HERAUSGEBER_NAME|" packaging/io.github.dieschatten.Winky.metainfo.xml \
   > "$P"/usr/share/metainfo/io.github.dieschatten.Winky.metainfo.xml
-# Jedes Bildschirmfoto aus der Beschreibung muss im Paket liegen
 for bild in $(sed -n 's|.*file://\([^<]*\)<.*|\1|p' "$P"/usr/share/metainfo/io.github.dieschatten.Winky.metainfo.xml); do
   [[ -f "$P$bild" ]] || { echo "Bildschirmfoto fehlt im Paket: $bild" >&2; exit 1; }
 done

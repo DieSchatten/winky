@@ -1,28 +1,7 @@
-// Messwerkzeug für die Machbarkeitsmessung (Machbarkeit der IR-Gesichtserkennung).
-//
-// Läuft als normaler Benutzer. Speichert keine Bilder: nur Kennzahlen als CSV
-// und beim Einlernen die Merkmalsvektoren (Datei mit Rechten 0600).
-//
-//   winky-messung selbsttest
-//   winky-messung kamera    [--bilder N]
-//   winky-messung vorschau  [--vorlagen DATEI] [--dauer S]
-//   winky-messung einlernen --vorlagen DATEI [--dauer S]
-//   winky-messung messen    --vorlagen DATEI --name NAME [--dauer S] [--csv DATEI]
-//   winky-messung hand      --name NAME [--dauer S] [--csv DATEI]
-//
-// "hand" misst Handzeichen (MediaPipe Gesture Recognizer, ausgewertet wird Victory ✌). Die
-// CSV enthält außerdem Rohwerte aus den ersten Messrunden (Daumen-Regel, Abstand
-// Zeigefinger-Nase). Nur Zahlen, keine Bilder; die Zeit steht als Unix-Millisekunden in
-// jeder Zeile, damit die Oberfläche ihre Aufforderungen dazulegen kann.
-//
-// Gemeinsame Optionen: --geraet PFAD, --modelle ORDNER, --threads N,
-// --vorschau (Protokoll für die Oberfläche auf stdout), --vorlagen-id ID.
-//
-// Vorschau-Protokoll (stdout, nur mit --vorschau):
-//   STATUS {json}\n
-//   BILD <breite> <hoehe> <bytes>\n<RGB-Daten>
-// Menschenlesbare Ausgaben gehen dann nach stderr. Das Kamerabild wird nur an
-// die Oberfläche weitergereicht und nirgends gespeichert.
+// Messwerkzeug zur Machbarkeit der IR-Gesichts- und Handerkennung (Aufruf: siehe usage()).
+// Läuft als normaler Benutzer, speichert keine Bilder: nur Kennzahlen als CSV und beim Einlernen
+// Merkmalsvektoren (Rechte 0600). Mit --vorschau erhält die Oberfläche auf stdout
+// "STATUS {json}\n" und "BILD <breite> <hoehe> <bytes>\n<RGB-Daten>"; Text geht dann nach stderr.
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -128,9 +107,7 @@ std::string safeText(const std::string& s) {
   return out;
 }
 
-// ---------------------------------------------------------------------------
-// Vorlagendatei (nur für die Messung): "WINKYM", Version, Dimension, Anzahl, Floats
-// ---------------------------------------------------------------------------
+// Vorlagendatei (nur für die Messung): "WINK", Version, Dimension, Anzahl, Floats
 
 struct Templates {
   int dim = 0;
@@ -177,11 +154,7 @@ Templates readTemplates(const std::string& path) {
   return t;
 }
 
-// ---------------------------------------------------------------------------
-// Modelle (laden parallel zum Kamerastart, wie später im Prüfdienst).
-// Hauptmodell SFace; ein weiteres Modell zum Vergleich wird geladen, falls
-// vendor/vergleich.onnx existiert (112 x 112 Eingabe, nicht im Paket).
-// ---------------------------------------------------------------------------
+// Modelle; das Vergleichsmodell vendor/vergleich.onnx (112 x 112) wird geladen, falls vorhanden.
 
 struct Models {
   std::unique_ptr<winky::FaceDetector> detector;
@@ -209,7 +182,7 @@ void loadModels(Ort::Env* env, const Options* o, Models* m) {
     }
     const std::string palm = o->models + "/hand_detector.onnx";
     if ((o->command == "hand" || o->command == "selbsttest") && ::access(palm.c_str(), R_OK) == 0) {
-      // Schwelle der Handflächensuche wie MediaPipe (0,5); der beste Wert steht trotzdem in der CSV
+      // Schwelle wie MediaPipe (0,5); der beste Wert steht trotzdem in der CSV
       m->hand = std::make_unique<winky::HandGestureRecognizer>(*env, o->models, o->threads, 0.5f);
     }
   } catch (const std::exception& e) {
@@ -218,7 +191,6 @@ void loadModels(Ort::Env* env, const Options* o, Models* m) {
   m->load_ms = msSince(t0);
 }
 
-// Ergebnis der Analyse eines beleuchteten Bildes
 struct LitResult {
   int n_faces = 0;
   winky::FaceBox face;
@@ -262,9 +234,7 @@ std::pair<float, float> score(const std::vector<float>& emb, const Templates& tp
   return {top, sims.front()};
 }
 
-// ---------------------------------------------------------------------------
 // Vorschau für die Oberfläche: halbe Auflösung, Gesichtsrahmen eingezeichnet
-// ---------------------------------------------------------------------------
 
 class Preview {
  public:
@@ -355,7 +325,7 @@ std::string jsonNum(double v, int digits = 3) {
   return buf;
 }
 
-// Kamera und Modelle parallel starten (wie später der Prüfdienst)
+// Kamera und Modelle parallel starten (wie der Prüfdienst)
 struct Session {
   Ort::Env env{ORT_LOGGING_LEVEL_ERROR, "winky-messung"};
   Models models;
@@ -381,9 +351,7 @@ bool openSession(const Options& o, Session& s, Clock::time_point t0) {
   return true;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: selbsttest (ohne Kamera: Modelle laden und einmal durchrechnen)
-// ---------------------------------------------------------------------------
 
 int cmdSelbsttest(const Options& o) {
   Ort::Env env(ORT_LOGGING_LEVEL_ERROR, "winky-messung");
@@ -421,9 +389,7 @@ int cmdSelbsttest(const Options& o) {
   return e1.empty() ? 1 : 0;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: kamera
-// ---------------------------------------------------------------------------
 
 int cmdKamera(const Options& o) {
   const auto t0 = Clock::now();
@@ -449,9 +415,7 @@ int cmdKamera(const Options& o) {
   return 0;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: vorschau (Kamerabild mit Gesichtsrahmen, optional mit Wert)
-// ---------------------------------------------------------------------------
 
 int cmdVorschau(const Options& o) {
   const auto t0 = Clock::now();
@@ -482,9 +446,7 @@ int cmdVorschau(const Options& o) {
   return 0;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: einlernen
-// ---------------------------------------------------------------------------
 
 int cmdEinlernen(const Options& o) {
   if (o.templates.empty()) usage();
@@ -620,9 +582,7 @@ int cmdEinlernen(const Options& o) {
   return 0;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: messen
-// ---------------------------------------------------------------------------
 
 int cmdMessen(const Options& o) {
   if (o.templates.empty() || o.name.empty()) usage();
@@ -779,16 +739,13 @@ int cmdMessen(const Options& o) {
   return 0;
 }
 
-// ---------------------------------------------------------------------------
 // Befehl: hand (Machbarkeit eines Handzeichens)
-// ---------------------------------------------------------------------------
 
 const char* kGestenNamen[winky::kGestureCount] = {"keine", "Faust", "offene Hand", "Zeigefinger hoch",
                                                 "Daumen runter", "Daumen hoch", "Victory",
                                                 "I love you"};
 
-// Einfache Regel aus den Handpunkten (Bild, y nach unten): Daumen zeigt nach oben und
-// ragt über alle anderen Punkte, die vier Finger sind eingerollt.
+// Daumen-hoch-Regel (Bild, y nach unten): Daumen oben über allen Punkten, Finger eingerollt.
 struct DaumenRegel {
   bool hoch = false;
   float winkel = 0;      // Daumenrichtung gegen senkrecht nach oben, Grad
@@ -953,8 +910,8 @@ int cmdHand(const Options& o) {
   return 0;
 }
 
-// Prüfbefehl ohne Kamera: Handzeichen in einem Graustufenbild (PGM, P5), zum Abgleich
-// mit MediaPipe selbst. Aufruf: winky-messung handbild --name DATEI.pgm
+// Ohne Kamera: Handzeichen in einem 8-Bit-PGM (P5), zum Abgleich mit MediaPipe.
+// Aufruf: winky-messung handbild --name DATEI.pgm
 int cmdHandbild(const Options& o) {
   FILE* f = std::fopen(o.name.c_str(), "rb");
   if (!f) {

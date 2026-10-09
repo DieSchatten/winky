@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Attrappe des Messwerkzeugs für Oberflächentests ohne Kamera.
-
-Spricht dasselbe Vorschau-Protokoll wie bau/winky-messung (BILD/STATUS auf
-stdout) und schreibt CSV- und Vorlagendateien im echten Format.
+"""Attrappe des Messwerkzeugs für Oberflächentests ohne Kamera: spricht das Vorschau-Protokoll
+von bau/winky-messung (BILD/STATUS auf stdout), schreibt CSV- und Vorlagendateien im echten Format.
 """
 
 import json

@@ -2,7 +2,7 @@
 /vendor/
 # Bauergebnisse
 /bau/
-# Messdaten und eingelernte Merkmalsvektoren: bleiben nur auf diesem Rechner
+# Messdaten und eingelernte Merkmalsvektoren bleiben lokal
 /messungen/
 *.neu
 # Python-Zwischendateien

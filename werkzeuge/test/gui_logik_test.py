@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Ablauftest der App mit Attrappe (ohne Kamera, ohne root, ohne Systemänderung).
-
-Spielt den Assistenten von vorn bis hinten durch, dann Startseite, Erweitert und Fehlerfälle.
+"""Ablauftest der App mit Attrappe (ohne Kamera, root und Systemänderung): Assistent komplett,
+dann Startseite, Erweitert und Fehlerfälle.
 
 Aufruf (braucht ein GTK-Display, z. B. Broadway):
   gtk4-broadwayd :9 &

@@ -1,10 +1,6 @@
-// Winky: Gesichtsentsperrung für KeePassXC
-//
-// Gilt ausschließlich für das Schnellentsperren von KeePassXC (ab Version 2.8,
-// Aktion org.keepassxc.KeePassXC.unlockDatabase). Erkennt die IR-Kamera das
-// eingelernte Gesicht des Benutzers, entfällt die Passworteingabe. Sonst bleibt
-// es beim normalen Passwortdialog. Alle anderen Polkit-Aktionen bleiben
-// unberührt. Ein- und ausgeschaltet über die App "Gesichtsentsperrung".
+// Winky: Schnellentsperren von KeePassXC (ab 2.8) per Gesicht, nur für diese eine Aktion.
+// Erkannt (Exit 0): kein Passwort; sonst wirft polkit.spawn() und es bleibt beim Passwortdialog.
+// Ein-/Ausschalten über die Winky-App.
 polkit.addRule(function(action, subject) {
     if (action.id !== "org.keepassxc.KeePassXC.unlockDatabase") {
         return polkit.Result.NOT_HANDLED;

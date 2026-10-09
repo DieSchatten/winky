@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""Kalibrierwerkzeug (Entwicklung), nicht Teil des Pakets.
+"""Kalibrierwerkzeug (Entwicklung, nicht Teil des Pakets): Messreihen für die Vorgabe-Strenge
+der App (SFace auf dem IR-Bild; bei anderem Modell oder anderer Kameraklasse neu messen) und
+für das Handzeichen ✌.
 
-Erkennung: Messreihen mit eigenen und fremden Gesichtern und Täuschungsversuchen; daraus
-kommt die Vorgabe-Strenge der App (Modell SFace auf dem Infrarot-Bild). Hand: Messung des
-Handzeichens ✌ für sudo und KeePassXC. Für ein anderes Modell oder eine andere
-Kameraklasse hier neu messen.
-
-Start: ./scripts/kalibrierung.sh
+Aufruf: ./scripts/kalibrierung.sh
 """
 
 import sys

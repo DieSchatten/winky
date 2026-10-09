@@ -1,5 +1,4 @@
-// Prüft über logind, ob der Benutzer eine aktive, lokale grafische Sitzung
-// am Hauptarbeitsplatz (seat0) hat. Nur dann darf entsperrt werden.
+// Entsperren nur mit aktiver, lokaler grafischer Sitzung an seat0 (Abfrage über logind).
 #pragma once
 
 #include <sys/types.h>

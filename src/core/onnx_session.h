@@ -1,5 +1,4 @@
-// Dünne Hülle um eine ONNX-Runtime-Sitzung: gemeinsame Ort::Env, einstellbare Thread-Zahl,
-// Abfrage der Ein- und Ausgabeformen.
+// Dünne Hülle um eine ONNX-Runtime-Sitzung (gemeinsame Ort::Env, einstellbare Threads).
 #pragma once
 
 #include <onnxruntime_cxx_api.h>

@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# Wandelt Googles MediaPipe Gesture Recognizer (Apache-2.0) von TFLite nach ONNX um:
-# Handflächen, Handpunkte und Gesten aus gesture_recognizer.task. Quelle ist das offizielle
-# Paket (Version 1, float16), per SHA-256 geprüft. Die Umwandlung läuft in einem
-# Wegwerf-Container mit festen Werkzeugversionen und vergleicht danach die
-# Ausgaben von TFLite und ONNX mit Zufallseingaben.
-#
+# Wandelt Googles MediaPipe Gesture Recognizer (Apache-2.0; offizielles Paket Version 1,
+# float16, per SHA-256 geprüft) in einem Wegwerf-Container mit festen Werkzeugversionen von
+# TFLite nach ONNX um und vergleicht danach die Ausgaben beider mit Zufallseingaben.
 # Aufruf: scripts/mediapipe-umwandeln.sh ZIELORDNER
 set -euo pipefail
 ZIEL=$(realpath "${1:?Zielordner fehlt}")

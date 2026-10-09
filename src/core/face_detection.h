@@ -1,7 +1,6 @@
-// Gesichtssuche mit YuNet (OpenCV Zoo, MIT-Lizenz, Fassung 2023mar) samt 5 Gesichtspunkten.
-// Das Netz rechnet auf einem festen 640 x 640-Feld; das Kamerabild liegt oben links darin.
-// Ausgabe je Schrittweite 8, 16 und 32 ein Raster mit Klassen- und Objektwert, Rahmen
-// (Versatz und Logarithmus der Größe, in Schrittweiten) und 5 Punkten.
+// Gesichtssuche mit YuNet 2023mar (OpenCV Zoo, MIT) samt 5 Punkten. Eingabe 640 x 640, Bild oben
+// links; Ausgabe je Schrittweite 8/16/32 ein Raster mit Klassen- und Objektwert, Rahmen (Versatz
+// und log. Größe, in Schrittweiten) und 5 Punkten.
 #pragma once
 
 #include <array>

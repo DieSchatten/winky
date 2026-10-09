@@ -1,8 +1,7 @@
 """Seite "Messung": Kalibrierung der Erkennung mit eigenen und fremden Gesichtern.
 
-Läuft als normaler Benutzer mit dem Messwerkzeug. Gespeichert werden nur
-Kennzahlen (CSV) und eigene Mess-Vorlagen unter ~/.local/share/winky. Die
-Systemvorlagen für die Entsperrung sind davon getrennt.
+Läuft als normaler Benutzer; gespeichert werden nur Kennzahlen (CSV) und eigene Mess-Vorlagen
+unter ~/.local/share/winky, getrennt von den Systemvorlagen der Entsperrung.
 """
 
 import hashlib
@@ -90,7 +89,7 @@ class Messreihe:
         try:
             self.daten = json.loads(self.datei.read_text())
         except (FileNotFoundError, ValueError):
-            # Messreihen aus dem alten Skript gehören zu den damals entstandenen Vorlagen
+            # Reihen ohne messreihe.json gelten als mit den aktuellen Vorlagen gemessen
             self.daten = {"vorlagen_id": vorlagen_id(), "personen": []}
             self.speichern()
 
@@ -154,8 +153,7 @@ def zusammenfassung(pfad: Path):
 
 
 def reihen_ordner():
-    """Messreihen der Erkennung: Ordner mit Datumsnamen. Die Unterordner anderer Seiten
-    (etwa hand/) gehören nicht dazu."""
+    """Messreihen der Erkennung: Ordner mit Datumsnamen, ohne Unterordner anderer Seiten (hand/)."""
     if not umgebung.MESSUNGEN.is_dir():
         return []
     return sorted(p for p in umgebung.MESSUNGEN.iterdir()
@@ -163,9 +161,7 @@ def reihen_ordner():
 
 
 def gesamtauswertung():
-    """Auswertung aller Messreihen mit den aktuellen Mess-Vorlagen.
-
-    Liefert (Text, Ergebnisse je Modell, Ordnerliste)."""
+    """Alle Messreihen mit aktuellen Mess-Vorlagen: (Text, Ergebnisse je Modell, Ordnerliste)."""
     vid = vorlagen_id()
     if not umgebung.MESSUNGEN.is_dir() or vid is None:
         return "Noch keine Messungen.", [], []
@@ -227,7 +223,7 @@ class MessungSeite(Gtk.Box):
         self._reihen_laden()
         self._liste_aufbauen(auswahl="einlernen" if not VORLAGEN().exists() else None)
 
-    # ------------------------------------------------------------ Messreihen
+    # Messreihen
 
     def _letzte_oder_neue_reihe(self):
         umgebung.MESSUNGEN.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -276,7 +272,7 @@ class MessungSeite(Gtk.Box):
         else:
             self.banner.set_revealed(False)
 
-    # ------------------------------------------------------------ Seitenleiste
+    # Seitenleiste
 
     def _schritte(self):
         alle = [EINLERNEN, *FESTE_SCHRITTE]
@@ -359,7 +355,7 @@ class MessungSeite(Gtk.Box):
     def zeige_auswertung(self):
         self._liste_aufbauen(auswahl="auswertung")
 
-    # ------------------------------------------------------------ Schrittseite
+    # Schrittseite
 
     def _baue_schrittseite(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=24,
@@ -463,7 +459,7 @@ class MessungSeite(Gtk.Box):
         self.liste.set_sensitive(not messung_laeuft)
         self.reihen_auswahl.set_sensitive(not laeuft)
 
-    # ------------------------------------------------------------ Abläufe
+    # Abläufe
 
     def beschaeftigt(self):
         return self.lauf is not None or self.countdown_id is not None
@@ -629,7 +625,7 @@ class MessungSeite(Gtk.Box):
                 return
         self._liste_aufbauen(auswahl="auswertung")
 
-    # ------------------------------------------------------------ Personen
+    # Personen
 
     def _person_dialog(self):
         dialog = Adw.AlertDialog.new(
@@ -686,7 +682,7 @@ class MessungSeite(Gtk.Box):
         dialog.connect("response", antwort)
         dialog.present(self.get_root())
 
-    # ------------------------------------------------------------ Auswertung
+    # Auswertung
 
     def _baue_auswertung(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin_top=24,

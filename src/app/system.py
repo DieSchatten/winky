@@ -1,7 +1,5 @@
-"""Systemzustand lesen (ohne root) und Verlauf aus dem Journal holen.
-
-Alles hier ist nur lesend. Ändern geht ausschließlich über den
-Verwaltungshelfer mit Passwortabfrage (umgebung.verwalten_befehl).
+"""Systemzustand (ohne root) und Verlauf aus dem Journal nur lesen; Änderungen laufen
+ausschließlich über den Verwaltungshelfer mit Passwortabfrage (umgebung.verwalten_befehl).
 """
 
 import json
@@ -129,9 +127,8 @@ def keepassxc_info():
 
 
 def verlauf(anzahl=8, uid=None):
-    """Letzte Entsperrversuche aus dem Journal: Liste von dicts, neueste zuerst.
-
-    Liefert None, wenn das Journal nicht lesbar ist."""
+    """Letzte Entsperrversuche aus dem Journal (Liste von dicts, neueste zuerst);
+    None, wenn das Journal nicht lesbar ist."""
     uid = os.getuid() if uid is None else uid
     if umgebung.ATTRAPPE:
         try:

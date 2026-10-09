@@ -86,7 +86,6 @@ std::vector<FaceBox> FaceDetector::detect(const GrayImage& img) {
     if (behalten.size() >= 10) break;
   }
 
-  // Zurück in Kamerakoordinaten
   const float zurueck = 1.0f / e.faktor;
   std::vector<FaceBox> ergebnis;
   for (auto f : behalten) {

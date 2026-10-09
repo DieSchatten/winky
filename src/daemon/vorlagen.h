@@ -1,7 +1,5 @@
-// Eingelernte Merkmalsvektoren eines Benutzers.
-//
-// Datei /var/lib/winky/<uid>/vorlagen.bin, geschrieben nur vom
-// Verwaltungshelfer (root). Format:
+// Merkmalsvektoren je Benutzer in /var/lib/winky/<uid>/vorlagen.bin (nur root schreibt). Jeder
+// Pfadteil: ohne Verknüpfung geöffnet, root-eigen, nicht für Gruppe/andere beschreibbar. Format:
 //   0  "WNKV"            4 Byte
 //   4  Version (1)       u32
 //   8  Dimension         u32
@@ -9,9 +7,6 @@
 //   16 Modell-SHA-256    64 Zeichen hex
 //   80 erstellt (Unix)   i64
 //   88 Anzahl*Dimension float32, jeder Vektor auf Länge 1 normiert
-//
-// Jeder Pfadteil wird ohne Verknüpfungen geöffnet und muss root gehören und
-// darf für Gruppe/andere nicht beschreibbar sein.
 #pragma once
 
 #include <sys/types.h>

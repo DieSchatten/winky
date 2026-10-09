@@ -1,35 +1,18 @@
 #!/usr/bin/python3 -I
 """winky-verwalten / winky-gesicht: Verwaltung der Gesichtsentsperrung.
 
-Läuft als root, gestartet über pkexec (Polkit fragt nach dem Passwort) oder
-sudo. Wirkt immer nur für den aufrufenden Benutzer (PKEXEC_UID bzw. SUDO_UID)
-und liest nichts aus dem Home-Verzeichnis.
+Läuft als root (pkexec oder sudo), wirkt nur für den Aufrufer (PKEXEC_UID bzw. SUDO_UID) und
+liest nichts aus dessen Home. Als winky-gesicht (eigenes Passwort) sind nur die Befehle fürs
+eigene Gesicht erlaubt, als winky-verwalten (Administratorpasswort) auch die systemweiten.
 
-Unter dem Namen winky-gesicht (eigenes Passwort genügt) sind nur Befehle für
-das eigene Gesicht erlaubt. Unter winky-verwalten (Administratorpasswort)
-zusätzlich die systemweiten Einstellungen.
+Eigenes Gesicht: status, kameras, einlernen, testen (ohne Sperrzähler), gegenprobe (andere
+  Person darf nicht passen), geste-testen (Gesicht und ✌, Freigabe für sudo), entfernen
+System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.40 bis 0.95),
+  aktivieren / deaktivieren (pam-auth-update), pausieren / fortsetzen (Notschalter),
+  keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus
 
-Eigenes Gesicht:
-  status                 Zustand als JSON
-  kameras                IR-Kameras suchen und prüfen
-  einlernen              Gesicht aufnehmen (über den Prüfdienst) und speichern
-  testen                 Erkennung probeweise, ohne Sperrzähler
-  gegenprobe             eine andere Person schaut in die Kamera und darf nicht passen
-  geste-testen           Gesicht und Handzeichen ✌ probeweise (Freigabe für sudo)
-  entfernen              eingelernte Vorlagen löschen
-System (Administrator):
-  kamera PFAD|auto       IR-Kamera festlegen, Blinkprüfung passend einstellen
-  schwelle WERT          Schwelle setzen (0.40 bis 0.95)
-  aktivieren             Gesicht am Sperrbildschirm einschalten (pam-auth-update)
-  deaktivieren           wieder ausschalten
-  pausieren / fortsetzen Notschalter setzen oder entfernen
-  keepassxc an|aus       Schnellentsperren von KeePassXC (ab 2.8) per Gesicht
-  keepassxc geste-an|geste-aus   dafür zusätzlich ✌ verlangen (Vorgabe) oder nicht
-  sudo an|aus            sudo mit Gesicht und Handzeichen ✌ bestätigen
-
-Ausgabe für die Oberfläche (zeilenweise):
-  STATUS {json}   BILD <breite> <hoehe> <bytes>\\n<RGB>   ERGEBNIS {json}
-Abbruch: Schließt der Aufrufer die Standardeingabe, endet ein laufender Vorgang.
+Ausgabe zeilenweise: STATUS {json}, BILD <breite> <hoehe> <bytes>\\n<RGB>, ERGEBNIS {json}.
+Schließt der Aufrufer die Standardeingabe, endet ein laufender Vorgang.
 """
 
 import grp
@@ -103,7 +86,7 @@ def aufrufer():
     return uid, eintrag.pw_name
 
 
-# ------------------------------------------------------------------ Dateien
+# Dateien
 
 def schreibe_atomar(pfad, daten: bytes, modus, gid=0):
     ordner = os.path.dirname(pfad)
@@ -201,7 +184,7 @@ def aktuelle_schwelle():
         return 0.0
 
 
-# ------------------------------------------------------------------ Prüfdienst
+# Prüfdienst
 
 def verbinde(op, uid, dauer):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -305,7 +288,7 @@ def pruefe_vektoren(roh):
     return anzahl, dim, floats
 
 
-# ------------------------------------------------------------------ Befehle
+# Befehle
 
 def befehl_einlernen(uid, _name):
     s = verbinde(OP_EINLERNEN, uid, 25)
@@ -355,8 +338,7 @@ def countdown(sekunden):
 
 
 def befehl_gegenprobe(uid, _name):
-    """Eine andere Person schaut 10 s in die Kamera. Sie darf nicht erkannt werden
-    und soll deutlich unter der Schwelle bleiben."""
+    """Eine andere Person darf nicht erkannt werden und soll deutlich unter der Schwelle bleiben."""
     if not os.path.exists(vorlagen_pfad(uid)):
         fertig(False, fehler="Zuerst das eigene Gesicht einlernen")
     countdown(GEGENPROBE_COUNTDOWN)
@@ -580,9 +562,8 @@ def befehl_keepassxc(uid, _name, wahl=None):
 
 
 def befehl_sudo(uid, _name, wahl=None):
-    """sudo mit Gesicht und ✌ bestätigen: Schalter in der Konfiguration (Prüfdienst) und
-    /etc/winky/sudo-ein (PAM-Modul). Nur mit aktiver Gesichtsentsperrung und bestandenem
-    ✌-Test des Aufrufers; jede weitere Person braucht ihren eigenen ✌-Test."""
+    """sudo mit Gesicht und ✌: Schalter in winky.conf (Prüfdienst) und /etc/winky/sudo-ein (PAM).
+    Nur bei aktiver Gesichtsentsperrung und bestandenem ✌-Test; jede Person braucht ihren eigenen."""
     if wahl == "an":
         if not pam_aktiv():
             fertig(False, fehler="Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten")

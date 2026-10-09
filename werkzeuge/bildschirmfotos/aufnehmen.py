@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Bildschirmfotos der App für die Software-Verwaltung (AppStream).
+"""Bildschirmfotos der App für die Software-Verwaltung, mit Verwaltungs-Attrappe und gezeichnetem
+Kamerabild. Ausgabe: packaging/bildschirmfotos/{startseite,einrichtung,sicherheit}.png
+(WINKY_FOTO_ZIEL=Ordner; WINKY_FOTO_ALLE=1: zusätzlich jeder Assistentenschritt).
 
-Läuft mit der Attrappe des Verwaltungshelfers (ohne Kamera, ohne root) und
-einem gezeichneten Kamerabild statt eines echten Gesichts. Start über
-scripts/bildschirmfotos.sh, das einen eigenen Broadway-Bildschirm aufmacht.
-Ausgabe: packaging/bildschirmfotos/{startseite,einrichtung,sicherheit}.png
-(WINKY_FOTO_ZIEL=Ordner und WINKY_FOTO_ALLE=1: zusätzlich jeder Assistentenschritt)
+Aufruf: scripts/bildschirmfotos.sh (startet einen eigenen Broadway-Bildschirm)
 """
 
 import json
