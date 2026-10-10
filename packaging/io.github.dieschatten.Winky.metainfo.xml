@@ -39,9 +39,9 @@
       <li>Optional: unlock KeePassXC (from version 2.8) with your face and ✌.</li>
       <li xml:lang="de">Wahlweise KeePassXC (ab Version 2.8) mit Gesicht und ✌ entsperren.</li>
       <li>Optional: approve administrator dialogs such as installing updates with your face and
-        ✌ instead of the password, each group separately.</li>
+        ✌ instead of the password.</li>
       <li xml:lang="de">Wahlweise Administrator-Dialoge wie das Installieren von Updates mit
-        Gesicht und ✌ statt Passwort freigeben, jede Gruppe einzeln.</li>
+        Gesicht und ✌ statt Passwort freigeben.</li>
       <li>No images are stored, only face features that only the system can read. No network
         access.</li>
       <li xml:lang="de">Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das
@@ -146,8 +146,10 @@
           <li xml:lang="de">Wahlweise Anmeldung nach dem Start mit dem Gesicht. Der Schlüsselbund bleibt dann zu.</li>
           <li>Experimental: also unlock the login keyring after a face login (password sealed in the TPM chip).</li>
           <li xml:lang="de">Experimentell: nach der Gesichtsanmeldung auch den Schlüsselbund entsperren (Passwort versiegelt im TPM-Chip).</li>
-          <li>Status messages at the login screen; network and power queries never trigger the camera.</li>
-          <li xml:lang="de">Statusmeldungen an der Anmeldemaske; Netzwerk- und Energie-Abfragen schalten nie die Kamera ein.</li>
+          <li>Administrator dialogs now work inside the password dialog itself: one switch, and background permission checks never turn on the camera.</li>
+          <li xml:lang="de">Administrator-Dialoge laufen jetzt im Passwortdialog selbst: ein Schalter, und Hintergrund-Abfragen schalten nie die Kamera ein.</li>
+          <li>Status messages at the login screen.</li>
+          <li xml:lang="de">Statusmeldungen an der Anmeldemaske.</li>
           <li>Adjustable time for the ✌; the ✌ window shows what you are approving.</li>
           <li xml:lang="de">Einstellbare Zeit für das ✌; das ✌-Fenster zeigt, was du freigibst.</li>
           <li>“About Winky” with version, license and project page.</li>

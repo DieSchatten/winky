@@ -1,6 +1,6 @@
-Name: Winky: Gesicht am Sperrbildschirm, sudo wahlweise mit Gesicht und ✌
+Name: Winky: Gesicht am Sperrbildschirm, sudo und Administrator-Dialoge wahlweise mit Gesicht und ✌
 Default: no
 Priority: 300
 Auth-Type: Primary
 Auth:
-	[success=end default=ignore]	pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=35000
+	[success=end default=ignore]	pam_winky.so services=gdm-password,sudo,polkit-1 geste=sudo,polkit-1 timeout_ms=3000 geste_timeout_ms=35000

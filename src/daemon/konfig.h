@@ -24,7 +24,7 @@ struct Konfig {
   bool sudo = false;          // sudo per Gesicht und ✌ bestätigen
   bool anmeldung = false;     // auch die erste Anmeldung nach dem Start
   int sudo_ms = 8000;         // Wartezeit auf das ✌ (sudo; Polkit-Wege höchstens 9 s)
-  std::string freigaben;      // Polkit-Gruppen mit ✌, kommagetrennt (leer = keine)
+  bool dialoge = false;       // Administrator-Dialoge (polkit-1) mit Gesicht und ✌
 };
 
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler);

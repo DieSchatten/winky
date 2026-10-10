@@ -77,13 +77,10 @@ This is in your own hands:
     physical access may be able to read it, and with it the password itself, which many
     people also use elsewhere. Winky only hands it out right after a recognized face login,
     checks it against `/etc/shadow` first and discards it after a password change.
-11. **Administrator dialogs with ✌.** Every group you turn on works like sudo with ✌: a
-   harmful program running as you can trigger such a dialog, and a ✌ at the wrong moment
-   approves it. Updates and software from your package sources only install signed packages.
-   Downloaded packages, `pkexec` and “all other administrator dialogs” give full
-   administrator rights; for the last group, the ✌ window only names the action, not the
-   details. Only turn on what you really use, and only show ✌ for dialogs you started
-   yourself.
+11. **Administrator dialogs with ✌.** Works like sudo with ✌: a harmful program running as
+    you can open such a dialog, and a ✌ at the wrong moment approves it, with full
+    administrator rights. The dialog itself shows what is requested; only show ✌ for dialogs
+    you started yourself. Background permission checks never reach Winky.
 
 ## Risks in the technology itself
 

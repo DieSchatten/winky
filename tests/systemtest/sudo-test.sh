@@ -52,7 +52,7 @@ pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face and"' "sudo an
 install -m0640 -g _winky /dev/null /var/lib/winky/1000/geste-ok   # Test ersetzt hier den ✌-Test
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "\"ok\": true"' "sudo an mit Administratorrechten"
 pruefe '[ -f /etc/winky/sudo-ein ] && grep -q "^sudo = ja" /etc/winky/winky.conf' "Schalter und Konfiguration gesetzt"
-pruefe 'grep -q "pam_winky.so services=gdm-password,sudo geste=sudo" /etc/pam.d/common-auth' "common-auth enthält den sudo-Weg"
+pruefe 'grep -q "pam_winky.so services=gdm-password,sudo,polkit-1 geste=sudo,polkit-1" /etc/pam.d/common-auth' "common-auth enthält sudo- und Dialog-Weg"
 
 # 1. Anfrage ohne Handzeichen: Aufforderung, dann nicht bestätigt, Hinweisdatei, Zähler
 cp /etc/pam.d/sudo-nurgeste /etc/pam.d/sudo
@@ -141,43 +141,35 @@ SUDO_UID=1000 $V keepassxc aus </dev/null >/dev/null
 # Die Kamera sieht im Test ein fremdes Gesicht: Fehlversuchs- und sudo-Zähler zurücksetzen
 rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 
-# 8. Administrator-Dialoge über Polkit: Gruppen einzeln, immer mit ✌, Pause wirkt
+# 8. Administrator-Dialoge (PAM polkit-1): ein Schalter, immer mit ✌, Pause wirkt, Umstellung aus 0.10.0
 R=/etc/polkit-1/rules.d/zz-winky-freigaben.rules
-P=/usr/libexec/winky/winky-polkit-pruefung
-polkit_anfrage() { python3 -c "import json;d=json.load(open('/run/winky/anfrage/1000.json'));print(d['zweck'],d['stand'],d['befehl'])" 2>/dev/null; }
-pruefe '[ ! -e $R ]' "ab Werk keine Freigaben-Regel"
-pruefe 'SUDO_UID=1000 $V freigabe-an alles </dev/null | erg | grep -q "\"ok\": false"' "unbekannte Gruppe abgelehnt"
-t0=$(date +%s)
-pruefe 'SUDO_UID=1000 $V freigabe-an updates </dev/null | erg | grep -q "\"ok\": true"' "Updates mit ✌ eingeschaltet"
-pruefe '[ -f $R ] && grep -q "org.freedesktop.packagekit.system-update" $R && ! grep -q "\"org.freedesktop.policykit.exec\": true" $R && grep -q "^freigaben = updates$" /etc/winky/winky.conf' "Regel nur mit Update-Aktionen, Konfiguration gesetzt"
-pruefe 'grep -q "isInGroup(\"sudo\")" $R && grep -q "subject.local" $R' "Regel nur für Administratoren in lokaler, aktiver Sitzung"
-sleep 2
-pruefe '! journalctl -u polkit --since "@$t0" --no-pager | grep -qi -E "error|exception"' "Polkit lädt die Regel ohne Fehler"
-t0=$(date +%s%N); $P ubuntu org.freedesktop.packagekit.system-update ""; rc=$?; t=$(( ($(date +%s%N)-t0)/1000000 ))
-pruefe '[ $rc = 1 ] && [ $t -lt 9900 ]' "Update ohne ✌ nicht freigegeben, unter dem Polkit-Limit (${t} ms)"
-pruefe '[ "$(polkit_anfrage)" = "polkit:org.freedesktop.packagekit.system-update nicht_bestaetigt " ]' "Hinweis nennt die Aktion: nicht bestätigt"
-pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=polkit:" | tail -1 | grep -q "geste=1"' "Freigabe verlangt ✌ (Journal)"
-SUDO_UID=1000 $V freigabe-an programme </dev/null >/dev/null
-pruefe 'grep -q "\"org.freedesktop.policykit.exec\": true" $R && grep -q "org.freedesktop.packagekit.system-update" $R && grep -q "^freigaben = updates,programme$" /etc/winky/winky.conf' "zweite Gruppe dazu, erste bleibt"
-$P ubuntu org.freedesktop.policykit.exec "/usr/bin/gparted --test"
-pruefe '[ "$(polkit_anfrage)" = "polkit:org.freedesktop.policykit.exec nicht_bestaetigt /usr/bin/gparted --test" ]' "pkexec: Befehl steht im Hinweis"
-SUDO_UID=1000 $V freigabe-an system </dev/null >/dev/null
-pruefe '! grep -q "io.github.dieschatten.winky" $R && ! grep -q "org.keepassxc" $R' "nie für Winkys eigene Einstellungen und KeePassXC"
-pruefe '! grep -q "\"org.freedesktop.NetworkManager\." $R && ! grep -q "\"org.freedesktop.login1\." $R' "nie für Netzwerk und Energie (GNOME fragt im Hintergrund ab)"
+dialog_anfrage() { python3 -c "import json;d=json.load(open('/run/winky/anfrage/1000.json'));print(d['zweck'],d['stand'])" 2>/dev/null; }
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+n=$(journalctl -t winky -o cat --no-pager | grep -c "zweck=dialog")
+pamtester polkit-1 ubuntu authenticate </dev/null >/dev/null 2>&1
+pruefe '[ "$(journalctl -t winky -o cat --no-pager | grep -c "zweck=dialog")" = "$n" ]' "ab Werk: Passwortdialog ohne Winky"
+pruefe 'SUDO_UID=1000 $V dialoge an </dev/null | erg | grep -q "\"ok\": true" && [ -f /etc/winky/dialoge-ein ] && grep -q "^dialoge = ja" /etc/winky/winky.conf' "Administrator-Dialoge eingeschaltet"
+t0=$(date +%s%N); AUS=$(pamtester polkit-1 ubuntu authenticate </dev/null 2>&1); t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe 'echo "$AUS" | grep -q "to approve" && [ "$(dialog_anfrage)" = "dialog nicht_bestaetigt" ]' "echter polkit-1-Dialog: Aufforderung, ohne ✌ weiter zum Passwort (${t} ms)"
+pruefe '[ $t -ge 7500 ] && [ $t -lt 12000 ]' "Dialog wartet die eingestellte ✌-Zeit (8 s), ohne Polkit-Grenze"
+pruefe '[ ! -e $R ]' "keine Polkit-Regel: Hintergrund-Abfragen erreichen Winky nie"
 SUDO_UID=1000 $V pausieren </dev/null >/dev/null
-t0=$(date +%s%N); $P ubuntu org.freedesktop.packagekit.system-update ""; rc=$?; t=$(( ($(date +%s%N)-t0)/1000000 ))
-pruefe '[ $rc = 1 ] && [ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "grund=pausiert"' "Pause: keine Kamera, sofort Passwort (${t} ms)"
+n=$(journalctl -t winky -o cat --no-pager | grep -c "zweck=dialog")
+pamtester polkit-1 ubuntu authenticate </dev/null >/dev/null 2>&1
+pruefe '[ "$(journalctl -t winky -o cat --no-pager | grep -c "zweck=dialog")" = "$n" ]' "Pause: Dialog ohne Kamera"
+P=/usr/libexec/winky/winky-polkit-pruefung
+SUDO_UID=1000 $V keepassxc an </dev/null >/dev/null
 t0=$(date +%s%N); $P ubuntu; t=$(( ($(date +%s%N)-t0)/1000000 ))
 pruefe '[ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "zweck=keepassxc grund=pausiert"' "Pause gilt auch für KeePassXC (${t} ms)"
+SUDO_UID=1000 $V keepassxc aus </dev/null >/dev/null
 SUDO_UID=1000 $V fortsetzen </dev/null >/dev/null
-# Regel einer älteren Fassung (mit Netzwerk-Aktion) muss das Paket-Update ersetzen
-sed -i 's/^    var aktionen = {$/    var aktionen = {\n        "org.freedesktop.NetworkManager.reload": true,/' $R
-SUDO_UID=1000 $V regeln-erneuern; rc=$?   # wie postinst unter „sudo apt install“
-pruefe '! grep -q "NetworkManager" $R' "Paket-Update entfernt veraltete Aktionen aus der Regel"
-pruefe '[ $rc = 0 ] && grep -q "\"org.freedesktop.policykit.exec\": true" $R' "Paket-Update erneuert die Regel"
-for g in updates programme system; do SUDO_UID=1000 $V freigabe-aus $g </dev/null >/dev/null; done
-pruefe '[ ! -e $R ] && grep -q "^freigaben = $" /etc/winky/winky.conf' "alle aus: Regel entfernt"
-SUDO_UID=1000 $V freigabe-an updates </dev/null >/dev/null
+SUDO_UID=1000 $V dialoge aus </dev/null >/dev/null
+pruefe '[ ! -e /etc/winky/dialoge-ein ] && grep -q "^dialoge = nein" /etc/winky/winky.conf' "Administrator-Dialoge wieder aus"
+# Umstellung von 0.10.0: Gruppen-Regel weg, Gruppen werden zum Dialog-Schalter
+echo "// alt" > $R; echo "freigaben = updates,system" >> /etc/winky/winky.conf
+SUDO_UID=1000 $V migrieren; rc=$?   # wie postinst unter „sudo apt install“
+pruefe '[ $rc = 0 ] && [ ! -e $R ] && ! grep -q "^freigaben" /etc/winky/winky.conf && [ -f /etc/winky/dialoge-ein ] && grep -q "^dialoge = ja" /etc/winky/winky.conf' "Update stellt 0.10.0-Gruppen auf den Dialog-Schalter um"
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 
 # 9. Erste Anmeldung nach dem Start: eigener Schalter, nur gdm-password ohne Wiederanmeldung
 printf "auth [success=done default=ignore] pam_winky.so services=gdm-password timeout_ms=3000\nauth requisite pam_deny.so\n" > /etc/pam.d/gdm-password
@@ -222,7 +214,7 @@ pruefe 'systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep 
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1
 pruefe '[ ! -e /etc/winky/sudo-ein ] && ! grep -q pam_winky /etc/pam.d/common-auth' "Deinstallieren entfernt Schalter und PAM-Eintrag"
-pruefe '[ ! -e $R ]' "Deinstallieren entfernt die Freigaben-Regel"
+pruefe '[ ! -e /etc/winky/dialoge-ein ]' "Deinstallieren entfernt den Dialog-Schalter"
 pruefe '[ ! -e /etc/winky/anmeldung-ein ]' "Deinstallieren entfernt den Schalter für die Erstanmeldung"
 pruefe '[ ! -e /var/lib/winky/1000/geste-ok ]' "Freigabe mit den Gesichtsdaten gelöscht"
 echo; echo "$F Fehler"

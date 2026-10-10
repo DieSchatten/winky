@@ -10,7 +10,7 @@ Eigenes Gesicht: status, kameras, einlernen, testen (ohne Sperrzähler), gegenpr
 System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.40 bis 0.95),
   aktivieren / deaktivieren (pam-auth-update), pausieren / fortsetzen (Notschalter),
   keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus,
-  freigabe-an / freigabe-aus GRUPPE (Administrator-Dialoge mit Gesicht und ✌),
+  dialoge an|aus (Administrator-Dialoge mit Gesicht und ✌),
   anmeldung an|aus (auch die erste Anmeldung nach dem Start per Gesicht),
   geste-zeit SEKUNDEN (Wartezeit auf das ✌, 5 bis 30; Polkit-Wege höchstens 9)
 Eigenes Gesicht, zusätzlich: schluesselbund an|aus (Anmeldepasswort im TPM versiegeln, damit
@@ -46,43 +46,9 @@ KEEPASSXC_REGEL_VORLAGE = "/usr/share/winky/polkit/50-winky-keepassxc.rules"
 KEEPASSXC_REGEL = "/etc/polkit-1/rules.d/50-winky-keepassxc.rules"
 SUDO_SCHALTER = "/etc/winky/sudo-ein"
 ANMELDUNG_SCHALTER = "/etc/winky/anmeldung-ein"
-# Sortiert nach allen anderen Regeln: Was Ubuntu ohne Passwort erlaubt, bleibt so
-FREIGABEN_REGEL = "/etc/polkit-1/rules.d/zz-winky-freigaben.rules"
-FREIGABEN = {
-    "updates": {"org.debian.apt.upgrade-packages", "org.debian.apt.update-cache",
-                "org.freedesktop.packagekit.system-update",
-                "org.freedesktop.packagekit.system-sources-refresh",
-                "org.freedesktop.packagekit.trigger-offline-update",
-                "org.freedesktop.packagekit.upgrade-system",
-                "org.freedesktop.packagekit.trigger-offline-upgrade",
-                "org.freedesktop.Flatpak.app-update", "org.freedesktop.Flatpak.runtime-update",
-                "org.freedesktop.fwupd.update-internal", "org.freedesktop.fwupd.update-hotplug"},
-    "software": {"org.debian.apt.install-or-remove-packages",
-                 "org.debian.apt.install-packages.high-trust-repo",
-                 "org.debian.apt.fix-broken-depends", "org.debian.apt.clean",
-                 "org.freedesktop.packagekit.package-install",
-                 "org.freedesktop.packagekit.package-remove",
-                 "org.freedesktop.packagekit.package-reinstall",
-                 "org.freedesktop.packagekit.repair-system",
-                 "org.freedesktop.packagekit.package-eula-accept",
-                 "org.freedesktop.Flatpak.app-install", "org.freedesktop.Flatpak.runtime-install",
-                 "org.freedesktop.Flatpak.app-uninstall",
-                 "org.freedesktop.Flatpak.runtime-uninstall", "io.snapcraft.snapd.manage"},
-    "fremd": {"org.debian.apt.install-file", "org.debian.apt.install-packages-from-new-repo",
-              "org.debian.apt.change-repository", "org.debian.apt.change-config",
-              "org.debian.apt.install-purchased-packages",
-              "org.freedesktop.packagekit.package-install-untrusted",
-              "org.freedesktop.packagekit.package-downgrade",
-              "org.freedesktop.packagekit.system-sources-configure",
-              "org.freedesktop.packagekit.system-trust-signing-key",
-              "org.freedesktop.Flatpak.modify-repo", "org.freedesktop.Flatpak.configure-remote"},
-    "programme": {"org.freedesktop.policykit.exec"},
-}
-# Nie über Winky: eigene Einstellungen und KeePassXC (eigener Schalter) sowie Aktionen, die GNOME
-# ständig im Hintergrund abfragt (Netzwerkmenü, Energiemenü): Polkit verrät der Regel nicht, ob
-# jemand fragt oder nur nachsieht, sonst ginge bei jeder Abfrage die Kamera an
-FREIGABEN_NIE = ("io.github.dieschatten.winky.", "org.keepassxc.", "org.freedesktop.NetworkManager.",
-                 "org.freedesktop.login1.", "org.freedesktop.ModemManager1.")
+DIALOG_SCHALTER = "/etc/winky/dialoge-ein"
+# Polkit-Regel der Gruppen aus 0.10.0: ersetzt durch den Weg über den Dialog (PAM polkit-1)
+ALTE_FREIGABEN_REGEL = "/etc/polkit-1/rules.d/zz-winky-freigaben.rules"
 GRUPPE = "_winky"
 MODELL_SHA = b"0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79"
 MODELL_DIM = 128
@@ -643,89 +609,51 @@ def befehl_keepassxc(uid, _name, wahl=None):
     fertig(False, fehler=_("Usage: {usage}").format(usage="keepassxc an|aus|geste-an|geste-aus"))
 
 
-def admin_aktionen():
-    """Polkit-Aktionen, die ein Administratorpasswort verlangen (implicit active auth_admin*)."""
-    r = subprocess.run(["pkaction", "--verbose"], capture_output=True, text=True,
-                       env={"PATH": "/usr/bin:/bin", "LANG": "C"})
-    aktionen, aktuell = set(), None
-    for zeile in r.stdout.splitlines():
-        if zeile and not zeile[0].isspace() and zeile.endswith(":"):
-            aktuell = zeile[:-1]
-        elif aktuell and zeile.strip().startswith("implicit active:") and \
-                zeile.split(":", 1)[1].strip().startswith("auth_admin"):
-            aktionen.add(aktuell)
-    return aktionen
-
-
-def freigaben_gruppen():
-    wert = konfig_wert(lese_konfig(), "freigaben") or ""
-    return [g for g in wert.split(",") if g in FREIGABEN or g == "system"]
-
-
-def schreibe_freigaben_regel(gruppen):
-    """Polkit-Regel aus den gewählten Gruppen erzeugen; nur Aktionen mit Administratorpasswort,
-    nur für Administratoren in einer lokalen, aktiven Sitzung."""
-    admin = admin_aktionen()
-    bekannt = set().union(*FREIGABEN.values())
-    aktionen = set()
-    for g in gruppen:
-        aktionen |= (admin - bekannt) if g == "system" else (FREIGABEN[g] & admin)
-    aktionen = sorted(a for a in aktionen if not a.startswith(FREIGABEN_NIE))
-    if not gruppen:
-        loeschen(FREIGABEN_REGEL)
-        return
-    liste = ",\n".join(f'        "{a}": true' for a in aktionen)
-    regel = f"""// Winky: Administrator-Dialoge mit Gesicht und ✌ ({", ".join(gruppen)}).
-// Erzeugt von winky-verwalten, Änderungen gehen beim nächsten Umschalten verloren.
-polkit.addRule(function(action, subject) {{
-    var aktionen = {{
-{liste}
-    }};
-    if (aktionen[action.id] !== true || !subject.local || !subject.active ||
-            !(subject.isInGroup("sudo") || subject.isInGroup("admin"))) {{
-        return polkit.Result.NOT_HANDLED;
-    }}
-    var detail = "";
-    if (action.id == "org.freedesktop.policykit.exec") {{
-        detail = String(action.lookup("command_line") || "");
-    }}
-    try {{
-        polkit.spawn(["/usr/libexec/winky/winky-polkit-pruefung", subject.user, action.id, detail]);
-        return polkit.Result.YES;
-    }} catch (fehler) {{
-        return polkit.Result.NOT_HANDLED;
-    }}
-}});
-"""
-    ordner = os.path.dirname(FREIGABEN_REGEL)
-    if not os.path.isdir(ordner) or os.path.islink(ordner):
-        fertig(False, fehler=_("The polkit rules folder is missing"))
-    schreibe_atomar(FREIGABEN_REGEL, regel.encode(), 0o644)
-
-
 def polkit_zugang_anpassen():
-    an = bool(freigaben_gruppen()) or os.path.exists(KEEPASSXC_REGEL)
+    """Polkit-Zugang des Prüfdienstes nur, solange die KeePassXC-Regel aktiv ist."""
+    an = os.path.exists(KEEPASSXC_REGEL)
     subprocess.run(["systemctl", "enable" if an else "disable", "--now", "winky-polkit.socket"],
                    check=False, capture_output=True)
 
 
-def befehl_freigabe(uid, _name, gruppe, an):
-    """Gruppe von Administrator-Dialogen mit Gesicht und ✌ freigeben oder zurück aufs Passwort."""
-    if gruppe not in FREIGABEN and gruppe != "system":
-        fertig(False, fehler=_("Unknown group: {group}").format(group=gruppe))
-    gruppen = freigaben_gruppen()
-    if an:
+def befehl_dialoge(uid, _name, wahl=None):
+    """Administrator-Dialoge (Passwortdialoge von Polkit) mit Gesicht und ✌: Schalter für PAM
+    (/etc/winky/dialoge-ein) und Prüfdienst. Wirkt nur, wenn wirklich ein Dialog erscheint."""
+    if wahl == "an":
         if not pam_aktiv():
             fertig(False, fehler=_("Turn on face unlock for the lock screen first"))
         if not os.path.exists(geste_pfad(uid)):
             fertig(False, fehler=_("Test your face and ✌ successfully first"))
-        gruppen = [g for g in list(FREIGABEN) + ["system"] if g in gruppen or g == gruppe]
-    else:
-        gruppen = [g for g in gruppen if g != gruppe]
-    setze_konfig("freigaben", ",".join(gruppen))
-    schreibe_freigaben_regel(gruppen)
+        setze_konfig("dialoge", "ja")
+        sicherer_ordner("/etc/winky", 0o755)
+        schreibe_atomar(DIALOG_SCHALTER, b"Administrator-Dialoge mit Gesicht und Handzeichen\n",
+                        0o644)
+        fertig(True)
+    if wahl == "aus":
+        loeschen(DIALOG_SCHALTER)
+        setze_konfig("dialoge", "nein")
+        fertig(True)
+    fertig(False, fehler=_("Usage: {usage}").format(usage="dialoge an|aus"))
+
+
+def migrieren():
+    """Nach Paket-Updates (postinst, als root): Gruppen aus 0.10.0 auf den Dialog-Schalter
+    umstellen; wer dort etwas eingeschaltet hatte, behält den Komfort."""
+    text = lese_konfig()
+    gruppen = konfig_wert(text, "freigaben")
+    if os.path.exists(ALTE_FREIGABEN_REGEL):
+        loeschen(ALTE_FREIGABEN_REGEL)
+    if gruppen is None:
+        return
+    zeilen = [z for z in text.splitlines()
+              if not (z.split("#", 1)[0].strip().split("=", 1)[0].strip() == "freigaben")]
+    sicherer_ordner("/etc/winky", 0o755)
+    schreibe_atomar(KONFIG, ("\n".join(zeilen) + "\n").encode(), 0o644)
+    if gruppen.strip():
+        setze_konfig("dialoge", "ja")
+        schreibe_atomar(DIALOG_SCHALTER, b"Administrator-Dialoge mit Gesicht und Handzeichen\n",
+                        0o644)
     polkit_zugang_anpassen()
-    fertig(True)
 
 
 def befehl_sudo(uid, _name, wahl=None):
@@ -842,8 +770,9 @@ def befehl_schluesselbund(uid, name, wahl=None):
 
 
 def befehl_deaktivieren(_uid, _name):
-    # sudo per ✌ und die erste Anmeldung hängen am Profil: mit ausschalten
+    # sudo, Dialoge und die erste Anmeldung hängen am Profil: mit ausschalten
     loeschen(SUDO_SCHALTER)
+    loeschen(DIALOG_SCHALTER)
     loeschen(ANMELDUNG_SCHALTER)
     if konfig_wert(lese_konfig(), "sudo") == "ja":
         setze_konfig("sudo", "nein")
@@ -877,7 +806,7 @@ def befehl_status(uid, name):
            vorlagen=status.get("vorlagen"), schwelle=konfig_wert(lese_konfig(), "schwelle"),
            kamera=konfig_wert(lese_konfig(), "kamera"), test_ok=status.get("test_ok"),
            keepassxc=os.path.exists(KEEPASSXC_REGEL), keepassxc_geste=keepassxc_mit_geste(),
-           sudo=os.path.exists(SUDO_SCHALTER), freigaben=freigaben_gruppen(),
+           sudo=os.path.exists(SUDO_SCHALTER), dialoge=os.path.exists(DIALOG_SCHALTER),
            anmeldung=os.path.exists(ANMELDUNG_SCHALTER),
            geste_zeit=int(konfig_wert(lese_konfig(), "sudo_ms") or 8000) // 1000,
            schluesselbund=os.path.exists(schluesselbund_pfad(uid)), secure_boot=secure_boot(),
@@ -893,20 +822,18 @@ BEFEHLE = {
     "aktivieren": befehl_aktivieren, "deaktivieren": befehl_deaktivieren,
     "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
     "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
-    "freigabe-an": None, "freigabe-aus": None, "anmeldung": None, "geste-zeit": None,
+    "dialoge": None, "anmeldung": None, "geste-zeit": None,
     "schluesselbund": None,
 }
 
 
 def main(argv):
     os.umask(0o022)
-    # Nach Paket-Updates (postinst, als root, auch unter sudo apt): Freigaben-Regel aus der
-    # Konfiguration neu erzeugen; harmlos, ändert keine Einstellung
-    if argv[1:] == ["regeln-erneuern"] and os.getuid() == 0:
-        if os.path.exists(FREIGABEN_REGEL):
-            schreibe_freigaben_regel(freigaben_gruppen())
+    # Nach Paket-Updates (postinst, als root, auch unter sudo apt): alte Einstellungen umstellen
+    if argv[1:] == ["migrieren"] and os.getuid() == 0:
+        migrieren()
         sys.exit(0)
-    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "freigabe-an", "freigabe-aus",
+    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "dialoge",
                 "anmeldung", "geste-zeit", "schluesselbund"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
@@ -929,8 +856,8 @@ def main(argv):
         befehl_geste_zeit(uid, name, argv[2])
     if argv[1] == "schluesselbund":
         befehl_schluesselbund(uid, name, argv[2])
-    if argv[1] in ("freigabe-an", "freigabe-aus"):
-        befehl_freigabe(uid, name, argv[2], argv[1] == "freigabe-an")
+    if argv[1] == "dialoge":
+        befehl_dialoge(uid, name, argv[2])
     BEFEHLE[argv[1]](uid, name)
 
 

@@ -104,13 +104,13 @@ static void testKonfig() {
   schreibe(p, "keepassxc_geste=vielleicht\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für keepassxc_geste wird abgelehnt");
   schreibe(p, "schwelle=0.65\n");
-  PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben.empty(), "Administrator-Freigaben ohne Eintrag aus");
-  schreibe(p, "freigaben = updates,software\n");
-  PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben == "updates,software", "Freigaben-Gruppen werden gelesen");
+  PRUEFE(winky::ladeKonfig(p, k, f) && !k.dialoge, "Administrator-Dialoge ohne Eintrag aus");
+  schreibe(p, "dialoge = ja\nfreigaben = updates,software\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.dialoge, "Dialog-Schalter gelesen, alte Freigaben-Zeile stört nicht");
   schreibe(p, "schwelle=0.65\nanmeldung=ja\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && k.anmeldung, "Erstanmeldung per Gesicht nur ausdrücklich");
-  schreibe(p, "freigaben=updates,alles\n");
-  PRUEFE(!winky::ladeKonfig(p, k, f), "unbekannte Freigaben-Gruppe wird abgelehnt");
+  schreibe(p, "dialoge=vielleicht\n");
+  PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für dialoge wird abgelehnt");
 }
 
 static void testAnfrage() {

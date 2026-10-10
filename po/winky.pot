@@ -187,55 +187,6 @@ msgid "%Y-%m-%d %H:%M"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid ""
-"Instead of the password, for example when installing updates. Always with "
-"face and ✌, only for administrators. The ✌ window shows what you are "
-"approving."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Updates"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Install updates from your package sources. Low risk."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Software"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Install or remove programs from your package sources. Low risk."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Downloaded packages and new sources"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Caution: a downloaded package can run any code as administrator."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Programs as administrator"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Caution: like sudo; the ✌ window shows the command."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "All other administrator dialogs"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid ""
-"Caution: users, disks, services … The ✌ window only names the action. "
-"Network and power stay with the password."
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "Cancel"
 msgstr ""
 
@@ -298,6 +249,10 @@ msgid "Set up"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Administrator dialogs"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "KeePassXC only with ✌"
 msgstr ""
 
@@ -317,10 +272,6 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Winky is resting, only your password works everywhere"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Administrator dialogs with ✌"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -951,13 +902,11 @@ msgid "After a restart, the password is required again"
 msgstr ""
 
 #: src/app/gesicht_app.py
-#, python-brace-format
-msgid "“{group}” can now be approved with face and ✌"
+msgid "Administrator dialogs can now be approved with face and ✌"
 msgstr ""
 
 #: src/app/gesicht_app.py
-#, python-brace-format
-msgid "“{group}” is back to password only"
+msgid "Administrator dialogs are back to password only"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1094,6 +1043,12 @@ msgstr ""
 #: src/app/gesicht_app.py
 #, python-brace-format
 msgid "Found: {found}."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Approve password dialogs such as updates with face and ✌; the dialog shows "
+"what"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1678,6 +1633,10 @@ msgid "Confirm"
 msgstr ""
 
 #: src/hinweis/winky-hinweis
+msgid "What you approve is shown in the password dialog."
+msgstr ""
+
+#: src/hinweis/winky-hinweis
 msgid "You are approving:"
 msgstr ""
 
@@ -1873,11 +1832,6 @@ msgstr ""
 #: src/verwalten/winky-verwalten
 #, python-brace-format
 msgid "Usage: {usage}"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-#, python-brace-format
-msgid "Unknown group: {group}"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

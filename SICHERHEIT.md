@@ -82,13 +82,10 @@ Das hast du selbst in der Hand:
     das Passwort selbst, das viele auch anderswo nutzen. Winky gibt es nur direkt nach einer
     erkannten Gesichtsanmeldung heraus, prüft es vorher gegen `/etc/shadow` und verwirft es
     nach einer Passwortänderung.
-11. **Administrator-Dialoge mit ✌.** Jede eingeschaltete Gruppe wirkt wie sudo mit ✌: Ein
-   Schadprogramm unter deinem Konto kann so einen Dialog auslösen, und ein ✌ im falschen
-   Moment gibt ihn frei. Updates und Software aus deinen Paketquellen installieren nur
-   unterschriebene Pakete. Heruntergeladene Pakete, `pkexec` und „alle anderen
-   Administrator-Dialoge“ geben volle Administratorrechte; bei der letzten Gruppe nennt das
-   ✌-Fenster nur die Aktion, keine Einzelheiten. Schalte nur ein, was du wirklich nutzt, und
-   zeig ✌ nur für Dialoge, die du selbst ausgelöst hast.
+11. **Administrator-Dialoge mit ✌.** Wirkt wie sudo mit ✌: Ein Schadprogramm unter deinem
+    Konto kann so einen Dialog öffnen, und ein ✌ im falschen Moment gibt ihn frei, mit vollen
+    Administratorrechten. Was angefragt wird, zeigt der Dialog selbst; zeig ✌ nur für Dialoge,
+    die du selbst ausgelöst hast. Berechtigungsabfragen im Hintergrund erreichen Winky nie.
 
 ## Risiken in der Technik selbst
 

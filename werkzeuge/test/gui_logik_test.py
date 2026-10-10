@@ -268,19 +268,12 @@ def test(f):
     pruefe(fertig(f) and not f.zustand.schluesselbund, "Versiegelung wieder entfernt")
     f.r_anmeldung.set_active(False)
     pruefe(fertig(f) and not f.zustand.anmeldung, "Erstanmeldung wieder mit Passwort")
-    pruefe(f.g_freigaben.get_visible() and not any(z.get_active() for z in f.r_freigaben.values()),
-           "Administrator-Dialoge: Gruppe sichtbar, alles ab Werk aus")
-    pruefe(all(z.get_sensitive() for z in f.r_freigaben.values()),
-           "Administrator-Dialoge nach bestandenem ✌-Test schaltbar")
-    f.r_freigaben["updates"].set_active(True)
-    pruefe(fertig(f) and f.zustand.freigaben == ("updates",), "Updates mit ✌ eingeschaltet")
-    f.r_freigaben["programme"].set_active(True)
-    pruefe(fertig(f) and set(f.zustand.freigaben) == {"updates", "programme"}
-           and f.r_freigaben["programme"].get_active(), "zweite Gruppe dazu, erste bleibt")
-    f.r_freigaben["updates"].set_active(False)
-    fertig(f)
-    f.r_freigaben["programme"].set_active(False)
-    pruefe(fertig(f) and f.zustand.freigaben == (), "alle Administrator-Dialoge wieder Passwort")
+    pruefe(not f.r_dialoge.get_active() and f.r_dialoge.get_sensitive(),
+           "Administrator-Dialoge: ab Werk aus, nach ✌-Test schaltbar")
+    f.r_dialoge.set_active(True)
+    pruefe(fertig(f) and f.zustand.dialoge, "Administrator-Dialoge mit ✌ eingeschaltet")
+    f.r_dialoge.set_active(False)
+    pruefe(fertig(f) and not f.zustand.dialoge, "Administrator-Dialoge wieder Passwort")
     pruefe(any("entsperrt" in r.get_title() for r in f._verlauf_zeilen), "Verlauf zeigt den Test")
     f.r_pause.set_active(True)
     pruefe(fertig(f) and f.zustand.pausiert and "Pause" in f.s_titel.get_label(), "pausiert")

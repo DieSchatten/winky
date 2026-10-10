@@ -173,22 +173,6 @@ def strengere_schwelle(wert):
 
 
 
-FREIGABEN_TEXT = _("Instead of the password, for example when installing updates. Always with "
-                   "face and ✌, only for administrators. The ✌ window shows what you are "
-                   "approving.")
-# Administrator-Dialoge mit ✌: Gruppe (winky-verwalten), Titel, Untertitel, Warnsymbol
-FREIGABE_GRUPPEN = (
-    ("updates", _("Updates"), _("Install updates from your package sources. Low risk."), False),
-    ("software", _("Software"),
-     _("Install or remove programs from your package sources. Low risk."), False),
-    ("fremd", _("Downloaded packages and new sources"),
-     _("Caution: a downloaded package can run any code as administrator."), True),
-    ("programme", _("Programs as administrator"),
-     _("Caution: like sudo; the ✌ window shows the command."), True),
-    ("system", _("All other administrator dialogs"),
-     _("Caution: users, disks, services … The ✌ window only names the action. Network and "
-       "power stay with the password."), True),
-)
 
 class KameraAblauf(Gtk.Box):
     """Anleitung, Kamerabild, Fortschritt und Ergebnis für einen Ablauf mit der Kamera
@@ -368,6 +352,10 @@ class Fenster(Adw.ApplicationWindow):
         self.r_sudo.add_suffix(self.s_sudo)
         self.r_sudo.set_activatable_widget(self.s_sudo)
         self.g_schalter.add(self.r_sudo)
+        self.r_dialoge = Adw.SwitchRow(title=_("Administrator dialogs"))
+        self.r_dialoge.add_prefix(Gtk.Image(icon_name="dialog-password-symbolic"))
+        self.r_dialoge.connect("notify::active", self._dialoge_umgeschaltet)
+        self.g_schalter.add(self.r_dialoge)
         self.r_keepassxc = Adw.SwitchRow(title="KeePassXC")
         self.r_keepassxc.add_prefix(Gtk.Image(icon_name="dialog-password-symbolic"))
         self.r_keepassxc.connect("notify::active", self._keepassxc_umgeschaltet)
@@ -394,22 +382,6 @@ class Fenster(Adw.ApplicationWindow):
         self.r_pause.connect("notify::active", self._pause_umgeschaltet)
         self.g_schalter.add(self.r_pause)
         s.add(self.g_schalter)
-
-        # Administrator-Dialoge (Polkit): jede Gruppe einzeln, ab Werk aus
-        self.g_freigaben = Adw.PreferencesGroup(title=_("Administrator dialogs with ✌"),
-                                                description=FREIGABEN_TEXT)
-        self.r_freigaben = {}
-        for gruppe, titel, untertitel, riskant in FREIGABE_GRUPPEN:
-            zeile = Adw.SwitchRow(title=titel, subtitle=untertitel)
-            symbol = Gtk.Image(icon_name="dialog-warning-symbolic" if riskant
-                               else "software-update-available-symbolic")
-            if riskant:
-                symbol.add_css_class("warning")
-            zeile.add_prefix(symbol)
-            zeile.connect("notify::active", self._freigabe_umgeschaltet, gruppe)
-            self.g_freigaben.add(zeile)
-            self.r_freigaben[gruppe] = zeile
-        s.add(self.g_freigaben)
 
         self.g_pflege = Adw.PreferencesGroup(title=_("Try out and maintain"))
         self.r_probe = weiterzeile(_("Try out recognition"), _("Look at the camera and see "
@@ -1082,17 +1054,16 @@ class Fenster(Adw.ApplicationWindow):
             self._verwalten(["anmeldung", "aus"],
                             _("After a restart, the password is required again"), admin=True)
 
-    def _freigabe_umgeschaltet(self, zeile, _pspec, gruppe):
+    def _dialoge_umgeschaltet(self, zeile, _pspec):
         if self._schalter_sperre:
             return
-        titel = zeile.get_title()
         if zeile.get_active():
-            self._verwalten(["freigabe-an", gruppe],
-                            _("“{group}” can now be approved with face and ✌").format(group=titel),
+            self._verwalten(["dialoge", "an"],
+                            _("Administrator dialogs can now be approved with face and ✌"),
                             admin=True, danach=lambda ok, _e, _m: ok and self._hinweis_starten())
         else:
-            self._verwalten(["freigabe-aus", gruppe],
-                            _("“{group}” is back to password only").format(group=titel), admin=True)
+            self._verwalten(["dialoge", "aus"], _("Administrator dialogs are back to password only"),
+                            admin=True)
 
     def _hinweis_starten(self):
         """Das Hinweisprogramm startet sonst erst bei der nächsten Anmeldung."""
@@ -1234,14 +1205,12 @@ class Fenster(Adw.ApplicationWindow):
             _("Found: {found}.").format(found=gefunden) + " " + rest if gefunden else rest)
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
-        self.g_freigaben.set_visible(self.g_schalter.get_visible())
-        fehlt = ("" if z.aktiv and s["geste"] else " " + (_("Turn on the lock screen first")
-                 if not z.aktiv else _("Test face and ✌ first")) + ".")
-        self.g_freigaben.set_description(FREIGABEN_TEXT + fehlt)
-        for gruppe, zeile in self.r_freigaben.items():
-            an = gruppe in z.freigaben
-            zeile.set_active(an)
-            zeile.set_sensitive(((z.aktiv and s["geste"]) or an) and not laeuft)
+        self.r_dialoge.set_active(z.dialoge)
+        self.r_dialoge.set_sensitive(((z.aktiv and s["geste"]) or z.dialoge) and not laeuft)
+        self.r_dialoge.set_subtitle(
+            _("Approve password dialogs such as updates with face and ✌; the dialog shows what")
+            if z.dialoge or (z.aktiv and s["geste"]) else
+            _("Turn on the lock screen first") if not z.aktiv else _("Test face and ✌ first"))
         self._schalter_sperre = False
 
         # Ausprobieren und pflegen

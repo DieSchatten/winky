@@ -3,7 +3,8 @@
  * Jede unerfüllte Vorbedingung und jeder Fehler ergibt PAM_IGNORE, dann fragt pam_unix (Passwort).
  * Argumente: services=a,b timeout_ms=500..5000 geste=<Dienste, auch in services>
  * geste_timeout_ms=3000..60000; Unbekanntes schaltet das Modul ab. Testdienste für pamtester:
- * winky-test (ohne GDM-Prüfung), winky-test-geste (ohne Terminalprüfung). */
+ * winky-test (ohne GDM-Prüfung), winky-test-geste (ohne Terminalprüfung), winky-test-dialog
+ * (wie polkit-1). */
 #define PAM_SM_AUTH
 #define _GNU_SOURCE
 
@@ -33,6 +34,8 @@
 #define TESTDIENST_GESTE "winky-test-geste"
 #define SUDO_SCHALTER "/etc/winky/sudo-ein"
 #define ANMELDUNG_SCHALTER "/etc/winky/anmeldung-ein"
+#define DIALOG_SCHALTER "/etc/winky/dialoge-ein"
+#define TESTDIENST_DIALOG "winky-test-dialog"
 
 struct argumente {
   char dienste[256];
@@ -279,6 +282,28 @@ static int vorpruefung(pam_handle_t *pamh, int argc, const char **argv, uid_t *u
   return a.timeout_ms;
 }
 
+/* Administrator-Dialog (polkit-1): läuft nur, wenn wirklich ein Passwortdialog erscheint. Was
+ * freigegeben wird, zeigt der Dialog selbst; Winky schreibt die Aufforderung zum ✌ hinein. */
+static int dialog_weg(pam_handle_t *pamh, uid_t uid, const struct argumente *a) {
+  if (!schalter_an(DIALOG_SCHALTER)) return PAM_IGNORE;
+  struct stat st;
+  if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
+  if (deckel_zu()) return PAM_IGNORE;
+  uint32_t status = WINKY_FEHLER;
+  int wartete = 0;
+  if (frage(WINKY_OP_DIALOG, uid, a->geste_timeout_ms, NULL, 0, pamh,
+            deutsch() ? "Winky: zum Freigeben \u270c in die Kamera zeigen (sonst Passwort) \u2026"
+                      : "Winky: show \u270c to the camera to approve (or type your password) \u2026",
+            &wartete, &status) == 0 && status == WINKY_TREFFER) {
+    pam_info(pamh, deutsch() ? "Winky: \u2713 freigegeben" : "Winky: \u2713 approved");
+    pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
+    pam_syslog(pamh, LOG_INFO, "Administrator-Dialog per Gesicht und Handzeichen freigegeben");
+    return PAM_SUCCESS;
+  }
+  if (wartete) pam_info(pamh, deutsch() ? "Winky: nicht bestätigt" : "Winky: not confirmed");
+  return PAM_IGNORE;
+}
+
 SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
   (void)flags;
   uid_t uid;
@@ -289,6 +314,9 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   const void *dienst = NULL;
   pam_get_item(pamh, PAM_SERVICE, &dienst);
   if (dienst && in_liste(a.geste, (const char *)dienst)) {
+    if (strcmp((const char *)dienst, "polkit-1") == 0 ||
+        strcmp((const char *)dienst, TESTDIENST_DIALOG) == 0)
+      return dialog_weg(pamh, uid, &a);
     /* Gestenweg (sudo): nur am echten Terminal, nicht bei sudo -S oder Skripten */
     if (!schalter_an(SUDO_SCHALTER)) return PAM_IGNORE;
     const int test = strcmp((const char *)dienst, TESTDIENST_GESTE) == 0;

@@ -8,7 +8,6 @@ Prüfdienstes. Ein heimlich gestartetes sudo fällt so sofort auf; ohne ✌ pass
 import gettext
 import json
 import os
-import re
 import subprocess
 import time
 from pathlib import Path
@@ -52,14 +51,13 @@ TEXTE = {
         "abgebrochen": ("critical", _("Unlocking KeePassXC canceled"), _GLEICHZEITIG),
         "begrenzt": _BEGRENZT,
     },
-    # Administrator-Dialoge über Polkit; {befehl} = Beschreibung der Aktion und ggf. Befehl
-    "polkit": {
+    # Administrator-Dialoge (PAM polkit-1); was freigegeben wird, zeigt der Dialog selbst
+    "dialog": {
         "wartet": ("critical", _("Administrator approval is waiting for ✌"),
-                   "{befehl}\n" + _("Show ✌ to the camera to approve. Not you? Then don't show "
-                                    "the sign and you will be asked for the password.")),
-        "bestaetigt": ("normal", _("✓ Approved"), "{befehl}"),
-        "nicht_bestaetigt": ("low", _("Not approved with ✌"),
-                             "{befehl}\n" + _("Use your password instead.")),
+                   _("Show ✌ to the camera to approve. Not you? Then don't show "
+                     "the sign and you will be asked for the password.")),
+        "bestaetigt": ("normal", _("✓ Approved"), ""),
+        "nicht_bestaetigt": ("low", _("Not approved with ✌"), _("Use your password instead.")),
         "abgebrochen": ("critical", _("Administrator approval canceled"), _GLEICHZEITIG),
         "begrenzt": _BEGRENZT,
     },
@@ -68,7 +66,7 @@ TEXTE = {
 
 # Großes ✌ während einer Anfrage, weil GNOME Benachrichtigungen nicht größer darstellt
 FENSTER_TITEL = {"sudo": _("Confirm sudo"), "keepassxc": _("Unlock KeePassXC"),
-                 "polkit": _("Administrator approval")}
+                 "dialog": _("Administrator approval")}
 FENSTER_DAUER = 8.0   # Vorgabe, wenn die Anfrage keine Wartezeit (frist) nennt
 FENSTER_CSS = b"""
 window { background-color: transparent; }
@@ -119,7 +117,11 @@ class Fenster:
         self.zeichen.get_style_context().add_class("zeichen")
         self.titel = Gtk.Label(label=FENSTER_TITEL.get(zweck, _("Confirm")))
         self.titel.get_style_context().add_class("titel")
-        freigabe = Gtk.Label(label=_("You are approving:"))
+        if zweck == "dialog" and not befehl:
+            befehl, frei = _("What you approve is shown in the password dialog."), ""
+        else:
+            frei = _("You are approving:")
+        freigabe = Gtk.Label(label=frei)
         freigabe.get_style_context().add_class("unter")
         # Ganz lesbar: umbrechen, erst nach vier Zeilen kürzen
         unter = Gtk.Label(label=befehl, max_width_chars=48, wrap=True, lines=4,
@@ -130,7 +132,7 @@ class Fenster:
         self.balken.set_margin_top(8)
         for w in (self.zeichen, self.titel, freigabe, unter, self.balken):
             karte.pack_start(w, False, False, 0)
-        freigabe.set_visible(bool(befehl))
+        freigabe.set_visible(bool(befehl) and bool(frei))
         unter.set_visible(bool(befehl))
         return karte
 
@@ -150,8 +152,8 @@ class Fenster:
         w.add_events(self.gdk.EventMask.BUTTON_PRESS_MASK)
         w.connect("button-press-event", lambda *_: self.schliessen())
         w.show_all()
-        self.freigabe.set_visible(bool(befehl))   # show_all zeigt sonst auch leere Zeilen
-        self.befehl.set_visible(bool(befehl))
+        self.freigabe.set_visible(bool(self.freigabe.get_label()))  # show_all zeigt sonst alles
+        self.befehl.set_visible(bool(self.befehl.get_label()))
         anzeige = self.gdk.Display.get_default()
         bildschirm = anzeige.get_primary_monitor() or anzeige.get_monitor(0)
         g = bildschirm.get_geometry()
@@ -189,21 +191,6 @@ class Fenster:
         if self.fenster:
             self.fenster.destroy()
             self.fenster = None
-
-
-def aktion_beschreibung(aktion):
-    """Beschreibung einer Polkit-Aktion in der Sprache der Sitzung, sonst ihre Kennung."""
-    if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", aktion):
-        return ""
-    try:
-        r = subprocess.run(["pkaction", "--action-id", aktion, "--verbose"], capture_output=True,
-                           text=True, timeout=3)
-        for zeile in str(r.stdout).splitlines():
-            if zeile.strip().startswith("description:"):
-                return zeile.split(":", 1)[1].strip() or aktion
-    except (OSError, subprocess.TimeoutExpired):
-        pass
-    return aktion
 
 
 class Hinweis:
@@ -244,9 +231,6 @@ class Hinweis:
             return
         stand, zeit = daten.get("stand"), daten.get("zeit", 0)
         zweck = str(daten.get("zweck", "sudo"))
-        aktion = zweck[len("polkit:"):] if zweck.startswith("polkit:") else ""
-        if aktion:
-            zweck = "polkit"
         texte = TEXTE.get(zweck, TEXTE["sudo"])
         if stand not in texte or not isinstance(zeit, int) or time.time() - zeit > ALT:
             return
@@ -257,12 +241,9 @@ class Hinweis:
         befehl = str(daten.get("befehl", "sudo"))[:240]
         frist = daten.get("frist")
         dauer = frist / 1000 if isinstance(frist, int) and 3000 <= frist <= 30000 else FENSTER_DAUER
-        if zweck == "polkit":
-            befehl = "\n".join(t for t in (aktion_beschreibung(aktion), befehl) if t)
         # Warten: großes Fenster; Fehlschlag, Abbruch, ohne X-Anzeige: Benachrichtigung
         if stand == "wartet":
-            if self.fenster.zeigen(zweck, befehl if zweck in ("sudo", "polkit") else "", zeit,
-                                   dauer):
+            if self.fenster.zeigen(zweck, befehl if zweck == "sudo" else "", zeit, dauer):
                 return
         elif stand == "bestaetigt":
             if self.fenster.bestaetigt():

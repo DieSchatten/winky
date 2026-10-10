@@ -7,7 +7,6 @@
  *   'E' + winky_antwort                          Ende
  * SUDO: zweite Nachricht 'C' + Terminal + '\0' + Befehlszeile + '\0' (bis WINKY_BEFEHL_MAX Bytes);
  * läuft die Kamera, schickt der Dienst das Einzelbyte 'W', erst dann fordert PAM zum ✌ auf.
- * POLKIT: zweite Nachricht 'P' + Polkit-Aktion + '\0' + Detail (pkexec-Befehl) + '\0'.
  * Zahlen in Maschinen-Byteordnung (beide Seiten auf demselben Rechner).
  */
 #ifndef WINKY_PROTOKOLL_H
@@ -16,7 +15,7 @@
 #include <stdint.h>
 
 #define WINKY_SOCKET "/run/winky.sock"
-#define WINKY_POLKIT_SOCKET "/run/winky-polkit.sock" /* root:polkitd 0660, nur KEEPASSXC und POLKIT */
+#define WINKY_POLKIT_SOCKET "/run/winky-polkit.sock" /* root:polkitd 0660, nur KEEPASSXC */
 #define WINKY_MAGIC 0x314b4e57u /* "WNK1" */
 /* root 0600; Antwort 'K' + Passwort oder 'N', nur direkt nach erkannter Erstanmeldung */
 #define WINKY_SCHLUESSEL_SOCKET "/run/winky-schluessel.sock"
@@ -31,7 +30,7 @@ enum winky_op {
   WINKY_OP_KEEPASSXC = 6, /* KeePassXC entsperren (über Polkit) */
   WINKY_OP_SUDO = 7,      /* sudo bestätigen: Gesicht und ✌ (PAM-Modul) */
   WINKY_OP_GESTE_TESTEN = 8, /* Gesicht und ✌ probeweise (Verwaltungshelfer) */
-  WINKY_OP_POLKIT = 9,       /* Administrator-Freigabe mit Gesicht und ✌ (über Polkit) */
+  WINKY_OP_DIALOG = 9,       /* Administrator-Dialog (PAM-Dienst polkit-1): Gesicht und ✌ */
   WINKY_OP_ANMELDUNG = 10,   /* erste Anmeldung nach dem Start (GDM-Anmeldemaske) */
   WINKY_OP_SCHLUESSEL = 11   /* Schlüsselbund-Passwort holen (WINKY_SCHLUESSEL_SOCKET) */
 };

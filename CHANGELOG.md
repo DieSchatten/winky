@@ -7,6 +7,11 @@
 - Adjustable time for the ✌ (5 to 30 seconds for sudo); the ✌ window shows “You are
   approving:” with the full command or action.
   Einstellbare Zeit für das ✌; das ✌-Fenster zeigt „Du gibst frei:“ mit Befehl oder Aktion.
+- Administrator dialogs now work inside the password dialog itself (PAM `polkit-1`): one
+  switch instead of five groups; background permission checks never reach Winky. Earlier
+  groups are switched over automatically.
+  Administrator-Dialoge laufen im Passwortdialog selbst: ein Schalter statt fünf Gruppen.
+- Status messages at the login screen. Statusmeldungen an der Anmeldemaske.
 - Experimental: after a face login, also unlock the keyring with the login password sealed
   in the TPM chip. Experimentell: Schlüsselbund nach Gesichtsanmeldung entsperren, Passwort
   versiegelt im TPM-Chip.

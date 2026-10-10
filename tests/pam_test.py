@@ -53,12 +53,13 @@ class Attrappe:
                 return
             magic, op, uid, _ = struct.unpack("IIII", daten)
             self.anfragen.append((op, uid))
-            if op == 7:
-                c.settimeout(1)
-                try:
-                    self.zusatz.append(c.recv(1024))
-                except OSError:
-                    self.zusatz.append(b"")
+            if op in (7, 9):   # sudo (mit Terminal und Befehl) bzw. Administrator-Dialog
+                if op == 7:
+                    c.settimeout(1)
+                    try:
+                        self.zusatz.append(c.recv(1024))
+                    except OSError:
+                        self.zusatz.append(b"")
                 antwort = {"geste-treffer": TREFFER, "geste-kein": KEIN_TREFFER}
                 if self.modus == "geste-ablehnen":
                     c.send(struct.pack("IIfI", MAGIC, 6, -1.0, 1))
@@ -327,6 +328,32 @@ def main():
     ok, _ = pam("winky-test-geste", items=tty)
     pruefe(not ok and len(a.anfragen) == vorher, "ungültiges geste_timeout_ms schaltet das Modul ab")
     os.unlink(schalter)
+
+    # Administrator-Dialog (polkit-1): nur mit Schalter, kein Terminal nötig, ✌-Aufforderung im Dialog
+    dienst("winky-test-dialog", [
+        f"auth [success=done default=ignore] {modul} services=winky-test-dialog "
+        f"geste=winky-test-dialog timeout_ms=1500 geste_timeout_ms=3000",
+        "auth requisite pam_deny.so"])
+    dialog_schalter = "/etc/winky/dialoge-ein"
+    a.modus = "geste-treffer"
+    vorher = len(a.anfragen)
+    ok, _ = pam("winky-test-dialog")
+    pruefe(not ok and len(a.anfragen) == vorher, "Administrator-Dialog ohne Schalter: keine Verbindung")
+    with open(dialog_schalter, "w") as f:
+        f.write("an\n")
+    os.chmod(dialog_schalter, 0o644)
+    ok, _ = pam("winky-test-dialog")
+    pruefe(ok and a.anfragen[-1] == (9, 1000) and "to approve" in pam.ausgabe
+           and "\u2713 approved" in pam.ausgabe, "Dialog: Gesicht und ✌ geben frei, Aufforderung im Dialog")
+    a.modus = "geste-kein"
+    ok, _ = pam("winky-test-dialog")
+    pruefe(not ok and "not confirmed" in pam.ausgabe, "Dialog ohne ✌: weiter mit Passwort")
+    open("/etc/winky/disabled", "w").close()
+    vorher = len(a.anfragen)
+    ok, _ = pam("winky-test-dialog")
+    pruefe(not ok and len(a.anfragen) == vorher, "Pause gilt auch für Dialoge")
+    os.unlink("/etc/winky/disabled")
+    os.unlink(dialog_schalter)
 
     # Fehlendes Modul: Passwort funktioniert weiter
     dienst("gdm-ohne-modul", [

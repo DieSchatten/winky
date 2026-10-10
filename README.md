@@ -21,7 +21,7 @@ step.
   with the master password, by default only with your face **and** ✌.
 - **Login after startup with your face** (optional): your login keyring then stays locked
   and asks for the password when a program needs it.
-- **Administrator dialogs with face and ✌** (optional, each group separately): for example
+- **Administrator dialogs with face and ✌** (optional): for example
   installing updates, without typing the password.
 - **Several people** on the same computer, each with their own face and password.
 - **Setup without the terminal:** The app finds the camera, records your face, lets you try
@@ -193,23 +193,18 @@ Winky is asked first:
 
 ## Administrator dialogs with ✌
 
-Dialogs that ask for the administrator password (Polkit) can optionally be approved with face
-and ✌ instead. Each group has its own switch on the home page, all are off by default:
+With **Administrator dialogs** on the home page, password dialogs that ask for the
+administrator password (for example when installing updates, software or with `pkexec`) can
+be approved with face and ✌ instead. Off by default.
 
-| Group | Covers | Risk |
-|---|---|---|
-| Updates | installing updates (Software Updater, Software app) | low |
-| Software | installing or removing programs from your package sources | low |
-| Downloaded packages and new sources | `.deb` files, new package sources, signing keys | **high:** any code as administrator |
-| Programs as administrator | `pkexec`; the ✌ window shows the command | **high:** like sudo |
-| All other administrator dialogs | users, disks, services … (not network and power: GNOME queries those in the background all the time) | **high:** the ✌ window only names the action |
-
-- Always face **and** ✌, only for administrators (group `sudo`), only in an active local
-  session. Without ✌ the usual password dialog appears after at most nine seconds (a Polkit
-  limit).
-- What Ubuntu already allows without a password stays that way; Winky is only asked
-  afterwards. Winky's own settings always require the password.
-- The rule is `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; Pause turns it off, too.
+- Winky works inside the password dialog itself (PAM service `polkit-1`), like the GNOME
+  fingerprint login. It only becomes active when a dialog really appears on screen;
+  background permission checks by programs never reach Winky.
+- The dialog shows what you are approving; Winky writes “show ✌ …” into it, and the large
+  ✌ window appears. Without ✌, the same dialog asks for the password after the time set for
+  the ✌.
+- Always face **and** ✌, only for the account that the dialog asks for, only in an active
+  local session. Pause turns it off, too.
 
 ## Login after startup and keyring (experimental)
 

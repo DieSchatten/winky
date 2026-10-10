@@ -31,7 +31,7 @@ class Zustand:
     keepassxc_geste: bool = True  # KeePassXC nur mit Gesicht und ✌
     sudo: bool = False        # sudo mit Gesicht und ✌ eingeschaltet (systemweit)
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
-    freigaben: tuple = ()     # Administrator-Dialoge mit Gesicht und ✌ (Gruppen)
+    dialoge: bool = False     # Administrator-Dialoge mit Gesicht und ✌
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
     geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
     schluesselbund: int = 0   # Anmeldepasswort im TPM versiegelt (Zeitpunkt)
@@ -84,7 +84,6 @@ def lese_zustand(uid=None) -> Zustand:
         z.blinkpruefung = (_konfig(text, "blinkpruefung") or "ja") != "nein"
         z.keepassxc = _konfig(text, "keepassxc") == "ja"
         z.keepassxc_geste = _konfig(text, "keepassxc_geste") != "nein"
-        z.freigaben = tuple(g for g in (_konfig(text, "freigaben") or "").split(",") if g)
         z.geste_zeit = int(_konfig(text, "sudo_ms") or 8000) // 1000
     except (OSError, ValueError):
         pass
@@ -97,6 +96,7 @@ def lese_zustand(uid=None) -> Zustand:
     z.pausiert = w("/etc/winky/disabled").exists()
     z.sudo = w("/etc/winky/sudo-ein").exists()
     z.anmeldung = w("/etc/winky/anmeldung-ein").exists()
+    z.dialoge = w("/etc/winky/dialoge-ein").exists()
     if umgebung.ATTRAPPE:
         z.dienst = w("/run/winky.sock").exists()
     elif z.installiert:

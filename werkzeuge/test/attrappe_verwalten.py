@@ -202,15 +202,15 @@ def main():
         else:
             p("/etc/winky/anmeldung-ein").unlink(missing_ok=True)
         fertig(True)
-    if befehl in ("freigabe-an", "freigabe-aus"):
-        gruppen = [g for g in (wert_von("freigaben") or "").split(",") if g and g != args[1]]
-        if befehl == "freigabe-an":
+    if befehl == "dialoge":
+        if args[1] == "an":
             if "pam_winky" not in p("/etc/pam.d/common-auth").read_text():
                 fertig(False, fehler="Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten")
             if not lese_status().get("geste_ok"):
                 fertig(False, fehler="Zuerst Gesicht und ✌ erfolgreich testen")
-            gruppen.append(args[1])
-        setze("freigaben", ",".join(gruppen))
+            p("/etc/winky/dialoge-ein").write_text("an\n")
+        else:
+            p("/etc/winky/dialoge-ein").unlink(missing_ok=True)
         fertig(True)
     if befehl == "schwelle":
         w = round(float(args[1]), 2)

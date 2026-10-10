@@ -191,63 +191,6 @@ msgid "%Y-%m-%d %H:%M"
 msgstr "%d.%m.%Y %H:%M"
 
 #: src/app/gesicht_app.py
-msgid ""
-"Instead of the password, for example when installing updates. Always with "
-"face and ✌, only for administrators. The ✌ window shows what you are "
-"approving."
-msgstr ""
-"Statt des Passworts, etwa beim Installieren von Updates. Immer mit Gesicht "
-"und ✌, nur für Administratoren. Das ✌-Fenster zeigt, was du freigibst."
-
-#: src/app/gesicht_app.py
-msgid "Updates"
-msgstr "Updates"
-
-#: src/app/gesicht_app.py
-msgid "Install updates from your package sources. Low risk."
-msgstr "Updates aus deinen Paketquellen installieren. Geringes Risiko."
-
-#: src/app/gesicht_app.py
-msgid "Software"
-msgstr "Software"
-
-#: src/app/gesicht_app.py
-msgid "Install or remove programs from your package sources. Low risk."
-msgstr ""
-"Programme aus deinen Paketquellen installieren oder entfernen. Geringes "
-"Risiko."
-
-#: src/app/gesicht_app.py
-msgid "Downloaded packages and new sources"
-msgstr "Heruntergeladene Pakete und neue Quellen"
-
-#: src/app/gesicht_app.py
-msgid "Caution: a downloaded package can run any code as administrator."
-msgstr ""
-"Vorsicht: Ein heruntergeladenes Paket kann beliebigen Code als Administrator "
-"ausführen."
-
-#: src/app/gesicht_app.py
-msgid "Programs as administrator"
-msgstr "Programme als Administrator"
-
-#: src/app/gesicht_app.py
-msgid "Caution: like sudo; the ✌ window shows the command."
-msgstr "Vorsicht: wie sudo; das ✌-Fenster zeigt den Befehl."
-
-#: src/app/gesicht_app.py
-msgid "All other administrator dialogs"
-msgstr "Alle anderen Administrator-Dialoge"
-
-#: src/app/gesicht_app.py
-msgid ""
-"Caution: users, disks, services … The ✌ window only names the action. "
-"Network and power stay with the password."
-msgstr ""
-"Vorsicht: Benutzer, Datenträger, Dienste … Das ✌-Fenster nennt nur die "
-"Aktion. Netzwerk und Energie bleiben beim Passwort."
-
-#: src/app/gesicht_app.py
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -313,6 +256,10 @@ msgid "Set up"
 msgstr "Einrichten"
 
 #: src/app/gesicht_app.py
+msgid "Administrator dialogs"
+msgstr "Administrator-Dialoge"
+
+#: src/app/gesicht_app.py
 msgid "KeePassXC only with ✌"
 msgstr "KeePassXC nur mit ✌"
 
@@ -335,10 +282,6 @@ msgstr "Pause"
 #: src/app/gesicht_app.py
 msgid "Winky is resting, only your password works everywhere"
 msgstr "Winky ruht, überall gilt nur dein Passwort"
-
-#: src/app/gesicht_app.py
-msgid "Administrator dialogs with ✌"
-msgstr "Administrator-Dialoge mit ✌"
 
 #: src/app/gesicht_app.py
 msgid "Try out and maintain"
@@ -1022,14 +965,12 @@ msgid "After a restart, the password is required again"
 msgstr "Nach einem Neustart gilt wieder das Passwort"
 
 #: src/app/gesicht_app.py
-#, python-brace-format
-msgid "“{group}” can now be approved with face and ✌"
-msgstr "„{group}“ lässt sich jetzt mit Gesicht und ✌ freigeben"
+msgid "Administrator dialogs can now be approved with face and ✌"
+msgstr "Administrator-Dialoge lassen sich jetzt mit Gesicht und ✌ freigeben"
 
 #: src/app/gesicht_app.py
-#, python-brace-format
-msgid "“{group}” is back to password only"
-msgstr "„{group}“ wieder nur mit Passwort"
+msgid "Administrator dialogs are back to password only"
+msgstr "Administrator-Dialoge wieder nur mit Passwort"
 
 #: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
@@ -1188,6 +1129,14 @@ msgstr ""
 #, python-brace-format
 msgid "Found: {found}."
 msgstr "Gefunden: {found}."
+
+#: src/app/gesicht_app.py
+msgid ""
+"Approve password dialogs such as updates with face and ✌; the dialog shows "
+"what"
+msgstr ""
+"Passwortdialoge wie bei Updates mit Gesicht und ✌ freigeben; der Dialog "
+"zeigt, wofür"
 
 #: src/app/gesicht_app.py
 msgid "Recommended: checks that Winky only recognizes you"
@@ -1815,6 +1764,10 @@ msgid "Confirm"
 msgstr "Bestätigen"
 
 #: src/hinweis/winky-hinweis
+msgid "What you approve is shown in the password dialog."
+msgstr "Was du freigibst, steht im Passwortdialog."
+
+#: src/hinweis/winky-hinweis
 msgid "You are approving:"
 msgstr "Du gibst frei:"
 
@@ -2026,11 +1979,6 @@ msgstr "Polkit-Regelordner fehlt"
 #, python-brace-format
 msgid "Usage: {usage}"
 msgstr "Aufruf: {usage}"
-
-#: src/verwalten/winky-verwalten
-#, python-brace-format
-msgid "Unknown group: {group}"
-msgstr "Unbekannte Gruppe: {group}"
 
 #: src/verwalten/winky-verwalten
 msgid "Turn on face unlock for the lock screen first"

@@ -97,18 +97,11 @@ pruefe(melde and "--urgency=critical" in melde[0] and "abgebrochen" in melde[0][
 fenster, melde = lauf(hinweis, "wartet", alter=300)
 pruefe(not fenster and not melde, "alte Anfragen (etwa nach dem Anmelden) werden nicht gemeldet")
 
-fenster, melde = lauf(hinweis, "wartet", "polkit:org.freedesktop.packagekit.system-update", "", alter=6)
-melde = [m for m in melde if m[0] == "notify-send"]   # pkaction-Aufruf für die Beschreibung
-pruefe(fenster and fenster[0][:2] == ("zeigen", "polkit") and
-       "org.freedesktop.packagekit.system-update" in fenster[0][2] and not melde,
-       "Administrator-Freigabe wartet: großes Fenster nennt die Aktion")
-fenster, melde = lauf(hinweis, "nicht_bestaetigt", "polkit:org.freedesktop.policykit.exec",
-                      "/usr/bin/gparted", alter=7)
-melde = [m for m in melde if m[0] == "notify-send"]
-pruefe(melde and "Nicht per ✌ freigegeben" in melde[0][-2] and "/usr/bin/gparted" in melde[0][-1],
-       "Freigabe nicht bestätigt: Benachrichtigung mit Befehl")
-fenster, melde = lauf(hinweis, "wartet", "polkit:../../x", "", alter=8)
-pruefe(fenster and fenster[0][2] == "", "ungültige Aktionskennung wird nicht weitergereicht")
+fenster, melde = lauf(hinweis, "wartet", "dialog", "", alter=6)
+pruefe(fenster == [("zeigen", "dialog", "")] and not melde,
+       "Administrator-Dialog wartet: großes Fenster, keine Benachrichtigung")
+fenster, melde = lauf(hinweis, "nicht_bestaetigt", "dialog", "", alter=7)
+pruefe(melde and "Nicht per ✌ freigegeben" in melde[0][-2], "Dialog nicht bestätigt: Benachrichtigung")
 
 fenster, melde = lauf(hinweis, "wartet", alter=9, frist=20000)
 pruefe(hinweis.fenster.dauer == 20.0, "Fenster zählt die eingestellte Wartezeit herunter (20 s)")
@@ -129,6 +122,9 @@ if os.environ.get("DISPLAY"):
         karte2 = f.inhalt("sudo", "sudo apt install etwas-sehr-langes " * 4)  # festhalten, sonst weg
         pruefe(f.freigabe.get_visible() and f.freigabe.get_label() == "Du gibst frei:",
                "Fenster sagt, was freigegeben wird")
+        karte3 = f.inhalt("dialog", "")
+        pruefe(not f.freigabe.get_visible() and "Passwortdialog" in f.befehl.get_label(),
+               "Dialog-Fenster verweist auf den Passwortdialog")
 
 print(f"\n{len(FEHLER)} Fehler")
 sys.exit(1 if FEHLER else 0)

@@ -34,23 +34,6 @@ bool zahl(const std::string& v, double lo, double hi, double& out) {
 
 }  // namespace
 
-namespace {
-// Kommagetrennte Liste bekannter Gruppen (Polkit-Regel aus winky-verwalten)
-bool gueltigeFreigaben(const std::string& val) {
-  static const char* const bekannt[] = {"updates", "software", "fremd", "programme", "system"};
-  size_t pos = 0;
-  while (pos <= val.size() && !val.empty()) {
-    const size_t komma = val.find(',', pos);
-    const std::string teil = trim(val.substr(pos, komma == std::string::npos ? std::string::npos : komma - pos));
-    if (std::none_of(std::begin(bekannt), std::end(bekannt), [&](const char* b) { return teil == b; }))
-      return false;
-    if (komma == std::string::npos) break;
-    pos = komma + 1;
-  }
-  return true;
-}
-}  // namespace
-
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
   const int fd = ::open(pfad.c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
   if (fd < 0) {
@@ -125,9 +108,11 @@ bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
     } else if (key == "sudo") {
       ok = val == "ja" || val == "nein";
       neu.sudo = val == "ja";
+    } else if (key == "dialoge") {
+      ok = val == "ja" || val == "nein";
+      neu.dialoge = val == "ja";
     } else if (key == "freigaben") {
-      ok = gueltigeFreigaben(val);
-      neu.freigaben = val;
+      // Polkit-Gruppen aus 0.10.0, ersetzt durch „dialoge“; postinst stellt um, bis dahin ignoriert
     } else if (key == "anmeldung") {
       ok = val == "ja" || val == "nein";
       neu.anmeldung = val == "ja";

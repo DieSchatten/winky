@@ -21,7 +21,7 @@ Einrichtung.
   dem Master-Passwort, standardmäßig nur mit Gesicht **und** ✌.
 - **Anmeldung nach dem Start mit dem Gesicht** (freiwillig): Der Schlüsselbund bleibt dann
   zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
-- **Administrator-Dialoge mit Gesicht und ✌** (freiwillig, jede Gruppe einzeln): etwa
+- **Administrator-Dialoge mit Gesicht und ✌** (freiwillig): etwa
   Updates installieren, ohne das Passwort zu tippen.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
 - **Einrichtung ohne Terminal:** Die App findet die Kamera, nimmt das Gesicht auf, lässt
@@ -191,25 +191,18 @@ KeePassXC 2.8 bringt unter Linux ein Schnellentsperren über Polkit mit. Mit dem
 
 ## Administrator-Dialoge mit ✌
 
-Dialoge, die nach dem Administratorpasswort fragen (Polkit), lassen sich wahlweise mit Gesicht
-und ✌ freigeben. Jede Gruppe hat ihren eigenen Schalter auf der Startseite, alle sind ab Werk
-aus:
+Mit **Administrator-Dialoge** auf der Startseite lassen sich Passwortdialoge, die nach dem
+Administratorpasswort fragen (etwa beim Installieren von Updates, Software oder bei
+`pkexec`), stattdessen mit Gesicht und ✌ freigeben. Ab Werk aus.
 
-| Gruppe | umfasst | Risiko |
-|---|---|---|
-| Updates | Updates installieren (Aktualisierungsverwaltung, Software-App) | gering |
-| Software | Programme aus den Paketquellen installieren oder entfernen | gering |
-| Heruntergeladene Pakete und neue Quellen | `.deb`-Dateien, neue Paketquellen, Signaturschlüssel | **hoch:** beliebiger Code als Administrator |
-| Programme als Administrator | `pkexec`; das ✌-Fenster zeigt den Befehl | **hoch:** wie sudo |
-| Alle anderen Administrator-Dialoge | Benutzer, Datenträger, Dienste … (nicht Netzwerk und Energie: die fragt GNOME ständig im Hintergrund ab) | **hoch:** das ✌-Fenster nennt nur die Aktion |
-
-- Immer Gesicht **und** ✌, nur für Administratoren (Gruppe `sudo`), nur in einer aktiven,
-  lokalen Sitzung. Ohne ✌ erscheint nach höchstens neun Sekunden der gewohnte
-  Passwortdialog (eine Grenze von Polkit).
-- Was Ubuntu schon ohne Passwort erlaubt, bleibt so; Winky wird erst danach gefragt. Winkys
-  eigene Einstellungen verlangen immer das Passwort.
-- Die Regel liegt in `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; die Pause schaltet
-  auch sie ab.
+- Winky arbeitet im Passwortdialog selbst (PAM-Dienst `polkit-1`), wie die
+  Fingerabdruck-Anmeldung von GNOME. Es wird nur aktiv, wenn wirklich ein Dialog auf dem
+  Bildschirm erscheint; Berechtigungsabfragen von Programmen im Hintergrund erreichen Winky nie.
+- Der Dialog zeigt, was du freigibst; Winky schreibt „✌ zeigen …“ hinein, und das große
+  ✌-Fenster erscheint. Ohne ✌ fragt derselbe Dialog nach der eingestellten ✌-Zeit nach dem
+  Passwort.
+- Immer Gesicht **und** ✌, nur für das Konto, nach dem der Dialog fragt, nur in einer aktiven,
+  lokalen Sitzung. Die Pause schaltet auch das ab.
 
 ## Anmeldung nach dem Start und Schlüsselbund (experimentell)
 
