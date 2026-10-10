@@ -95,15 +95,15 @@ Ausführlich in **[SICHERHEIT.md](SICHERHEIT.md)**.
 ## Installation
 
 Die Datei `winky_<version>_amd64.deb` von der
-[Release-Seite](https://github.com/DieSchatten/winky/releases) herunterladen und doppelt
+[Release-Seite](https://github.com/DieSchatten/winky/releases/latest) herunterladen und doppelt
 anklicken. Die Software-Verwaltung installiert sie nach dem Administratorpasswort. Oder im
 Terminal:
 
 ```bash
-sudo apt install ./winky_0.9.0_amd64.deb
+sudo apt install ./winky_*_amd64.deb
 ```
 
-Die Prüfsumme steht auf der Release-Seite (`sha256sum winky_0.9.0_amd64.deb`). Das Paket
+Die Prüfsumme steht auf der Release-Seite (`sha256sum winky_*_amd64.deb`). Das Paket
 richtet zugleich Winkys eigene Paketquelle ein. Danach kommen Updates wie alle anderen über
 die Software-Verwaltung, und die Suche nach „Winky“ oder „Windows Hello“ findet es dort.
 Einstellungen und Gesichtsdaten bleiben erhalten.

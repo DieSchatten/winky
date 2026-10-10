@@ -6,7 +6,7 @@ Winky is a **convenience** for the lock screen, not a replacement for a good pas
 disk encryption. This page honestly describes what Winky protects against, what it does not
 protect against, and which risks lie in its use and in the technology itself.
 
-As of version 0.8.1. Winky was developed by one person with AI assistance and has **not been
+As of version 0.11.0. Winky was developed by one person with AI assistance and has **not been
 independently reviewed**. Recognition was measured on one laptop with a Windows Hello
 camera, with the current recognition model so far only with one person.
 

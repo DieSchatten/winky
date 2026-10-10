@@ -6,7 +6,7 @@ Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes 
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.
 
-Stand: Version 0.8.1. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
+Stand: Version 0.11.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
 Windows-Hello-Kamera gemessen, mit dem aktuellen Erkennungsmodell bisher nur mit einer
 Person.

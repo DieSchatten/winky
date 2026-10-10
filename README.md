@@ -94,15 +94,15 @@ Details in **[SECURITY.md](SECURITY.md)**.
 ## Installation
 
 Download the file `winky_<version>_amd64.deb` from the
-[releases page](https://github.com/DieSchatten/winky/releases) and double-click it. The
+[releases page](https://github.com/DieSchatten/winky/releases/latest) and double-click it. The
 software manager installs it after you enter the administrator password. Or in the
 terminal:
 
 ```bash
-sudo apt install ./winky_0.9.0_amd64.deb
+sudo apt install ./winky_*_amd64.deb
 ```
 
-The checksum is on the releases page (`sha256sum winky_0.9.0_amd64.deb`). The package also
+The checksum is on the releases page (`sha256sum winky_*_amd64.deb`). The package also
 sets up Winky's own package source. From then on, updates arrive through the software manager
 like any other update, and searching for "Winky" or "Windows Hello" there finds it. Your
 settings and face data are kept.
