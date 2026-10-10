@@ -3,22 +3,67 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Winky package source</title>
+<title>Winky – Windows Hello-style face unlock for Zorin OS and Ubuntu</title>
+<meta name="description" content="Winky unlocks the GNOME lock screen with your face, like Windows Hello, using the laptop's infrared camera. Optional: sudo, administrator dialogs and KeePassXC with face and the ✌ sign. Free and open source for Zorin OS 18 and Ubuntu 24.04.">
+<meta name="keywords" content="Windows Hello Linux, face unlock, face recognition, Zorin OS, Ubuntu, GNOME, Howdy alternative, infrared camera, IR camera, biometric login, sudo, KeePassXC">
+<link rel="canonical" href="https://dieschatten.github.io/winky/">
+<meta property="og:title" content="Winky – face unlock like Windows Hello for Zorin OS and Ubuntu">
+<meta property="og:description" content="Unlock the GNOME lock screen with a glance at the infrared camera. Free and open source.">
+<meta property="og:image" content="https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/startseite.png">
+<meta property="og:url" content="https://dieschatten.github.io/winky/">
 <style>
-  body { font: 16px/1.5 system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; color: #1d1d1d; background: #fff; }
-  code, pre { background: #f2f2f2; border-radius: 4px; }
-  pre { padding: .75rem; overflow-x: auto; }
-  @media (prefers-color-scheme: dark) { body { color: #eee; background: #1e1e1e; } code, pre { background: #2c2c2c; } }
+  :root { --text: #1d1d1f; --leise: #5b5b66; --flaeche: #f5f6f8; --akzent: #1a5fb4; --rand: #dcdde3; }
+  @media (prefers-color-scheme: dark) { :root { --text: #ececf1; --leise: #a8a8b3; --flaeche: #23242a; --akzent: #78aeed; --rand: #393a42; } body { background: #18191d; } }
+  body { font: 17px/1.6 system-ui, sans-serif; color: var(--text); margin: 0; padding: 0 16px; background: #fff; }
+  main { max-width: 52rem; margin: 2.5rem auto 4rem; }
+  h1 { font-size: 2.2rem; margin: 0 0 .3rem; }
+  h2 { margin-top: 2.4rem; }
+  .unter { color: var(--leise); font-size: 1.15rem; margin: 0 0 1.5rem; }
+  a { color: var(--akzent); }
+  .knopf { display: inline-block; background: var(--akzent); color: #fff; padding: .6rem 1.2rem; border-radius: 999px; text-decoration: none; margin: .3rem .5rem .3rem 0; font-weight: 600; }
+  .knopf.zweit { background: transparent; color: var(--akzent); border: 2px solid var(--akzent); }
+  img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rand); }
+  .bilder { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  pre { background: var(--flaeche); padding: .8rem; border-radius: 8px; overflow-x: auto; font-size: .9rem; }
+  code { background: var(--flaeche); border-radius: 4px; padding: 0 .2rem; }
+  ul { padding-left: 1.2rem; }
+  .hinweis { background: var(--flaeche); border-left: 4px solid var(--akzent); padding: .6rem 1rem; border-radius: 6px; }
+  footer { color: var(--leise); font-size: .9rem; margin-top: 3rem; }
 </style>
 </head>
 <body>
-<h1>Winky package source</h1>
-<p>APT package source for <a href="https://github.com/DieSchatten/winky">Winky</a>, face unlock for
-GNOME with an infrared camera. Installing the Winky package sets it up automatically. To set it up by hand:</p>
+<main>
+<h1>✌ Winky</h1>
+<p class="unter">Face unlock like <strong>Windows Hello</strong> for <strong>Zorin OS</strong> and <strong>Ubuntu</strong> (GNOME), with the laptop's infrared camera. Free and open source.</p>
+<p>
+  <a class="knopf" href="https://github.com/DieSchatten/winky/releases/latest">Download</a>
+  <a class="knopf zweit" href="https://github.com/DieSchatten/winky#readme">Documentation</a>
+  <a class="knopf zweit" href="https://github.com/DieSchatten/winky/blob/main/README.de.md">Deutsch</a>
+</p>
+
+<div class="bilder">
+  <img src="https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/startseite.png" alt="Winky home page with switches for lock screen, sudo, administrator dialogs and pause" width="900" height="768">
+  <img src="https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/einrichtung.png" alt="Setup assistant: trying out face recognition" width="900" height="768">
+</div>
+
+<h2>What Winky does</h2>
+<ul>
+  <li><strong>Unlock the lock screen with your face</strong>: press a key, look at the camera, done in about a second.</li>
+  <li><strong>Optional:</strong> log in after startup with your face, confirm <code>sudo</code> and administrator dialogs (updates, software) with face <strong>and</strong> the ✌ sign, open KeePassXC (2.8+).</li>
+  <li><strong>Your password always works.</strong> Photos on phones or screens are invisible to the infrared camera.</li>
+  <li>No pictures are stored, no network access, setup in a few minutes without the terminal. English and German.</li>
+</ul>
+
+<h2>Install</h2>
+<p>Download <code>winky_…_amd64.deb</code> from the <a href="https://github.com/DieSchatten/winky/releases/latest">releases page</a> and double-click it. Updates then arrive through the software manager. Or set up the package source by hand:</p>
 <pre>sudo wget -O /usr/share/keyrings/winky-archive-keyring.gpg https://dieschatten.github.io/winky/winky-archive-keyring.gpg
 sudo wget -O /etc/apt/sources.list.d/winky.sources https://dieschatten.github.io/winky/winky.sources
 sudo apt update &amp;&amp; sudo apt install winky</pre>
 <p>Signing key: <code>AC60 2CDB 8464 31CF 6787 2100 A0B2 C5BB 34E5 B149</code></p>
-<p lang="de">Deutsch: Paketquelle für Winky. Anleitung auf <a href="https://github.com/DieSchatten/winky/blob/main/README.de.md">GitHub</a>.</p>
+
+<p class="hinweis"><strong>Needs</strong> an infrared camera (Windows Hello camera) and GNOME with GDM, e.g. Zorin OS 18 or Ubuntu 24.04. So far tested with one camera; use at your own risk. Risks and limits are described openly in <a href="https://github.com/DieSchatten/winky/blob/main/SECURITY.md">SECURITY.md</a>.</p>
+
+<footer>Winky · MIT license · <a href="https://github.com/DieSchatten/winky">github.com/DieSchatten/winky</a> · Deutsch: Gesichtsentsperrung wie Windows Hello für Zorin OS und Ubuntu, <a href="https://github.com/DieSchatten/winky/blob/main/README.de.md">Anleitung auf Deutsch</a>.</footer>
+</main>
 </body>
 </html>

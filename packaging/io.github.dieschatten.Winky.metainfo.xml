@@ -139,7 +139,7 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.11.0" date="2026-10-10T11:52:15Z">
+    <release version="0.11.0" date="2026-10-10T21:38:42Z">
       <description>
         <ul>
           <li>Optional: log in after startup with your face. The login keyring then stays locked.</li>
