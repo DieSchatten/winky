@@ -36,26 +36,38 @@ from gi.repository import GdkPixbuf
 t, ID = sys.argv[1], sys.argv[2]
 komp = ET.parse(f"{t}/usr/share/metainfo/{ID}.metainfo.xml").getroot()
 ET.SubElement(komp, "pkgname").text = "winky"
-# Katalogformat: eine Beschreibung je Sprache statt Absätzen mit xml:lang
+# Katalogformat: eine Beschreibung je Sprache statt Absätzen mit xml:lang (auch je Version)
 LANG = "{http://www.w3.org/XML/1998/namespace}lang"
-beschr = komp.find("description")
-je_sprache = {}
-def eintrag(sprache, kind):
-    je_sprache.setdefault(sprache, []).append(kind)
-for kind in list(beschr):
-    if kind.tag == "p":
-        sprache = kind.attrib.pop(LANG, "C")
-        kind.text = " ".join((kind.text or "").split())
-        eintrag(sprache, kind)
-    elif kind.tag in ("ul", "ol"):
-        listen = {}
-        for li in kind:
-            sprache = li.attrib.pop(LANG, "C")
-            li.text = " ".join((li.text or "").split())
-            listen.setdefault(sprache, ET.Element(kind.tag)).append(li)
-        for sprache, liste in listen.items():
-            eintrag(sprache, liste)
-komp.remove(beschr)
+def aufteilen(eltern):
+    beschr = eltern.find("description")
+    if beschr is None:
+        return
+    je_sprache = {}
+    for kind in list(beschr):
+        if kind.tag == "p":
+            sprache = kind.attrib.pop(LANG, "C")
+            kind.text = " ".join((kind.text or "").split())
+            je_sprache.setdefault(sprache, []).append(kind)
+        elif kind.tag in ("ul", "ol"):
+            listen = {}
+            for li in kind:
+                sprache = li.attrib.pop(LANG, "C")
+                li.text = " ".join((li.text or "").split())
+                listen.setdefault(sprache, ET.Element(kind.tag)).append(li)
+            for sprache, liste in listen.items():
+                je_sprache.setdefault(sprache, []).append(liste)
+    eltern.remove(beschr)
+    for sprache, kinder in je_sprache.items():
+        neu = ET.SubElement(eltern, "description")
+        if sprache != "C":
+            neu.set(LANG, sprache)
+        neu.extend(kinder)
+aufteilen(komp)
+# Versionshinweise übernimmt das Katalogformat nur in einer Sprache: Englisch
+for version in komp.iter("release"):
+    aufteilen(version)
+    for b in [b for b in version.findall("description") if LANG in b.attrib]:
+        version.remove(b)
 # Suchbegriffe aller Sprachen gelten überall (so findet auch „Gesichtserkennung“ auf Englisch)
 woerter = komp.find("keywords")
 alle = list(dict.fromkeys(k.text for k in woerter))
@@ -66,11 +78,6 @@ for w in alle:
 for foto in komp.iter("screenshot"):
     for bild in [b for b in foto.findall("image") if LANG in b.attrib]:
         foto.remove(bild)
-for sprache, kinder in je_sprache.items():
-    neu = ET.SubElement(komp, "description")
-    if sprache != "C":
-        neu.set(LANG, sprache)
-    neu.extend(kinder)
 svg = f"{t}/usr/share/icons/hicolor/scalable/apps/{ID}.svg"
 for groesse, ordner in ((48, "48x48"), (64, "64x64"), (128, "128x128"), (128, "64x64@2"), (256, "128x128@2")):
     os.makedirs(f"{t}/icons/{ordner}", exist_ok=True)

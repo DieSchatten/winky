@@ -28,7 +28,8 @@ enum winky_op {
   WINKY_OP_KEEPASSXC = 6, /* KeePassXC entsperren (über Polkit) */
   WINKY_OP_SUDO = 7,      /* sudo bestätigen: Gesicht und ✌ (PAM-Modul) */
   WINKY_OP_GESTE_TESTEN = 8, /* Gesicht und ✌ probeweise (Verwaltungshelfer) */
-  WINKY_OP_POLKIT = 9        /* Administrator-Freigabe mit Gesicht und ✌ (über Polkit) */
+  WINKY_OP_POLKIT = 9,       /* Administrator-Freigabe mit Gesicht und ✌ (über Polkit) */
+  WINKY_OP_ANMELDUNG = 10    /* erste Anmeldung nach dem Start (GDM-Anmeldemaske) */
 };
 
 enum winky_status {

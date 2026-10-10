@@ -128,6 +128,9 @@ bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
     } else if (key == "freigaben") {
       ok = gueltigeFreigaben(val);
       neu.freigaben = val;
+    } else if (key == "anmeldung") {
+      ok = val == "ja" || val == "nein";
+      neu.anmeldung = val == "ja";
     } else if (key == "sudo_ms") {
       ok = zahl(val, 3000, 9500, d);  // unter dem Zeitlimit des PAM-Moduls (10 s)
       neu.sudo_ms = static_cast<int>(d);

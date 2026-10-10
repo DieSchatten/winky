@@ -19,6 +19,8 @@ Einrichtung.
   Bildschirmmitte erscheint dabei ein Hinweisfenster mit großem ✌ und dem Befehl.
 - **KeePassXC öffnen** (freiwillig, **nur ab KeePassXC 2.8**): nach dem ersten Öffnen mit
   dem Master-Passwort, standardmäßig nur mit Gesicht **und** ✌.
+- **Anmeldung nach dem Start mit dem Gesicht** (freiwillig): Der Schlüsselbund bleibt dann
+  zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
 - **Administrator-Dialoge mit Gesicht und ✌** (freiwillig, jede Gruppe einzeln): etwa
   Updates installieren, ohne das Passwort zu tippen.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
@@ -47,7 +49,7 @@ Einrichtung.
 
 ## Was Winky nicht kann
 
-- **Das Passwort ersetzen.** Nach dem Einschalten des Rechners, bei su, SSH, der Konsole
+- **Das Passwort ersetzen.** Nach dem Einschalten des Rechners (außer du schaltest es ein), bei su, SSH, der Konsole
   und in grafischen Administrator-Dialogen (außer du schaltest sie mit ✌ frei) gilt immer
   das Passwort. Das Passwort funktioniert außerdem immer als Ausweg.
 - **Zwillinge oder sehr ähnliche Geschwister sicher unterscheiden.** Das kann kein

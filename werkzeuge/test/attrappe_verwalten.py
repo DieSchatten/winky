@@ -178,6 +178,14 @@ def main():
             setze("sudo", "nein")
             p("/etc/winky/sudo-ein").unlink(missing_ok=True)
         fertig(True)
+    if befehl == "anmeldung":
+        if args[1] == "an":
+            if "pam_winky" not in p("/etc/pam.d/common-auth").read_text():
+                fertig(False, fehler="Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten")
+            p("/etc/winky/anmeldung-ein").write_text("an\n")
+        else:
+            p("/etc/winky/anmeldung-ein").unlink(missing_ok=True)
+        fertig(True)
     if befehl in ("freigabe-an", "freigabe-aus"):
         gruppen = [g for g in (wert_von("freigaben") or "").split(",") if g and g != args[1]]
         if befehl == "freigabe-an":
@@ -221,6 +229,7 @@ def main():
         fertig(True)
     if befehl == "deaktivieren":
         p("/etc/winky/sudo-ein").unlink(missing_ok=True)
+        p("/etc/winky/anmeldung-ein").unlink(missing_ok=True)
         p("/etc/pam.d/common-auth").write_text("auth [success=1 default=ignore] pam_unix.so\n")
         fertig(True)
     if befehl == "pausieren":

@@ -276,6 +276,16 @@ msgid "Unlock with a glance at the camera"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Login after startup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Caution: your face also logs you in after a restart. The login keyring then "
+"stays locked and asks for the password when a program needs it."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "sudo in the terminal"
 msgstr ""
 
@@ -351,6 +361,14 @@ msgid "Camera, strictness, delete data, uninstall"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "About Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Version, license and project page"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
 msgstr ""
 
@@ -367,7 +385,9 @@ msgid "Setup takes about two minutes."
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "After you turn on your computer, you still need your password."
+msgid ""
+"After you turn on your computer, you still need your password (you can "
+"change this later)."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -579,10 +599,6 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Delete …"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "About Winky"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -861,6 +877,20 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "sudo is back to password only"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Face unlock for GNOME with an infrared camera, like Windows Hello. Use at "
+"your own risk."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face now also logs you in after a restart"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "After a restart, the password is required again"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1165,8 +1195,8 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"Only the lock of a running session. After you turn on your computer, you "
-"need your password so that your keyring opens too."
+"Only the lock of a running session, unless you also turn on login after "
+"startup. Then your keyring stays locked until you type your password."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1207,8 +1237,9 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"The password always works. It’s the only way in after you turn on the "
-"computer, after failed attempts and during a pause."
+"The password always works. It’s the only way in after failed attempts and "
+"during a pause, and after you turn on the computer unless you allow your "
+"face there."
 msgstr ""
 
 #: src/app/gesicht_app.py

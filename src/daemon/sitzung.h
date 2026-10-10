@@ -9,6 +9,9 @@ namespace winky {
 
 bool hatLokaleGrafischeSitzung(uid_t uid, std::string& grund);
 
+// Erste Anmeldung: Ist an seat0 gerade die lokale GDM-Anmeldemaske (Klasse greeter) aktiv?
+bool anmeldemaskeAktiv(std::string& grund);
+
 // sudo: Gehört das Terminal (z. B. "/dev/pts/3") zu einer entfernten Sitzung (SSH)?
 // Terminals im grafischen Desktop gehören zu keiner logind-Sitzung und sind erlaubt.
 bool terminalEntfernt(const std::string& terminal);

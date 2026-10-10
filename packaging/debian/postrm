@@ -6,11 +6,11 @@ if [ "$1" = "remove" ]; then
     find /var/lib/winky -mindepth 1 -maxdepth 1 ! -name sicherung -exec rm -rf {} + 2>/dev/null || true
     rm -rf /run/winky
     # sudo mit ✌ muss nach einer Neuinstallation ausdrücklich wieder eingeschaltet werden
-    rm -f /etc/winky/sudo-ein
+    rm -f /etc/winky/sudo-ein /etc/winky/anmeldung-ein
 fi
 if [ "$1" = "purge" ]; then
     rm -rf /var/lib/winky /run/winky
-    rm -f /etc/winky/disabled /etc/winky/sudo-ein /etc/winky/winky.conf \
+    rm -f /etc/winky/disabled /etc/winky/sudo-ein /etc/winky/anmeldung-ein /etc/winky/winky.conf \
         /etc/winky/winky.conf.dpkg-old /etc/winky/winky.conf.dpkg-dist
     rmdir /etc/winky 2>/dev/null || true
 fi

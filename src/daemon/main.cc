@@ -783,8 +783,9 @@ int main(int argc, char** argv) {
                 "nicht_bestaetigt");
   }
 
-  if (q.op == WINKY_OP_AUTH || q.op == WINKY_OP_KEEPASSXC) {
-    const char* zweck = q.op == WINKY_OP_KEEPASSXC ? "keepassxc" : "sperrbildschirm";
+  if (q.op == WINKY_OP_AUTH || q.op == WINKY_OP_KEEPASSXC || q.op == WINKY_OP_ANMELDUNG) {
+    const char* zweck = q.op == WINKY_OP_KEEPASSXC ? "keepassxc"
+                        : q.op == WINKY_OP_ANMELDUNG ? "anmeldung" : "sperrbildschirm";
     auto ende = [&](uint32_t status, float wert, const char* grund) {
       c.antwort(status, wert, msSeit(t0), false);
       log(status == WINKY_TREFFER ? 5 : 6,
@@ -793,11 +794,14 @@ int main(int argc, char** argv) {
       return status == WINKY_TREFFER ? 0 : 1;
     };
     if (q.op == WINKY_OP_KEEPASSXC && !k.keepassxc) return ende(WINKY_ABGELEHNT, -1, "keepassxc_aus");
+    if (q.op == WINKY_OP_ANMELDUNG && !k.anmeldung) return ende(WINKY_ABGELEHNT, -1, "anmeldung_aus");
     if (k.schwelle <= 0) return ende(WINKY_NICHT_EINGERICHTET, -1, "schwelle_fehlt");
     if (k.kamera.empty()) return ende(WINKY_NICHT_EINGERICHTET, -1, "keine_kamera");
     if (k.sitzungspruefung) {
       std::string grund;
-      if (!winky::hatLokaleGrafischeSitzung(uid, grund)) return ende(WINKY_ABGELEHNT, -1, "sitzung");
+      const bool ok = q.op == WINKY_OP_ANMELDUNG ? winky::anmeldemaskeAktiv(grund)
+                                                 : winky::hatLokaleGrafischeSitzung(uid, grund);
+      if (!ok) return ende(WINKY_ABGELEHNT, -1, "sitzung");
     }
     if (winky::leseFehlversuche(o.sperre, uid) >= k.sperre_nach)
       return ende(WINKY_GESPERRT, -1, "zu_viele_fehlversuche");

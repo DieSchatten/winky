@@ -137,7 +137,35 @@
     <binary>winky</binary>
   </provides>
   <content_rating type="oars-1.1"/>
+  <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="@VERSION@" date="@DATUM@"/>
+    <release version="0.11.0" date="2026-10-10T11:52:15Z">
+      <description>
+        <ul>
+          <li>Optional: log in after startup with your face. The login keyring then stays locked.</li>
+          <li xml:lang="de">Wahlweise Anmeldung nach dem Start mit dem Gesicht. Der Schlüsselbund bleibt dann zu.</li>
+          <li>“About Winky” with version, license and project page.</li>
+          <li xml:lang="de">„Über Winky“ mit Version, Lizenz und Projektseite.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.10.0" date="2026-10-10T11:25:00Z">
+      <description>
+        <ul>
+          <li>Administrator dialogs with face and ✌, five groups to turn on separately.</li>
+          <li xml:lang="de">Administrator-Dialoge mit Gesicht und ✌, fünf einzeln schaltbare Gruppen.</li>
+          <li>Pause now also applies to KeePassXC.</li>
+          <li xml:lang="de">Die Pause gilt jetzt auch für KeePassXC.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.0" date="2026-10-09T22:56:00Z">
+      <description>
+        <ul>
+          <li>English and German, own package source for updates through the software manager.</li>
+          <li xml:lang="de">Englisch und Deutsch, eigene Paketquelle für Updates über die Software-Verwaltung.</li>
+        </ul>
+      </description>
+    </release>
   </releases>
 </component>

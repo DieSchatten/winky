@@ -1,5 +1,12 @@
 # Changes / Änderungen
 
+## 0.11.0 (10.10.2026)
+
+- Optional: login after startup with your face (keyring stays locked).
+  Wahlweise Anmeldung nach dem Start mit dem Gesicht (Schlüsselbund bleibt zu).
+- “About Winky” with version; release notes in the software manager.
+  „Über Winky“ mit Version; Versionshinweise in der Software-Verwaltung.
+
 ## 0.10.0 (10.10.2026)
 
 - Administrator dialogs (Polkit) with face and ✌, five groups to turn on separately: updates,

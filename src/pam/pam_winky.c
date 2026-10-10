@@ -32,6 +32,7 @@
 #define TESTDIENST "winky-test"
 #define TESTDIENST_GESTE "winky-test-geste"
 #define SUDO_SCHALTER "/etc/winky/sudo-ein"
+#define ANMELDUNG_SCHALTER "/etc/winky/anmeldung-ein"
 
 struct argumente {
   char dienste[256];
@@ -274,16 +275,23 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
     if (wartete) pam_info(pamh, deutsch() ? "Winky: nicht bestätigt" : "Winky: not confirmed");
     return PAM_IGNORE;
   }
+  /* Sperrbildschirm (GDM-Wiederanmeldung); die erste Anmeldung nur mit eigenem Schalter */
+  uint32_t op = WINKY_OP_AUTH;
   if (!testdienst) {
     const char *reauth = getenv("GDM_SESSION_FOR_REAUTH");
-    if (!reauth || strcmp(reauth, "1") != 0) return PAM_IGNORE;
+    if (!reauth || strcmp(reauth, "1") != 0) {
+      if (!dienst || strcmp((const char *)dienst, "gdm-password") != 0 ||
+          !schalter_an(ANMELDUNG_SCHALTER))
+        return PAM_IGNORE;
+      op = WINKY_OP_ANMELDUNG;
+    }
   }
   struct stat st;
   if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
   if (deckel_zu()) return PAM_IGNORE;
 
   uint32_t status = WINKY_FEHLER;
-  if (frage_dienst(WINKY_OP_AUTH, uid, timeout_ms, &status) == 0 && status == WINKY_TREFFER) {
+  if (frage_dienst(op, uid, timeout_ms, &status) == 0 && status == WINKY_TREFFER) {
     pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
     pam_syslog(pamh, LOG_INFO, "per Gesicht entsperrt");
     return PAM_SUCCESS;

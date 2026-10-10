@@ -37,6 +37,21 @@ bool hatLokaleGrafischeSitzung(uid_t uid, std::string& grund) {
   return ok;
 }
 
+bool anmeldemaskeAktiv(std::string& grund) {
+  char* sitzung = nullptr;
+  if (sd_seat_get_active("seat0", &sitzung, nullptr) < 0 || !sitzung) {
+    grund = "keine aktive Sitzung an seat0";
+    return false;
+  }
+  char* klasse = nullptr;
+  const bool ok = sd_session_is_remote(sitzung) == 0 && sd_session_get_class(sitzung, &klasse) >= 0 &&
+                  klasse && std::strcmp(klasse, "greeter") == 0;
+  std::free(klasse);
+  std::free(sitzung);
+  if (!ok) grund = "keine Anmeldemaske an seat0";
+  return ok;
+}
+
 bool terminalEntfernt(const std::string& terminal) {
   std::string tty = terminal;
   if (tty.rfind("/dev/", 0) == 0) tty = tty.substr(5);

@@ -158,10 +158,23 @@ for g in updates programme system; do SUDO_UID=1000 $V freigabe-aus $g </dev/nul
 pruefe '[ ! -e $R ] && grep -q "^freigaben = $" /etc/winky/winky.conf' "alle aus: Regel entfernt"
 SUDO_UID=1000 $V freigabe-an updates </dev/null >/dev/null
 
-# 9. Rückbau
+# 9. Erste Anmeldung nach dem Start: eigener Schalter, nur gdm-password ohne Wiederanmeldung
+printf "auth [success=done default=ignore] pam_winky.so services=gdm-password timeout_ms=3000\nauth requisite pam_deny.so\n" > /etc/pam.d/gdm-password
+n=$(journalctl -t winky -o cat --no-pager | grep -c "zweck=anmeldung")
+pamtester gdm-password ubuntu authenticate >/dev/null 2>&1
+pruefe '[ "$(journalctl -t winky -o cat --no-pager | grep -c "zweck=anmeldung")" = "$n" ]' "Erstanmeldung ab Werk: keine Anfrage"
+pruefe 'SUDO_UID=1000 $V anmeldung an </dev/null | erg | grep -q "\"ok\": true" && [ -f /etc/winky/anmeldung-ein ] && grep -q "^anmeldung = ja" /etc/winky/winky.conf' "Erstanmeldung eingeschaltet"
+pamtester gdm-password ubuntu authenticate >/dev/null 2>&1
+pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=anmeldung" | tail -1 | grep -q "Ergebnis uid=1000"' "Erstanmeldung fragt den Prüfdienst (zweck=anmeldung)"
+SUDO_UID=1000 $V anmeldung aus </dev/null >/dev/null
+pruefe '[ ! -e /etc/winky/anmeldung-ein ] && grep -q "^anmeldung = nein" /etc/winky/winky.conf' "Erstanmeldung wieder aus"
+SUDO_UID=1000 $V anmeldung an </dev/null >/dev/null
+
+# 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1
 pruefe '[ ! -e /etc/winky/sudo-ein ] && ! grep -q pam_winky /etc/pam.d/common-auth' "Deinstallieren entfernt Schalter und PAM-Eintrag"
 pruefe '[ ! -e $R ]' "Deinstallieren entfernt die Freigaben-Regel"
+pruefe '[ ! -e /etc/winky/anmeldung-ein ]' "Deinstallieren entfernt den Schalter für die Erstanmeldung"
 pruefe '[ ! -e /var/lib/winky/1000/geste-ok ]' "Freigabe mit den Gesichtsdaten gelöscht"
 echo; echo "$F Fehler"

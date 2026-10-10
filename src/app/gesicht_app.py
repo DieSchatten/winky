@@ -342,6 +342,15 @@ class Fenster(Adw.ApplicationWindow):
         self.r_aktiv.add_prefix(Gtk.Image(icon_name="system-lock-screen-symbolic"))
         self.r_aktiv.connect("notify::active", self._aktiv_umgeschaltet)
         self.g_schalter.add(self.r_aktiv)
+        self.r_anmeldung = Adw.SwitchRow(
+            title=_("Login after startup"),
+            subtitle=_("Caution: your face also logs you in after a restart. The login keyring "
+                       "then stays locked and asks for the password when a program needs it."))
+        warnsymbol = Gtk.Image(icon_name="dialog-warning-symbolic")
+        warnsymbol.add_css_class("warning")
+        self.r_anmeldung.add_prefix(warnsymbol)
+        self.r_anmeldung.connect("notify::active", self._anmeldung_umgeschaltet)
+        self.g_schalter.add(self.r_anmeldung)
         # Kein SwitchRow: „Einrichten“ muss bedienbar sein, solange der Schalter gesperrt ist
         self.r_sudo = Adw.ActionRow(title=_("sudo in the terminal"))
         self.r_sudo.add_prefix(Gtk.Image(icon_name="utilities-terminal-symbolic"))
@@ -424,6 +433,8 @@ class Fenster(Adw.ApplicationWindow):
         mehr.add(weiterzeile(_("Advanced"), _("Camera, strictness, delete data, uninstall"),
                              lambda: self.nav.push_by_tag("erweitert"),
                              "preferences-system-symbolic"))
+        mehr.add(weiterzeile(_("About Winky"), _("Version, license and project page"),
+                             self.ueber_zeigen, "help-about-symbolic"))
         s.add(mehr)
 
         self.banner = Adw.Banner(title=_("Part of Winky isn’t running. Reinstall Winky in the "
@@ -464,7 +475,7 @@ class Fenster(Adw.ApplicationWindow):
                 ("camera-photo-symbolic", _("Winky doesn’t save any photos of you.")),
                 ("preferences-system-time-symbolic", _("Setup takes about two minutes.")),
                 ("system-shutdown-symbolic", _("After you turn on your computer, you still need "
-                                               "your password."))):
+                                               "your password (you can change this later)."))):
             liste.append(textzeile(zeile, symbol=symbol))
         schritt("willkommen", _("Welcome to Winky"),
                 _("With Winky, you unlock the lock screen with a glance at the camera, similar "
@@ -982,6 +993,30 @@ class Fenster(Adw.ApplicationWindow):
         else:
             self._verwalten(["sudo", "aus"], _("sudo is back to password only"), admin=True)
 
+    def ueber_zeigen(self):
+        v = umgebung.version()
+        self.ueber = Adw.AboutDialog(
+            application_name="Winky", application_icon=APP_ID, developer_name="DieSchatten",
+            version=str(v.get("version", "?")), website="https://github.com/DieSchatten/winky",
+            issue_url="https://github.com/DieSchatten/winky/issues",
+            license_type=Gtk.License.MIT_X11,
+            comments=_("Face unlock for GNOME with an infrared camera, like Windows Hello. "
+                       "Use at your own risk."),
+            debug_info=f"Winky {v.get('version')} · {v.get('commit')} · {v.get('gebaut')}")
+        self.ueber.add_legal_section("YuNet, ONNX Runtime", None, Gtk.License.MIT_X11, None)
+        self.ueber.add_legal_section("SFace, MediaPipe", None, Gtk.License.APACHE_2_0, None)
+        self.ueber.present(self)
+
+    def _anmeldung_umgeschaltet(self, zeile, _pspec):
+        if self._schalter_sperre:
+            return
+        if zeile.get_active():
+            self._verwalten(["anmeldung", "an"],
+                            _("Your face now also logs you in after a restart"), admin=True)
+        else:
+            self._verwalten(["anmeldung", "aus"],
+                            _("After a restart, the password is required again"), admin=True)
+
     def _freigabe_umgeschaltet(self, zeile, _pspec, gruppe):
         if self._schalter_sperre:
             return
@@ -1082,6 +1117,8 @@ class Fenster(Adw.ApplicationWindow):
         self.r_aktiv.set_sensitive((darf or z.aktiv) and not laeuft)
         self.r_aktiv.set_subtitle(_("Unlock with a glance at the camera") if darf or z.aktiv
                                   else grund)
+        self.r_anmeldung.set_active(z.anmeldung)
+        self.r_anmeldung.set_sensitive((z.aktiv or z.anmeldung) and not laeuft)
         self.s_sudo.set_active(z.sudo)
         self.s_sudo.set_sensitive(((z.aktiv and s["geste"]) or z.sudo) and not laeuft)
         self.k_sudo_einrichten.set_visible(not s["geste"] and not z.sudo)
@@ -1261,8 +1298,8 @@ class Fenster(Adw.ApplicationWindow):
 SICHERHEIT = [
     (_("What Winky can do"), None, "emblem-ok-symbolic", [
         (_("Unlock the lock screen with your face"),
-         _("Only the lock of a running session. After you turn on your computer, you need your "
-           "password so that your keyring opens too.")),
+         _("Only the lock of a running session, unless you also turn on login after startup. "
+           "Then your keyring stays locked until you type your password.")),
         (_("Optionally confirm sudo with face and ✌"),
          _("Only in a terminal on the computer itself, only with both together, and only if "
            "you turn it on.")),
@@ -1274,8 +1311,8 @@ SICHERHEIT = [
     ]),
     (_("What Winky can’t do"), None, "dialog-information-symbolic", [
         (_("Replace your password"),
-         _("The password always works. It’s the only way in after you turn on the computer, "
-           "after failed attempts and during a pause.")),
+         _("The password always works. It’s the only way in after failed attempts and during a "
+           "pause, and after you turn on the computer unless you allow your face there.")),
         (_("Reliably tell twins or very similar siblings apart"),
          _("No face recognition can do that. The check with a second person shows whether it’s "
            "a close call.")),

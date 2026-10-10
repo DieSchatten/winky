@@ -191,6 +191,15 @@ msgid "%Y-%m-%d %H:%M"
 msgstr "%d.%m.%Y %H:%M"
 
 #: src/app/gesicht_app.py
+msgid ""
+"Instead of the password, for example when installing updates. Always with "
+"face and ✌, only for administrators. The ✌ window shows what you are "
+"approving."
+msgstr ""
+"Statt des Passworts, etwa beim Installieren von Updates. Immer mit Gesicht "
+"und ✌, nur für Administratoren. Das ✌-Fenster zeigt, was du freigibst."
+
+#: src/app/gesicht_app.py
 msgid "Updates"
 msgstr "Updates"
 
@@ -279,6 +288,19 @@ msgid "Unlock with a glance at the camera"
 msgstr "mit einem Blick in die Kamera öffnen"
 
 #: src/app/gesicht_app.py
+msgid "Login after startup"
+msgstr "Anmeldung nach dem Start"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Caution: your face also logs you in after a restart. The login keyring then "
+"stays locked and asks for the password when a program needs it."
+msgstr ""
+"Vorsicht: Dein Gesicht meldet dich auch nach einem Neustart an. Der "
+"Schlüsselbund bleibt dann zu und fragt nach dem Passwort, sobald ein "
+"Programm ihn braucht."
+
+#: src/app/gesicht_app.py
 msgid "sudo in the terminal"
 msgstr "sudo im Terminal"
 
@@ -313,15 +335,6 @@ msgstr "Winky ruht, überall gilt nur dein Passwort"
 #: src/app/gesicht_app.py
 msgid "Administrator dialogs with ✌"
 msgstr "Administrator-Dialoge mit ✌"
-
-#: src/app/gesicht_app.py
-msgid ""
-"Instead of the password, for example when installing updates. Always with "
-"face and ✌, only for administrators. The ✌ window shows what you are "
-"approving."
-msgstr ""
-"Statt des Passworts, etwa beim Installieren von Updates. Immer mit Gesicht "
-"und ✌, nur für Administratoren. Das ✌-Fenster zeigt, was du freigibst."
 
 #: src/app/gesicht_app.py
 msgid "Try out and maintain"
@@ -365,6 +378,14 @@ msgid "Camera, strictness, delete data, uninstall"
 msgstr "Kamera, Strenge, Daten löschen, Deinstallieren"
 
 #: src/app/gesicht_app.py
+msgid "About Winky"
+msgstr "Über Winky"
+
+#: src/app/gesicht_app.py
+msgid "Version, license and project page"
+msgstr "Version, Lizenz und Projektseite"
+
+#: src/app/gesicht_app.py
 msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
 msgstr ""
 "Ein Teil von Winky läuft nicht. Installier Winky in der Software-Verwaltung "
@@ -383,8 +404,12 @@ msgid "Setup takes about two minutes."
 msgstr "Die Einrichtung dauert etwa zwei Minuten."
 
 #: src/app/gesicht_app.py
-msgid "After you turn on your computer, you still need your password."
-msgstr "Nach dem Einschalten des Rechners brauchst du weiterhin dein Passwort."
+msgid ""
+"After you turn on your computer, you still need your password (you can "
+"change this later)."
+msgstr ""
+"Nach dem Einschalten des Rechners brauchst du weiterhin dein Passwort "
+"(später änderbar)."
 
 #: src/app/gesicht_app.py
 msgid "Welcome to Winky"
@@ -619,10 +644,6 @@ msgstr "Deine Gesichtsdaten"
 #: src/app/gesicht_app.py
 msgid "Delete …"
 msgstr "Löschen …"
-
-#: src/app/gesicht_app.py
-msgid "About Winky"
-msgstr "Über Winky"
 
 #: src/app/gesicht_app.py
 msgid "Version"
@@ -916,6 +937,22 @@ msgstr "sudo lässt sich jetzt mit Gesicht und ✌ bestätigen"
 #: src/app/gesicht_app.py
 msgid "sudo is back to password only"
 msgstr "sudo wieder nur mit Passwort"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Face unlock for GNOME with an infrared camera, like Windows Hello. Use at "
+"your own risk."
+msgstr ""
+"Gesichtsentsperrung für GNOME mit Infrarot-Kamera, wie Windows Hello. "
+"Nutzung auf eigenes Risiko."
+
+#: src/app/gesicht_app.py
+msgid "Your face now also logs you in after a restart"
+msgstr "Dein Gesicht meldet dich jetzt auch nach einem Neustart an"
+
+#: src/app/gesicht_app.py
+msgid "After a restart, the password is required again"
+msgstr "Nach einem Neustart gilt wieder das Passwort"
 
 #: src/app/gesicht_app.py
 #, python-brace-format
@@ -1242,11 +1279,12 @@ msgstr "Die Bildschirmsperre mit deinem Gesicht öffnen"
 
 #: src/app/gesicht_app.py
 msgid ""
-"Only the lock of a running session. After you turn on your computer, you "
-"need your password so that your keyring opens too."
+"Only the lock of a running session, unless you also turn on login after "
+"startup. Then your keyring stays locked until you type your password."
 msgstr ""
-"Nur die Sperre einer laufenden Sitzung. Nach dem Einschalten des Rechners "
-"brauchst du dein Passwort, damit auch dein Schlüsselbund aufgeht."
+"Nur die Sperre einer laufenden Sitzung, außer du schaltest auch die "
+"Anmeldung nach dem Start ein. Dann bleibt der Schlüsselbund zu, bis du dein "
+"Passwort eingibst."
 
 #: src/app/gesicht_app.py
 msgid "Optionally confirm sudo with face and ✌"
@@ -1290,11 +1328,12 @@ msgstr "Das Passwort ersetzen"
 
 #: src/app/gesicht_app.py
 msgid ""
-"The password always works. It’s the only way in after you turn on the "
-"computer, after failed attempts and during a pause."
+"The password always works. It’s the only way in after failed attempts and "
+"during a pause, and after you turn on the computer unless you allow your "
+"face there."
 msgstr ""
-"Das Passwort funktioniert immer und ist nach dem Einschalten des Rechners, "
-"bei Fehlversuchen und bei der Pause der einzige Weg."
+"Das Passwort geht immer. Nach Fehlversuchen und während der Pause ist es der "
+"einzige Weg, nach dem Einschalten ebenso, außer du erlaubst dort das Gesicht."
 
 #: src/app/gesicht_app.py
 msgid "Reliably tell twins or very similar siblings apart"

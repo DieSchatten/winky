@@ -13,10 +13,9 @@ Person.
 
 ## Kurz gesagt
 
-- Das Gesicht öffnet nur die **Bildschirmsperre einer laufenden Sitzung**. Nach dem
-  Einschalten des Rechners, bei su, SSH und der Konsole gilt immer das Passwort, in
-  grafischen Administrator-Dialogen ebenso, außer du schaltest Gruppen davon mit Gesicht und
-  ✌ frei.
+- Das Gesicht öffnet nur die **Bildschirmsperre einer laufenden Sitzung**. Bei su, SSH und
+  der Konsole gilt immer das Passwort, nach dem Einschalten des Rechners und in grafischen
+  Administrator-Dialogen ebenso, außer du schaltest sie eigens frei.
 - **sudo im Terminal** lässt sich wahlweise mit Gesicht **und** dem Handzeichen ✌
   bestätigen. Das ist ausgeschaltet, bis ein Administrator es einschaltet.
 - **Das Passwort funktioniert immer.** Erkennt Winky dich nicht, erscheint spätestens nach
@@ -72,7 +71,11 @@ Das hast du selbst in der Hand:
 8. **Veraltete Version.** Winky bringt seine Erkennungslaufzeit (ONNX Runtime) selbst
    mit. Deren Fehlerkorrekturen kommen nur mit einer neuen Winky-Version, nicht über die
    normalen Ubuntu-Updates.
-9. **Administrator-Dialoge mit ✌.** Jede eingeschaltete Gruppe wirkt wie sudo mit ✌: Ein
+9. **Anmeldung nach dem Start mit dem Gesicht** (ab Werk aus). Wer dein Gesicht täuschen
+   kann, kommt dann auch nach einem Neustart hinein, nicht nur in die gesperrte Sitzung. Der
+   Schlüsselbund bleibt zu, weil ihn nur das Passwort öffnet. Ohne verschlüsselte Festplatte
+   ist das zusätzliche Risiko klein: Wer den Rechner hat, kann die Festplatte ohnehin lesen.
+10. **Administrator-Dialoge mit ✌.** Jede eingeschaltete Gruppe wirkt wie sudo mit ✌: Ein
    Schadprogramm unter deinem Konto kann so einen Dialog auslösen, und ein ✌ im falschen
    Moment gibt ihn frei. Updates und Software aus deinen Paketquellen installieren nur
    unterschriebene Pakete. Heruntergeladene Pakete, `pkexec` und „alle anderen

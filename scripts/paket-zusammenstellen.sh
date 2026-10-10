@@ -39,7 +39,9 @@ for mo in bau/locale/*/LC_MESSAGES/winky.mo; do
 done
 # Metainfo: nötig für „Installiert“ und Deinstallieren in der Software-Verwaltung
 mkdir -p "$P"/usr/share/metainfo
-sed "s/@VERSION@/$VERSION/;s/@DATUM@/${GEBAUT%% *}/;s|@HERAUSGEBER_NAME@|$HERAUSGEBER_NAME|" packaging/io.github.dieschatten.Winky.metainfo.xml \
+OBEN=$(grep -m1 -o '<release version="[^"]*"' packaging/io.github.dieschatten.Winky.metainfo.xml | cut -d'"' -f2)
+[[ "$OBEN" == "$VERSION" ]] || { echo "Metainfo: oberste Version $OBEN passt nicht zu $VERSION" >&2; exit 1; }
+sed "s|@HERAUSGEBER_NAME@|$HERAUSGEBER_NAME|" packaging/io.github.dieschatten.Winky.metainfo.xml \
   > "$P"/usr/share/metainfo/io.github.dieschatten.Winky.metainfo.xml
 install -Dm0644 packaging/systemd/winky.socket "$P"/usr/lib/systemd/system/winky.socket
 install -Dm0644 packaging/systemd/winky@.service "$P"/usr/lib/systemd/system/winky@.service

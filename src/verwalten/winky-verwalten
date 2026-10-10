@@ -10,7 +10,8 @@ Eigenes Gesicht: status, kameras, einlernen, testen (ohne Sperrzähler), gegenpr
 System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.40 bis 0.95),
   aktivieren / deaktivieren (pam-auth-update), pausieren / fortsetzen (Notschalter),
   keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus,
-  freigabe-an / freigabe-aus GRUPPE (Administrator-Dialoge mit Gesicht und ✌)
+  freigabe-an / freigabe-aus GRUPPE (Administrator-Dialoge mit Gesicht und ✌),
+  anmeldung an|aus (auch die erste Anmeldung nach dem Start per Gesicht)
 
 Ausgabe zeilenweise: STATUS {json}, BILD <breite> <hoehe> <bytes>\\n<RGB>, ERGEBNIS {json}.
 Schließt der Aufrufer die Standardeingabe, endet ein laufender Vorgang.
@@ -40,6 +41,7 @@ COMMON_AUTH = "/etc/pam.d/common-auth"
 KEEPASSXC_REGEL_VORLAGE = "/usr/share/winky/polkit/50-winky-keepassxc.rules"
 KEEPASSXC_REGEL = "/etc/polkit-1/rules.d/50-winky-keepassxc.rules"
 SUDO_SCHALTER = "/etc/winky/sudo-ein"
+ANMELDUNG_SCHALTER = "/etc/winky/anmeldung-ein"
 # Sortiert nach allen anderen Regeln: Was Ubuntu ohne Passwort erlaubt, bleibt so
 FREIGABEN_REGEL = "/etc/polkit-1/rules.d/zz-winky-freigaben.rules"
 FREIGABEN = {
@@ -737,9 +739,30 @@ def befehl_sudo(uid, _name, wahl=None):
     fertig(False, fehler=_("Usage: {usage}").format(usage="sudo an|aus"))
 
 
+def befehl_anmeldung(uid, _name, wahl=None):
+    """Erste Anmeldung nach dem Start per Gesicht: Schalter für PAM und Prüfdienst. Der
+    Schlüsselbund bleibt dann zu, bis er das Passwort bekommt."""
+    if wahl == "an":
+        if not pam_aktiv():
+            fertig(False, fehler=_("Turn on face unlock for the lock screen first"))
+        status = lese_status(uid)
+        if not status.get("test_ok") or status.get("test_ok", 0) < status.get("eingelernt", 0):
+            fertig(False, fehler=_("Try out the recognition successfully first"))
+        setze_konfig("anmeldung", "ja")
+        sicherer_ordner("/etc/winky", 0o755)
+        schreibe_atomar(ANMELDUNG_SCHALTER, b"erste Anmeldung per Gesicht\n", 0o644)
+        fertig(True)
+    if wahl == "aus":
+        loeschen(ANMELDUNG_SCHALTER)
+        setze_konfig("anmeldung", "nein")
+        fertig(True)
+    fertig(False, fehler=_("Usage: {usage}").format(usage="anmeldung an|aus"))
+
+
 def befehl_deaktivieren(_uid, _name):
-    # sudo per ✌ hängt am Profil: mit ausschalten
+    # sudo per ✌ und die erste Anmeldung hängen am Profil: mit ausschalten
     loeschen(SUDO_SCHALTER)
+    loeschen(ANMELDUNG_SCHALTER)
     if konfig_wert(lese_konfig(), "sudo") == "ja":
         setze_konfig("sudo", "nein")
     r = subprocess.run(["pam-auth-update", "--disable", "winky"], capture_output=True, text=True,
@@ -773,6 +796,7 @@ def befehl_status(uid, name):
            kamera=konfig_wert(lese_konfig(), "kamera"), test_ok=status.get("test_ok"),
            keepassxc=os.path.exists(KEEPASSXC_REGEL), keepassxc_geste=keepassxc_mit_geste(),
            sudo=os.path.exists(SUDO_SCHALTER), freigaben=freigaben_gruppen(),
+           anmeldung=os.path.exists(ANMELDUNG_SCHALTER),
            geste_ok=os.path.exists(geste_pfad(uid)),
            gegenprobe_ok=status.get("gegenprobe_ok"),
            aktiv=pam_aktiv(), pausiert=os.path.exists(NOTSCHALTER), dienst=socket_aktiv)
@@ -785,7 +809,7 @@ BEFEHLE = {
     "aktivieren": befehl_aktivieren, "deaktivieren": befehl_deaktivieren,
     "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
     "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
-    "freigabe-an": None, "freigabe-aus": None,
+    "freigabe-an": None, "freigabe-aus": None, "anmeldung": None,
 }
 
 
@@ -797,7 +821,8 @@ def main(argv):
         if os.path.exists(FREIGABEN_REGEL):
             schreibe_freigaben_regel(freigaben_gruppen())
         sys.exit(0)
-    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "freigabe-an", "freigabe-aus"}
+    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "freigabe-an", "freigabe-aus",
+                "anmeldung"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
         fertig(False, fehler=_("Usage: winky-verwalten {commands} [VALUE]").format(
@@ -813,6 +838,8 @@ def main(argv):
         befehl_keepassxc(uid, name, argv[2])
     if argv[1] == "sudo":
         befehl_sudo(uid, name, argv[2])
+    if argv[1] == "anmeldung":
+        befehl_anmeldung(uid, name, argv[2])
     if argv[1] in ("freigabe-an", "freigabe-aus"):
         befehl_freigabe(uid, name, argv[2], argv[1] == "freigabe-an")
     BEFEHLE[argv[1]](uid, name)

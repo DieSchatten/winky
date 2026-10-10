@@ -154,6 +154,23 @@ def main():
     ok, _ = pam("gdm-nurgesicht", env=reauth)
     pruefe(ok, "Sperrbildschirm (GDM_SESSION_FOR_REAUTH=1) entsperrt per Gesicht")
 
+    # Erste Anmeldung nach dem Start: nur mit eigenem Schalter und nur für gdm-password
+    vorher = len(a.anfragen)
+    ok, _ = pam("gdm-password")
+    pruefe(len(a.anfragen) == vorher, "Erstanmeldung ohne Schalter: keine Verbindung")
+    with open("/etc/winky/anmeldung-ein", "w") as f:
+        f.write("an\n")
+    os.chmod("/etc/winky/anmeldung-ein", 0o644)
+    ok, _ = pam("gdm-nurgesicht")
+    pruefe(len(a.anfragen) == vorher, "Schalter gilt nur für gdm-password")
+    ok, _ = pam("gdm-password")
+    pruefe(ok and a.anfragen[-1] == (10, 1000), "Erstanmeldung mit Schalter: Operation ANMELDUNG")
+    os.chmod("/etc/winky/anmeldung-ein", 0o666)
+    vorher = len(a.anfragen)
+    ok, _ = pam("gdm-password")
+    pruefe(len(a.anfragen) == vorher, "für alle beschreibbarer Schalter wird ignoriert")
+    os.unlink("/etc/winky/anmeldung-ein")
+
     vorher = len(a.anfragen)
     ok, _ = pam("gdm-nurgesicht", env=reauth, items=("rhost=192.168.1.5",))
     pruefe(not ok and len(a.anfragen) == vorher, "entfernter Rechner (PAM_RHOST) wird ignoriert")

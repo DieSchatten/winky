@@ -107,6 +107,8 @@ static void testKonfig() {
   PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben.empty(), "Administrator-Freigaben ohne Eintrag aus");
   schreibe(p, "freigaben = updates,software\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben == "updates,software", "Freigaben-Gruppen werden gelesen");
+  schreibe(p, "schwelle=0.65\nanmeldung=ja\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.anmeldung, "Erstanmeldung per Gesicht nur ausdrücklich");
   schreibe(p, "freigaben=updates,alles\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "unbekannte Freigaben-Gruppe wird abgelehnt");
 }

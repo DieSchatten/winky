@@ -32,6 +32,7 @@ class Zustand:
     sudo: bool = False        # sudo mit Gesicht und ✌ eingeschaltet (systemweit)
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
     freigaben: tuple = ()     # Administrator-Dialoge mit Gesicht und ✌ (Gruppen)
+    anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
 
 
 def _konfig(text, schluessel):
@@ -79,6 +80,7 @@ def lese_zustand(uid=None) -> Zustand:
         z.aktiv = False
     z.pausiert = w("/etc/winky/disabled").exists()
     z.sudo = w("/etc/winky/sudo-ein").exists()
+    z.anmeldung = w("/etc/winky/anmeldung-ein").exists()
     if umgebung.ATTRAPPE:
         z.dienst = w("/run/winky.sock").exists()
     elif z.installiert:

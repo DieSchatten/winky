@@ -19,6 +19,8 @@ step.
   window with a large ✌ and the command appears at the top center of the screen.
 - **Open KeePassXC** (optional, **KeePassXC 2.8 or later only**): after the first unlock
   with the master password, by default only with your face **and** ✌.
+- **Login after startup with your face** (optional): your login keyring then stays locked
+  and asks for the password when a program needs it.
 - **Administrator dialogs with face and ✌** (optional, each group separately): for example
   installing updates, without typing the password.
 - **Several people** on the same computer, each with their own face and password.
@@ -47,7 +49,7 @@ step.
 
 ## What Winky cannot do
 
-- **Replace your password.** After switching on the computer, for su, SSH, the console and
+- **Replace your password.** After switching on the computer (unless you turn it on), for su, SSH, the console and
   in graphical administrator dialogs (unless you turn them on with ✌), the password always
   applies. The password also always works as a way out.
 - **Reliably tell twins or very similar siblings apart.** No face recognition system can do

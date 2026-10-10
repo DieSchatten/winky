@@ -244,6 +244,16 @@ def test(f):
     pruefe(fertig(f) and f.zustand.keepassxc, "KeePassXC eingeschaltet")
     f.r_keepassxc.set_active(False)
     pruefe(fertig(f) and not f.zustand.keepassxc, "KeePassXC ausgeschaltet")
+    f.ueber_zeigen()
+    pruefe(f.ueber.get_application_name() == "Winky" and f.ueber.get_version(),
+           "„Über Winky“ zeigt Name und Version")
+    f.ueber.close()
+    pruefe(not f.r_anmeldung.get_active() and f.r_anmeldung.get_sensitive(),
+           "Erstanmeldung: ab Werk aus, schaltbar")
+    f.r_anmeldung.set_active(True)
+    pruefe(fertig(f) and f.zustand.anmeldung, "Erstanmeldung per Gesicht eingeschaltet")
+    f.r_anmeldung.set_active(False)
+    pruefe(fertig(f) and not f.zustand.anmeldung, "Erstanmeldung wieder mit Passwort")
     pruefe(f.g_freigaben.get_visible() and not any(z.get_active() for z in f.r_freigaben.values()),
            "Administrator-Dialoge: Gruppe sichtbar, alles ab Werk aus")
     pruefe(all(z.get_sensitive() for z in f.r_freigaben.values()),

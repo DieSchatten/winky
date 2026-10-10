@@ -12,9 +12,9 @@ camera, with the current recognition model so far only with one person.
 
 ## In short
 
-- Your face only opens the **lock screen of a running session**. After switching on the
-  computer, for su, SSH and the console, the password always applies; in graphical
-  administrator dialogs too, unless you turn on groups of them with face and ✌.
+- Your face only opens the **lock screen of a running session**. For su, SSH and the
+  console, the password always applies; after switching on the computer and in graphical
+  administrator dialogs too, unless you turn these on separately.
 - **sudo in the terminal** can optionally be confirmed with your face **and** the ✌ sign.
   This is off until an administrator turns it on.
 - **The password always works.** If Winky does not recognize you, the usual prompt appears
@@ -67,7 +67,11 @@ This is in your own hands:
    the system directory (e.g. Timeshift), the face data ends up in the backup too.
 8. **Outdated version.** Winky ships its own recognition runtime (ONNX Runtime). Its bug
    fixes only arrive with a new Winky version, not through the normal Ubuntu updates.
-9. **Administrator dialogs with ✌.** Every group you turn on works like sudo with ✌: a
+9. **Login after startup with your face** (off by default). Then anyone who can fool your
+   face gets in after a restart too, not just into the locked session. Your login keyring
+   stays locked, because only the password opens it. Without disk encryption, the extra risk
+   is small: whoever has the computer can read the disk anyway.
+10. **Administrator dialogs with ✌.** Every group you turn on works like sudo with ✌: a
    harmful program running as you can trigger such a dialog, and a ✌ at the wrong moment
    approves it. Updates and software from your package sources only install signed packages.
    Downloaded packages, `pkexec` and “all other administrator dialogs” give full
