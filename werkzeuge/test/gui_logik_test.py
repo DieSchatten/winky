@@ -244,6 +244,19 @@ def test(f):
     pruefe(fertig(f) and f.zustand.keepassxc, "KeePassXC eingeschaltet")
     f.r_keepassxc.set_active(False)
     pruefe(fertig(f) and not f.zustand.keepassxc, "KeePassXC ausgeschaltet")
+    pruefe(f.g_freigaben.get_visible() and not any(z.get_active() for z in f.r_freigaben.values()),
+           "Administrator-Dialoge: Gruppe sichtbar, alles ab Werk aus")
+    pruefe(all(z.get_sensitive() for z in f.r_freigaben.values()),
+           "Administrator-Dialoge nach bestandenem ✌-Test schaltbar")
+    f.r_freigaben["updates"].set_active(True)
+    pruefe(fertig(f) and f.zustand.freigaben == ("updates",), "Updates mit ✌ eingeschaltet")
+    f.r_freigaben["programme"].set_active(True)
+    pruefe(fertig(f) and set(f.zustand.freigaben) == {"updates", "programme"}
+           and f.r_freigaben["programme"].get_active(), "zweite Gruppe dazu, erste bleibt")
+    f.r_freigaben["updates"].set_active(False)
+    fertig(f)
+    f.r_freigaben["programme"].set_active(False)
+    pruefe(fertig(f) and f.zustand.freigaben == (), "alle Administrator-Dialoge wieder Passwort")
     pruefe(any("entsperrt" in r.get_title() for r in f._verlauf_zeilen), "Verlauf zeigt den Test")
     f.r_pause.set_active(True)
     pruefe(fertig(f) and f.zustand.pausiert and "Pause" in f.s_titel.get_label(), "pausiert")

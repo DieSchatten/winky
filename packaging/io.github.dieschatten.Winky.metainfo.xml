@@ -38,6 +38,10 @@
         Handzeichen ✌ statt mit dem Passwort. Ein großer ✌-Hinweis zeigt den Befehl.</li>
       <li>Optional: unlock KeePassXC (from version 2.8) with your face and ✌.</li>
       <li xml:lang="de">Wahlweise KeePassXC (ab Version 2.8) mit Gesicht und ✌ entsperren.</li>
+      <li>Optional: approve administrator dialogs such as installing updates with your face and
+        ✌ instead of the password, each group separately.</li>
+      <li xml:lang="de">Wahlweise Administrator-Dialoge wie das Installieren von Updates mit
+        Gesicht und ✌ statt Passwort freigeben, jede Gruppe einzeln.</li>
       <li>No images are stored, only face features that only the system can read. No network
         access.</li>
       <li xml:lang="de">Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das

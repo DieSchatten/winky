@@ -8,6 +8,7 @@ Prüfdienstes. Ein heimlich gestartetes sudo fällt so sofort auf; ohne ✌ pass
 import gettext
 import json
 import os
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -51,11 +52,23 @@ TEXTE = {
         "abgebrochen": ("critical", _("Unlocking KeePassXC canceled"), _GLEICHZEITIG),
         "begrenzt": _BEGRENZT,
     },
+    # Administrator-Dialoge über Polkit; {befehl} = Beschreibung der Aktion und ggf. Befehl
+    "polkit": {
+        "wartet": ("critical", _("Administrator approval is waiting for ✌"),
+                   "{befehl}\n" + _("Show ✌ to the camera to approve. Not you? Then don't show "
+                                    "the sign and you will be asked for the password.")),
+        "bestaetigt": ("normal", _("✓ Approved"), "{befehl}"),
+        "nicht_bestaetigt": ("low", _("Not approved with ✌"),
+                             "{befehl}\n" + _("Use your password instead.")),
+        "abgebrochen": ("critical", _("Administrator approval canceled"), _GLEICHZEITIG),
+        "begrenzt": _BEGRENZT,
+    },
 }
 
 
 # Großes ✌ während einer Anfrage, weil GNOME Benachrichtigungen nicht größer darstellt
-FENSTER_TITEL = {"sudo": _("Confirm sudo"), "keepassxc": _("Unlock KeePassXC")}
+FENSTER_TITEL = {"sudo": _("Confirm sudo"), "keepassxc": _("Unlock KeePassXC"),
+                 "polkit": _("Administrator approval")}
 FENSTER_DAUER = 8.0   # so lange wartet der Prüfdienst (sudo_ms) auf das Zeichen
 FENSTER_CSS = b"""
 window { background-color: transparent; }
@@ -169,6 +182,21 @@ class Fenster:
             self.fenster = None
 
 
+def aktion_beschreibung(aktion):
+    """Beschreibung einer Polkit-Aktion in der Sprache der Sitzung, sonst ihre Kennung."""
+    if not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", aktion):
+        return ""
+    try:
+        r = subprocess.run(["pkaction", "--action-id", aktion, "--verbose"], capture_output=True,
+                           text=True, timeout=3)
+        for zeile in str(r.stdout).splitlines():
+            if zeile.strip().startswith("description:"):
+                return zeile.split(":", 1)[1].strip() or aktion
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return aktion
+
+
 class Hinweis:
     def __init__(self):
         self.meldung = None   # Kennung für notify-send --replace-id
@@ -206,7 +234,11 @@ class Hinweis:
         if not isinstance(daten, dict):
             return
         stand, zeit = daten.get("stand"), daten.get("zeit", 0)
-        texte = TEXTE.get(daten.get("zweck", "sudo"), TEXTE["sudo"])
+        zweck = str(daten.get("zweck", "sudo"))
+        aktion = zweck[len("polkit:"):] if zweck.startswith("polkit:") else ""
+        if aktion:
+            zweck = "polkit"
+        texte = TEXTE.get(zweck, TEXTE["sudo"])
         if stand not in texte or not isinstance(zeit, int) or time.time() - zeit > ALT:
             return
         if (zeit, stand) == self.letzte:
@@ -214,10 +246,11 @@ class Hinweis:
         self.letzte = (zeit, stand)
         dringlich, titel, text = texte[stand]
         befehl = str(daten.get("befehl", "sudo"))[:240]
-        zweck = daten.get("zweck", "sudo")
+        if zweck == "polkit":
+            befehl = "\n".join(t for t in (aktion_beschreibung(aktion), befehl) if t)
         # Warten: großes Fenster; Fehlschlag, Abbruch, ohne X-Anzeige: Benachrichtigung
         if stand == "wartet":
-            if self.fenster.zeigen(zweck, befehl if zweck == "sudo" else "", zeit):
+            if self.fenster.zeigen(zweck, befehl if zweck in ("sudo", "polkit") else "", zeit):
                 return
         elif stand == "bestaetigt":
             if self.fenster.bestaetigt():

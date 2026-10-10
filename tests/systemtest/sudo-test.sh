@@ -124,9 +124,44 @@ rm -f /var/lib/winky/1000/geste-ok; SUDO_UID=1000 $V keepassxc aus </dev/null >/
 pruefe 'SUDO_UID=1000 $V keepassxc an </dev/null | erg | grep -q "face and"' "KeePassXC mit ✌ verlangt bestandenen ✌-Test"
 install -m0640 -g _winky /dev/null /var/lib/winky/1000/geste-ok
 
-# 8. Rückbau
+# 8. Administrator-Dialoge über Polkit: Gruppen einzeln, immer mit ✌, Pause wirkt
+R=/etc/polkit-1/rules.d/zz-winky-freigaben.rules
+P=/usr/libexec/winky/winky-polkit-pruefung
+polkit_anfrage() { python3 -c "import json;d=json.load(open('/run/winky/anfrage/1000.json'));print(d['zweck'],d['stand'],d['befehl'])" 2>/dev/null; }
+pruefe '[ ! -e $R ]' "ab Werk keine Freigaben-Regel"
+pruefe 'SUDO_UID=1000 $V freigabe-an alles </dev/null | erg | grep -q "\"ok\": false"' "unbekannte Gruppe abgelehnt"
+t0=$(date +%s)
+pruefe 'SUDO_UID=1000 $V freigabe-an updates </dev/null | erg | grep -q "\"ok\": true"' "Updates mit ✌ eingeschaltet"
+pruefe '[ -f $R ] && grep -q "org.freedesktop.packagekit.system-update" $R && ! grep -q "\"org.freedesktop.policykit.exec\": true" $R && grep -q "^freigaben = updates$" /etc/winky/winky.conf' "Regel nur mit Update-Aktionen, Konfiguration gesetzt"
+pruefe 'grep -q "isInGroup(\"sudo\")" $R && grep -q "subject.local" $R' "Regel nur für Administratoren in lokaler, aktiver Sitzung"
+sleep 2
+pruefe '! journalctl -u polkit --since "@$t0" --no-pager | grep -qi -E "error|exception"' "Polkit lädt die Regel ohne Fehler"
+t0=$(date +%s%N); $P ubuntu org.freedesktop.packagekit.system-update ""; rc=$?; t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe '[ $rc = 1 ] && [ $t -lt 9900 ]' "Update ohne ✌ nicht freigegeben, unter dem Polkit-Limit (${t} ms)"
+pruefe '[ "$(polkit_anfrage)" = "polkit:org.freedesktop.packagekit.system-update nicht_bestaetigt " ]' "Hinweis nennt die Aktion: nicht bestätigt"
+pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=polkit:" | tail -1 | grep -q "geste=1"' "Freigabe verlangt ✌ (Journal)"
+SUDO_UID=1000 $V freigabe-an programme </dev/null >/dev/null
+pruefe 'grep -q "\"org.freedesktop.policykit.exec\": true" $R && grep -q "org.freedesktop.packagekit.system-update" $R && grep -q "^freigaben = updates,programme$" /etc/winky/winky.conf' "zweite Gruppe dazu, erste bleibt"
+$P ubuntu org.freedesktop.policykit.exec "/usr/bin/gparted --test"
+pruefe '[ "$(polkit_anfrage)" = "polkit:org.freedesktop.policykit.exec nicht_bestaetigt /usr/bin/gparted --test" ]' "pkexec: Befehl steht im Hinweis"
+SUDO_UID=1000 $V freigabe-an system </dev/null >/dev/null
+pruefe '! grep -q "io.github.dieschatten.winky" $R && ! grep -q "org.keepassxc" $R' "nie für Winkys eigene Einstellungen und KeePassXC"
+SUDO_UID=1000 $V pausieren </dev/null >/dev/null
+t0=$(date +%s%N); $P ubuntu org.freedesktop.packagekit.system-update ""; rc=$?; t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe '[ $rc = 1 ] && [ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "grund=pausiert"' "Pause: keine Kamera, sofort Passwort (${t} ms)"
+t0=$(date +%s%N); $P ubuntu; t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe '[ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "zweck=keepassxc grund=pausiert"' "Pause gilt auch für KeePassXC (${t} ms)"
+SUDO_UID=1000 $V fortsetzen </dev/null >/dev/null
+$V regeln-erneuern; rc=$?
+pruefe '[ $rc = 0 ] && grep -q "\"org.freedesktop.policykit.exec\": true" $R' "Paket-Update erneuert die Regel"
+for g in updates programme system; do SUDO_UID=1000 $V freigabe-aus $g </dev/null >/dev/null; done
+pruefe '[ ! -e $R ] && grep -q "^freigaben = $" /etc/winky/winky.conf' "alle aus: Regel entfernt"
+SUDO_UID=1000 $V freigabe-an updates </dev/null >/dev/null
+
+# 9. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1
 pruefe '[ ! -e /etc/winky/sudo-ein ] && ! grep -q pam_winky /etc/pam.d/common-auth' "Deinstallieren entfernt Schalter und PAM-Eintrag"
+pruefe '[ ! -e $R ]' "Deinstallieren entfernt die Freigaben-Regel"
 pruefe '[ ! -e /var/lib/winky/1000/geste-ok ]' "Freigabe mit den Gesichtsdaten gelöscht"
 echo; echo "$F Fehler"

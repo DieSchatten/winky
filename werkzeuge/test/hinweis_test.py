@@ -94,6 +94,19 @@ pruefe(melde and "--urgency=critical" in melde[0] and "abgebrochen" in melde[0][
 fenster, melde = lauf(hinweis, "wartet", alter=300)
 pruefe(not fenster and not melde, "alte Anfragen (etwa nach dem Anmelden) werden nicht gemeldet")
 
+fenster, melde = lauf(hinweis, "wartet", "polkit:org.freedesktop.packagekit.system-update", "", alter=6)
+melde = [m for m in melde if m[0] == "notify-send"]   # pkaction-Aufruf für die Beschreibung
+pruefe(fenster and fenster[0][:2] == ("zeigen", "polkit") and
+       "org.freedesktop.packagekit.system-update" in fenster[0][2] and not melde,
+       "Administrator-Freigabe wartet: großes Fenster nennt die Aktion")
+fenster, melde = lauf(hinweis, "nicht_bestaetigt", "polkit:org.freedesktop.policykit.exec",
+                      "/usr/bin/gparted", alter=7)
+melde = [m for m in melde if m[0] == "notify-send"]
+pruefe(melde and "Nicht per ✌ freigegeben" in melde[0][-2] and "/usr/bin/gparted" in melde[0][-1],
+       "Freigabe nicht bestätigt: Benachrichtigung mit Befehl")
+fenster, melde = lauf(hinweis, "wartet", "polkit:../../x", "", alter=8)
+pruefe(fenster and fenster[0][2] == "", "ungültige Aktionskennung wird nicht weitergereicht")
+
 hinweis.fenster = FensterAttrappe(sichtbar=False)
 fenster, melde = lauf(hinweis, "wartet", "keepassxc", alter=5)
 pruefe(melde and "KeePassXC wartet auf ✌" in melde[0], "ohne X-Anzeige: Benachrichtigung statt Fenster")

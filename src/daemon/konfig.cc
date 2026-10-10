@@ -4,7 +4,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cerrno>
+#include <iterator>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
@@ -30,6 +32,23 @@ bool zahl(const std::string& v, double lo, double hi, double& out) {
   return true;
 }
 
+}  // namespace
+
+namespace {
+// Kommagetrennte Liste bekannter Gruppen (Polkit-Regel aus winky-verwalten)
+bool gueltigeFreigaben(const std::string& val) {
+  static const char* const bekannt[] = {"updates", "software", "fremd", "programme", "system"};
+  size_t pos = 0;
+  while (pos <= val.size() && !val.empty()) {
+    const size_t komma = val.find(',', pos);
+    const std::string teil = trim(val.substr(pos, komma == std::string::npos ? std::string::npos : komma - pos));
+    if (std::none_of(std::begin(bekannt), std::end(bekannt), [&](const char* b) { return teil == b; }))
+      return false;
+    if (komma == std::string::npos) break;
+    pos = komma + 1;
+  }
+  return true;
+}
 }  // namespace
 
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
@@ -106,6 +125,9 @@ bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
     } else if (key == "sudo") {
       ok = val == "ja" || val == "nein";
       neu.sudo = val == "ja";
+    } else if (key == "freigaben") {
+      ok = gueltigeFreigaben(val);
+      neu.freigaben = val;
     } else if (key == "sudo_ms") {
       ok = zahl(val, 3000, 9500, d);  // unter dem Zeitlimit des PAM-Moduls (10 s)
       neu.sudo_ms = static_cast<int>(d);

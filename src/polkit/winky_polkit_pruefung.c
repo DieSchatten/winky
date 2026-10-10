@@ -1,7 +1,8 @@
-/* winky-polkit-pruefung BENUTZER: von 50-winky-keepassxc.rules per polkit.spawn() als polkitd
- * gestartet; fragt den Prüfdienst über /run/winky-polkit.sock nach Gesicht (ggf. mit ✌).
+/* winky-polkit-pruefung BENUTZER [AKTION [DETAIL]]: von den Winky-Polkit-Regeln per
+ * polkit.spawn() als polkitd gestartet; fragt den Prüfdienst über /run/winky-polkit.sock nach
+ * Gesicht (ggf. mit ✌). Ohne AKTION: KeePassXC, mit AKTION: Administrator-Freigabe.
  * Rückgabe 0 = erkannt (ohne Passwort), alles andere: Polkit fragt nach dem Passwort.
- */
+*/
 #define _GNU_SOURCE
 #include <errno.h>
 #include <poll.h>
@@ -25,7 +26,22 @@ static long ms_seit(const struct timespec *start) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2 || !argv[1][0] || strlen(argv[1]) > 64) return 2;
+  if (argc < 2 || argc > 4 || !argv[1][0] || strlen(argv[1]) > 64) return 2;
+  /* Aktion und Detail gehen als zweite Nachricht 'P' + Aktion + NUL + Detail + NUL mit */
+  char zusatz[WINKY_BEFEHL_MAX];
+  size_t zusatz_len = 0;
+  if (argc >= 3) {
+    const size_t al = strlen(argv[2]);
+    const char *detail = argc == 4 ? argv[3] : "";
+    size_t dl = strlen(detail);
+    if (al == 0 || al > 128) return 2;
+    if (2 + al + dl + 1 > sizeof(zusatz)) dl = sizeof(zusatz) - 3 - al;
+    zusatz[0] = 'P';
+    memcpy(zusatz + 1, argv[2], al + 1);
+    memcpy(zusatz + 2 + al, detail, dl);
+    zusatz[2 + al + dl] = '\0';
+    zusatz_len = 3 + al + dl;
+  }
   struct passwd pw, *pwp = NULL;
   char puffer[4096];
   if (getpwnam_r(argv[1], &pw, puffer, sizeof(puffer), &pwp) != 0 || !pwp || pw.pw_uid == 0)
@@ -43,8 +59,10 @@ int main(int argc, char **argv) {
   struct ucred cred;
   socklen_t len = sizeof(cred);
   if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) != 0 || cred.uid != 0) return 3;
-  struct winky_anfrage q = {WINKY_MAGIC, WINKY_OP_KEEPASSXC, (uint32_t)pw.pw_uid, 0};
+  struct winky_anfrage q = {WINKY_MAGIC, zusatz_len ? WINKY_OP_POLKIT : WINKY_OP_KEEPASSXC,
+                            (uint32_t)pw.pw_uid, 0};
   if (send(fd, &q, sizeof(q), MSG_NOSIGNAL) != (ssize_t)sizeof(q)) return 3;
+  if (zusatz_len && send(fd, zusatz, zusatz_len, MSG_NOSIGNAL) != (ssize_t)zusatz_len) return 3;
   for (;;) {
     const long rest = FRIST_MS - ms_seit(&start);
     if (rest <= 0) return 4;

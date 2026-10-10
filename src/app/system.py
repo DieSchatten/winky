@@ -31,6 +31,7 @@ class Zustand:
     keepassxc_geste: bool = True  # KeePassXC nur mit Gesicht und ✌
     sudo: bool = False        # sudo mit Gesicht und ✌ eingeschaltet (systemweit)
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
+    freigaben: tuple = ()     # Administrator-Dialoge mit Gesicht und ✌ (Gruppen)
 
 
 def _konfig(text, schluessel):
@@ -67,6 +68,7 @@ def lese_zustand(uid=None) -> Zustand:
         z.blinkpruefung = (_konfig(text, "blinkpruefung") or "ja") != "nein"
         z.keepassxc = _konfig(text, "keepassxc") == "ja"
         z.keepassxc_geste = _konfig(text, "keepassxc_geste") != "nein"
+        z.freigaben = tuple(g for g in (_konfig(text, "freigaben") or "").split(",") if g)
     except (OSError, ValueError):
         pass
     try:

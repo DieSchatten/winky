@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <csignal>
@@ -68,6 +69,7 @@ struct Optionen {
   std::string modelle = "/usr/share/winky/models";
   std::string anfrage = winky::kAnfrageBasis;
   std::string sudo_schalter = "/etc/winky/sudo-ein";
+  std::string notschalter = "/etc/winky/disabled";
   bool polkit = false;
 };
 
@@ -603,6 +605,7 @@ int main(int argc, char** argv) {
     else if (a == "--modelle") o.modelle = argv[i];
     else if (a == "--anfrage-basis") o.anfrage = argv[i];
     else if (a == "--sudo-schalter") o.sudo_schalter = argv[i];
+    else if (a == "--notschalter") o.notschalter = argv[i];
     else {
       log(3, "Unbekannte Option %s", a.c_str());
       return 2;
@@ -648,8 +651,8 @@ int main(int argc, char** argv) {
     return 1;
   }
   const uid_t uid = q.uid;
-  if (o.polkit && q.op != WINKY_OP_KEEPASSXC) {
-    log(4, "Über den Polkit-Zugang ist nur KEEPASSXC erlaubt");
+  if (o.polkit && q.op != WINKY_OP_KEEPASSXC && q.op != WINKY_OP_POLKIT) {
+    log(4, "Über den Polkit-Zugang sind nur KEEPASSXC und POLKIT erlaubt");
     c.antwort(WINKY_ABGELEHNT, -1, msSeit(t0), strom);
     return 1;
   }
@@ -677,17 +680,54 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  if (q.op == WINKY_OP_KEEPASSXC && k.keepassxc && k.keepassxc_geste) {
-    // KeePassXC mit ✌: Regeln wie sudo; sudo_ms (bis 9,5 s) bleibt unter Polkits 10-s-Limit
-    const std::string befehl = "KeePassXC entsperren";
+  // Pause gilt auch für den Polkit-Weg (das PAM-Modul ist dort nicht beteiligt)
+  if ((q.op == WINKY_OP_KEEPASSXC || q.op == WINKY_OP_POLKIT) && rootDatei(o.notschalter)) {
+    c.antwort(WINKY_ABGELEHNT, -1, msSeit(t0), false);
+    log(6, "Ergebnis uid=%u status=abgelehnt zweck=%s grund=pausiert", uid,
+        q.op == WINKY_OP_POLKIT ? "polkit" : "keepassxc");
+    return 1;
+  }
+
+  // Administrator-Freigabe: zweite Nachricht 'P' + Aktion + NUL + Detail + NUL
+  std::string aktion, detail;
+  if (q.op == WINKY_OP_POLKIT) {
+    char puf[WINKY_BEFEHL_MAX + 1];
+    pollfd pc{0, POLLIN, 0};
+    if (::poll(&pc, 1, 500) > 0) {
+      const ssize_t n = ::recv(0, puf, sizeof(puf), 0);
+      if (n > 1 && puf[0] == 'P' && n <= WINKY_BEFEHL_MAX) {
+        const std::string roh(puf + 1, static_cast<size_t>(n - 1));
+        const size_t nul = roh.find('\0');
+        aktion = roh.substr(0, nul);
+        if (nul != std::string::npos) detail = winky::saeubern(roh.substr(nul + 1), 200);
+      }
+    }
+    const bool gueltig = !aktion.empty() && aktion.size() <= 128 &&
+                         std::all_of(aktion.begin(), aktion.end(), [](unsigned char z) {
+                           return std::isalnum(z) || z == '.' || z == '-' || z == '_';
+                         });
+    if (!gueltig || k.freigaben.empty()) {
+      c.antwort(WINKY_ABGELEHNT, -1, msSeit(t0), false);
+      log(6, "Ergebnis uid=%u status=abgelehnt zweck=polkit grund=%s", uid,
+          gueltig ? "freigaben_aus" : "anfrage");
+      return 1;
+    }
+  }
+
+  if ((q.op == WINKY_OP_KEEPASSXC && k.keepassxc && k.keepassxc_geste) || q.op == WINKY_OP_POLKIT) {
+    // Gesicht und ✌ wie bei sudo; sudo_ms (bis 9,5 s) bleibt unter Polkits 10-s-Limit
+    const bool pk = q.op == WINKY_OP_POLKIT;
+    const std::string befehl = pk ? detail : "KeePassXC";
+    const std::string zweck = pk ? "polkit:" + aktion : "keepassxc";
     const long beginn = static_cast<long>(std::time(nullptr));
     auto ende = [&](uint32_t status, float wert, const char* grund, const char* stand) {
       c.antwort(status, wert, msSeit(t0), false);
-      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, "", beginn, "keepassxc");
+      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, "", beginn, zweck);
       log(status == WINKY_TREFFER ? 5 : 6,
-          "Ergebnis uid=%u status=%s wert=%s dauer_ms=%.0f zweck=keepassxc geste=1%s%s", uid,
-          statusText(status), zahl(wert).c_str(), msSeit(t0), grund ? " grund=" : "",
-          grund ? grund : "");
+          "Ergebnis uid=%u status=%s wert=%s dauer_ms=%.0f zweck=%s geste=1%s%s%s%s", uid,
+          statusText(status), zahl(wert).c_str(), msSeit(t0), zweck.c_str(),
+          grund ? " grund=" : "", grund ? grund : "", pk && !detail.empty() ? " befehl=" : "",
+          pk && !detail.empty() ? jsonText(detail).c_str() : "");
       return status == WINKY_TREFFER ? 0 : 1;
     };
     if (k.schwelle <= 0 || k.kamera.empty())
@@ -712,7 +752,7 @@ int main(int argc, char** argv) {
       winky::erhoeheSudoOffen(o.sperre, uid, beginn);
       return ende(WINKY_ABGELEHNT, -1, "gleichzeitig", "abgebrochen");
     }
-    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, "", beginn, "keepassxc");
+    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, "", beginn, zweck);
     Laufzeit l;
     if (!starte(o, k, l, true)) {
       log(4, "%s", l.fehler.c_str());

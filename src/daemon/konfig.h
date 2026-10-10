@@ -23,6 +23,7 @@ struct Konfig {
   bool keepassxc_geste = true;  // dabei zusätzlich ✌ verlangen
   bool sudo = false;          // sudo per Gesicht und ✌ bestätigen
   int sudo_ms = 8000;         // Zeitfenster der Gestenprüfung (sudo, KeePassXC)
+  std::string freigaben;      // Polkit-Gruppen mit ✌, kommagetrennt (leer = keine)
 };
 
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler);

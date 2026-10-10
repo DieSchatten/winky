@@ -30,5 +30,7 @@ if [ "$1" = "configure" ]; then
     systemctl enable --now winky.socket >/dev/null 2>&1 || true
     # "Default: no": Profil bleibt aus, bis die App es einschaltet; ein aktives wird erneuert
     pam-auth-update --package
+    # Freigaben-Regel an neue Programmversion und neu installierte Polkit-Aktionen anpassen
+    /usr/libexec/winky/winky-verwalten regeln-erneuern >/dev/null 2>&1 || true
 fi
 exit 0

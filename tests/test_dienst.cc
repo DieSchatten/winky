@@ -103,6 +103,12 @@ static void testKonfig() {
          "KeePassXC mit Gesicht allein nur ausdrücklich");
   schreibe(p, "keepassxc_geste=vielleicht\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für keepassxc_geste wird abgelehnt");
+  schreibe(p, "schwelle=0.65\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben.empty(), "Administrator-Freigaben ohne Eintrag aus");
+  schreibe(p, "freigaben = updates,software\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.freigaben == "updates,software", "Freigaben-Gruppen werden gelesen");
+  schreibe(p, "freigaben=updates,alles\n");
+  PRUEFE(!winky::ladeKonfig(p, k, f), "unbekannte Freigaben-Gruppe wird abgelehnt");
 }
 
 static void testAnfrage() {

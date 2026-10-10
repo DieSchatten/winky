@@ -55,7 +55,7 @@ Store-Beschreibung tragen Englisch und Deutsch direkt in sich.
 | Prüfdienst | `src/daemon/` | `winky-matcher`, je Anfrage per Socket gestartet, als `_winky` in einer systemd-Sandbox (Bewertung 1,0); Kamera, Erkennung, Entscheidung, Sperrzähler |
 | Erkennungskern | `src/core/`, `src/capture/` | YuNet (Gesichtssuche mit 5 Punkten), 5-Punkt-Ausrichtung, SFace (Vergleich, 128 Werte), MediaPipe-Handzeichen, V4L2-Infrarot |
 | Verwaltungshelfer | `src/verwalten/winky-verwalten` | root über Polkit: als `winky-gesicht` mit dem eigenen Passwort, als `winky-verwalten` mit dem Administratorpasswort |
-| Polkit-Prüfung | `src/polkit/winky_polkit_pruefung.c` | für die KeePassXC-Regel, nur libc |
+| Polkit-Prüfung | `src/polkit/winky_polkit_pruefung.c` | für die Polkit-Regeln (KeePassXC, Administrator-Dialoge), nur libc |
 | Hinweise | `src/hinweis/winky-hinweis` | Hinweisfenster mit großem ✌ zu jeder Anfrage (sudo, KeePassXC), ohne Fokus über XWayland; Benachrichtigung bei Fehlschlag (Autostart) |
 | App | `src/app/` | GTK4/libadwaita: Assistent, Startseite, Kamera, Sicherheit, Erweitert |
 | Protokoll | `src/protokoll/protokoll.h` | Nachrichten zwischen PAM-Modul, Helfer und Prüfdienst |
@@ -74,12 +74,12 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 
 ## Tests
 
-- **Komponenten** (`tests/test_dienst.cc`, 71 Prüfungen): Konfiguration, Vorlagen samt
+- **Komponenten** (`tests/test_dienst.cc`, 74 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
 - **PAM** (`tests/pam_test.py`, 38 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
-- **App** (`werkzeuge/test/gui_logik_test.py`, 62 Prüfungen): spielt den Assistenten von
+- **App** (`werkzeuge/test/gui_logik_test.py`, 67 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 
@@ -89,12 +89,12 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
     python3 werkzeuge/test/gui_logik_test.py
   ```
 
-- **Hinweise** (`werkzeuge/test/hinweis_test.py`, 9 Prüfungen): welcher Stand der
+- **Hinweise** (`werkzeuge/test/hinweis_test.py`, 12 Prüfungen): welcher Stand der
   Anfragedatei zu welchem Hinweis führt (Fenster, ✓, Benachrichtigung, alte Anfragen).
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
-- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 34 Prüfungen): echter Prüfdienst, echte
+- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 51 Prüfungen): echter Prüfdienst, echte
   Kamera, echtes libpam im Wegwerf-System. Einschalten nur mit aktiver Gesichtsentsperrung
   und bestandenem ✌-Test, Zeitlimit, Desktop-Hinweis, gleichzeitige Anfragen, Begrenzung,
   Zurücksetzen per Passwort, ohne Terminal, Schalter aus, su/login/polkit unberührt,

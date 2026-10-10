@@ -1,5 +1,12 @@
 # Changes / Änderungen
 
+## 0.10.0 (10.10.2026)
+
+- Administrator dialogs (Polkit) with face and ✌, five groups to turn on separately: updates,
+  software, downloaded packages, programs as administrator, all others.
+  Administrator-Dialoge mit Gesicht und ✌, fünf einzeln schaltbare Gruppen.
+- Pause now also applies to KeePassXC. Die Pause gilt jetzt auch für KeePassXC.
+
 ## 0.9.0 (10.10.2026)
 
 - English and German, depending on the system language: app, ✌ notice, terminal messages,

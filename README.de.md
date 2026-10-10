@@ -19,6 +19,8 @@ Einrichtung.
   Bildschirmmitte erscheint dabei ein Hinweisfenster mit großem ✌ und dem Befehl.
 - **KeePassXC öffnen** (freiwillig, **nur ab KeePassXC 2.8**): nach dem ersten Öffnen mit
   dem Master-Passwort, standardmäßig nur mit Gesicht **und** ✌.
+- **Administrator-Dialoge mit Gesicht und ✌** (freiwillig, jede Gruppe einzeln): etwa
+  Updates installieren, ohne das Passwort zu tippen.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
 - **Einrichtung ohne Terminal:** Die App findet die Kamera, nimmt das Gesicht auf, lässt
   es ausprobieren und mit einer zweiten Person gegenprüfen. In der Software-Verwaltung
@@ -46,8 +48,8 @@ Einrichtung.
 ## Was Winky nicht kann
 
 - **Das Passwort ersetzen.** Nach dem Einschalten des Rechners, bei su, SSH, der Konsole
-  und in grafischen Administrator-Dialogen gilt immer das Passwort. Das Passwort
-  funktioniert außerdem immer als Ausweg.
+  und in grafischen Administrator-Dialogen (außer du schaltest sie mit ✌ frei) gilt immer
+  das Passwort. Das Passwort funktioniert außerdem immer als Ausweg.
 - **Zwillinge oder sehr ähnliche Geschwister sicher unterscheiden.** Das kann kein
   Gesichtssystem.
 - **Täuschung mit einem Infrarot-Ausdruck oder einer Maske sicher erkennen.** Winky hat
@@ -183,6 +185,27 @@ KeePassXC 2.8 bringt unter Linux ein Schnellentsperren über Polkit mit. Mit dem
 - Den Schlüssel für das Schnellentsperren hält KeePassXC nur im laufenden Programm. Nach
   jedem Neustart von KeePassXC gilt wieder das Master-Passwort.
 - Getestet mit KeePassXC 2.8.0 Beta 1 (AppImage, Polkit-Aktion von Hand installiert).
+
+## Administrator-Dialoge mit ✌
+
+Dialoge, die nach dem Administratorpasswort fragen (Polkit), lassen sich wahlweise mit Gesicht
+und ✌ freigeben. Jede Gruppe hat ihren eigenen Schalter auf der Startseite, alle sind ab Werk
+aus:
+
+| Gruppe | umfasst | Risiko |
+|---|---|---|
+| Updates | Updates installieren (Aktualisierungsverwaltung, Software-App) | gering |
+| Software | Programme aus den Paketquellen installieren oder entfernen | gering |
+| Heruntergeladene Pakete und neue Quellen | `.deb`-Dateien, neue Paketquellen, Signaturschlüssel | **hoch:** beliebiger Code als Administrator |
+| Programme als Administrator | `pkexec`; das ✌-Fenster zeigt den Befehl | **hoch:** wie sudo |
+| Alle anderen Administrator-Dialoge | Benutzer, Datenträger, Netzwerk, Dienste … | **hoch:** das ✌-Fenster nennt nur die Aktion |
+
+- Immer Gesicht **und** ✌, nur für Administratoren (Gruppe `sudo`), nur in einer aktiven,
+  lokalen Sitzung. Ohne ✌ erscheint nach etwa acht Sekunden der gewohnte Passwortdialog.
+- Was Ubuntu schon ohne Passwort erlaubt, bleibt so; Winky wird erst danach gefragt. Winkys
+  eigene Einstellungen verlangen immer das Passwort.
+- Die Regel liegt in `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; die Pause schaltet
+  auch sie ab.
 
 ## Notfall und Deinstallieren
 

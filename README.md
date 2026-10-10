@@ -19,6 +19,8 @@ step.
   window with a large ✌ and the command appears at the top center of the screen.
 - **Open KeePassXC** (optional, **KeePassXC 2.8 or later only**): after the first unlock
   with the master password, by default only with your face **and** ✌.
+- **Administrator dialogs with face and ✌** (optional, each group separately): for example
+  installing updates, without typing the password.
 - **Several people** on the same computer, each with their own face and password.
 - **Setup without the terminal:** The app finds the camera, records your face, lets you try
   it out and check it with a second person. Winky can be removed again in the software
@@ -46,8 +48,8 @@ step.
 ## What Winky cannot do
 
 - **Replace your password.** After switching on the computer, for su, SSH, the console and
-  in graphical administrator dialogs, the password always applies. The password also always
-  works as a way out.
+  in graphical administrator dialogs (unless you turn them on with ✌), the password always
+  applies. The password also always works as a way out.
 - **Reliably tell twins or very similar siblings apart.** No face recognition system can do
   that.
 - **Reliably detect spoofing with an infrared printout or a mask.** Winky has no real
@@ -185,6 +187,25 @@ Winky is asked first:
 - KeePassXC keeps the key for quick unlock only in the running program. After every restart
   of KeePassXC, the master password applies again.
 - Tested with KeePassXC 2.8.0 Beta 1 (AppImage, Polkit action installed by hand).
+
+## Administrator dialogs with ✌
+
+Dialogs that ask for the administrator password (Polkit) can optionally be approved with face
+and ✌ instead. Each group has its own switch on the home page, all are off by default:
+
+| Group | Covers | Risk |
+|---|---|---|
+| Updates | installing updates (Software Updater, Software app) | low |
+| Software | installing or removing programs from your package sources | low |
+| Downloaded packages and new sources | `.deb` files, new package sources, signing keys | **high:** any code as administrator |
+| Programs as administrator | `pkexec`; the ✌ window shows the command | **high:** like sudo |
+| All other administrator dialogs | users, disks, network, services … | **high:** the ✌ window only names the action |
+
+- Always face **and** ✌, only for administrators (group `sudo`), only in an active local
+  session. Without ✌ the usual password dialog appears after about eight seconds.
+- What Ubuntu already allows without a password stays that way; Winky is only asked
+  afterwards. Winky's own settings always require the password.
+- The rule is `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; Pause turns it off, too.
 
 ## Emergency and uninstalling
 

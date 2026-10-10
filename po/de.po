@@ -191,6 +191,54 @@ msgid "%Y-%m-%d %H:%M"
 msgstr "%d.%m.%Y %H:%M"
 
 #: src/app/gesicht_app.py
+msgid "Updates"
+msgstr "Updates"
+
+#: src/app/gesicht_app.py
+msgid "Install updates from your package sources. Low risk."
+msgstr "Updates aus deinen Paketquellen installieren. Geringes Risiko."
+
+#: src/app/gesicht_app.py
+msgid "Software"
+msgstr "Software"
+
+#: src/app/gesicht_app.py
+msgid "Install or remove programs from your package sources. Low risk."
+msgstr ""
+"Programme aus deinen Paketquellen installieren oder entfernen. Geringes "
+"Risiko."
+
+#: src/app/gesicht_app.py
+msgid "Downloaded packages and new sources"
+msgstr "Heruntergeladene Pakete und neue Quellen"
+
+#: src/app/gesicht_app.py
+msgid "Caution: a downloaded package can run any code as administrator."
+msgstr ""
+"Vorsicht: Ein heruntergeladenes Paket kann beliebigen Code als Administrator "
+"ausführen."
+
+#: src/app/gesicht_app.py
+msgid "Programs as administrator"
+msgstr "Programme als Administrator"
+
+#: src/app/gesicht_app.py
+msgid "Caution: like sudo; the ✌ window shows the command."
+msgstr "Vorsicht: wie sudo; das ✌-Fenster zeigt den Befehl."
+
+#: src/app/gesicht_app.py
+msgid "All other administrator dialogs"
+msgstr "Alle anderen Administrator-Dialoge"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Caution: users, disks, network, services … The ✌ window only names the "
+"action."
+msgstr ""
+"Vorsicht: Benutzer, Datenträger, Netzwerk, Dienste … Das ✌-Fenster nennt nur "
+"die Aktion."
+
+#: src/app/gesicht_app.py
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -261,6 +309,19 @@ msgstr "Pause"
 #: src/app/gesicht_app.py
 msgid "Winky is resting, only your password works everywhere"
 msgstr "Winky ruht, überall gilt nur dein Passwort"
+
+#: src/app/gesicht_app.py
+msgid "Administrator dialogs with ✌"
+msgstr "Administrator-Dialoge mit ✌"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Instead of the password, for example when installing updates. Always with "
+"face and ✌, only for administrators. The ✌ window shows what you are "
+"approving."
+msgstr ""
+"Statt des Passworts, etwa beim Installieren von Updates. Immer mit Gesicht "
+"und ✌, nur für Administratoren. Das ✌-Fenster zeigt, was du freigibst."
 
 #: src/app/gesicht_app.py
 msgid "Try out and maintain"
@@ -855,6 +916,16 @@ msgstr "sudo lässt sich jetzt mit Gesicht und ✌ bestätigen"
 #: src/app/gesicht_app.py
 msgid "sudo is back to password only"
 msgstr "sudo wieder nur mit Passwort"
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "“{group}” can now be approved with face and ✌"
+msgstr "„{group}“ lässt sich jetzt mit Gesicht und ✌ freigeben"
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "“{group}” is back to password only"
+msgstr "„{group}“ wieder nur mit Passwort"
 
 #: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
@@ -1578,12 +1649,40 @@ msgid "Unlocking KeePassXC canceled"
 msgstr "KeePassXC-Entsperren abgebrochen"
 
 #: src/hinweis/winky-hinweis
+msgid "Administrator approval is waiting for ✌"
+msgstr "Administrator-Freigabe wartet auf ✌"
+
+#: src/hinweis/winky-hinweis
+msgid ""
+"Show ✌ to the camera to approve. Not you? Then don't show the sign and you "
+"will be asked for the password."
+msgstr ""
+"Zum Freigeben ✌ in die Kamera zeigen. Nicht du? Dann kein Zeichen zeigen, "
+"dann kommt die Passwortabfrage."
+
+#: src/hinweis/winky-hinweis
+msgid "✓ Approved"
+msgstr "✓ Freigegeben"
+
+#: src/hinweis/winky-hinweis
+msgid "Not approved with ✌"
+msgstr "Nicht per ✌ freigegeben"
+
+#: src/hinweis/winky-hinweis
+msgid "Administrator approval canceled"
+msgstr "Administrator-Freigabe abgebrochen"
+
+#: src/hinweis/winky-hinweis
 msgid "Confirm sudo"
 msgstr "sudo bestätigen"
 
 #: src/hinweis/winky-hinweis
 msgid "Unlock KeePassXC"
 msgstr "KeePassXC entsperren"
+
+#: src/hinweis/winky-hinweis
+msgid "Administrator approval"
+msgstr "Administrator-Freigabe"
 
 #: src/hinweis/winky-hinweis
 msgid "Confirm"
@@ -1797,6 +1896,11 @@ msgstr "Polkit-Regelordner fehlt"
 #, python-brace-format
 msgid "Usage: {usage}"
 msgstr "Aufruf: {usage}"
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "Unknown group: {group}"
+msgstr "Unbekannte Gruppe: {group}"
 
 #: src/verwalten/winky-verwalten
 msgid "Turn on face unlock for the lock screen first"
