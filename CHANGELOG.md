@@ -12,6 +12,8 @@
   groups are switched over automatically.
   Administrator-Dialoge laufen im Passwortdialog selbst: ein Schalter statt fünf Gruppen.
 - Status messages at the login screen. Statusmeldungen an der Anmeldemaske.
+- Clear notice with “Log out now” if the desktop can’t show its password dialog.
+  Klarer Hinweis mit „Jetzt abmelden“, wenn der Desktop keinen Passwortdialog zeigen kann.
 - Experimental: after a face login, also unlock the keyring with the login password sealed
   in the TPM chip. Experimentell: Schlüsselbund nach Gesichtsanmeldung entsperren, Passwort
   versiegelt im TPM-Chip.

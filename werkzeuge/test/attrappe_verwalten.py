@@ -3,7 +3,7 @@
 schreibt nach WINKY_TESTWURZEL statt ins System, gleiches Protokoll.
 
 Aufruf: attrappe_verwalten.py --rolle gesicht|verwalten BEFEHL [WERT]
-Umgebung: WINKY_ATTRAPPE_PASSWORT=abbrechen (abgebrochene Passwortabfrage),
+Umgebung: WINKY_ATTRAPPE_PASSWORT=abbrechen (abgebrochene Passwortabfrage) bzw. kein_dialog,
 WINKY_ATTRAPPE_FREMD=WERT (höchster Wert der Gegenprobe), WINKY_ATTRAPPE_BILD=DATEI (Kamerabild
 aus werkzeuge/bildschirmfotos/illustration.py), WINKY_ATTRAPPE_DAUER=SEKUNDEN (Einlernen, Testen).
 """
@@ -116,6 +116,8 @@ def main():
     if args[:1] == ["--rolle"]:
         rolle, args = args[1], args[2:]
     befehl = args[0]
+    if os.environ.get("WINKY_ATTRAPPE_PASSWORT") == "kein_dialog":
+        sys.exit(127)  # wie pkexec, wenn der Desktop keinen Passwortdialog zeigen kann
     if os.environ.get("WINKY_ATTRAPPE_PASSWORT") == "abbrechen":
         sys.exit(126)  # wie pkexec, wenn die Passwortabfrage abgebrochen wird
     if rolle == "gesicht" and befehl not in GESICHT_BEFEHLE:

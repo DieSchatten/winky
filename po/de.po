@@ -717,6 +717,30 @@ msgid "Good, keep slowly moving your head"
 msgstr "Gut so, Kopf langsam weiter bewegen"
 
 #: src/app/gesicht_app.py
+msgid "The password dialog isn’t available"
+msgstr "Der Passwortdialog ist nicht verfügbar"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky asks for your password through the desktop’s password dialog, but it "
+"didn’t appear. This can happen when the desktop didn’t start completely, for "
+"example after a login that hung. Log out and back in once (or restart), then "
+"it works again."
+msgstr ""
+"Winky fragt dein Passwort über den Passwortdialog des Desktops ab, aber der "
+"ist nicht erschienen. Das kann passieren, wenn der Desktop nicht vollständig "
+"gestartet ist, etwa nach einer hängenden Anmeldung. Einmal ab- und wieder "
+"anmelden (oder neu starten), dann geht es wieder."
+
+#: src/app/gesicht_app.py
+msgid "Later"
+msgstr "Später"
+
+#: src/app/gesicht_app.py
+msgid "Log out now"
+msgstr "Jetzt abmelden"
+
+#: src/app/gesicht_app.py
 msgid "Canceled"
 msgstr "Abgebrochen"
 
@@ -1546,6 +1570,14 @@ msgid ""
 msgstr ""
 "Winky ist ein Komfortmerkmal und ersetzt weder ein starkes Passwort noch "
 "eine verschlüsselte Festplatte."
+
+#: src/app/prozess.py
+msgid ""
+"The password dialog could not be shown. Log out and back in once, then try "
+"again."
+msgstr ""
+"Der Passwortdialog konnte nicht angezeigt werden. Einmal ab- und wieder "
+"anmelden, dann noch einmal versuchen."
 
 #: src/app/prozess.py
 msgid "Canceled: the password was not entered."

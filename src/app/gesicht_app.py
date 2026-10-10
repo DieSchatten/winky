@@ -778,7 +778,33 @@ class Fenster(Adw.ApplicationWindow):
             tipp = _("Good, keep slowly moving your head")
         return tipp, grund == "ok"
 
+    def passwortdialog_hilfe(self, lauf, rc):
+        """Erschien gar kein Passwortdialog, deutlich erklären und Abmelden anbieten."""
+        if not lauf.passwortdialog_fehlt(rc) or getattr(self, "_hilfe_offen", False):
+            return
+        self._hilfe_offen = True
+        dialog = Adw.AlertDialog.new(
+            _("The password dialog isn’t available"),
+            _("Winky asks for your password through the desktop’s password dialog, but it didn’t "
+              "appear. This can happen when the desktop didn’t start completely, for example "
+              "after a login that hung. Log out and back in once (or restart), then it works "
+              "again."))
+        dialog.add_response("spaeter", _("Later"))
+        dialog.add_response("abmelden", _("Log out now"))
+        dialog.set_response_appearance("abmelden", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("spaeter")
+
+        def antwort(_d, r):
+            self._hilfe_offen = False
+            if r == "abmelden" and not umgebung.ATTRAPPE:
+                subprocess.Popen(["gnome-session-quit", "--logout"], start_new_session=True)
+
+        dialog.connect("response", antwort)
+        dialog.present(self)
+        self.hilfe_dialog = dialog
+
     def _g_ende(self, lauf, rc):
+        self.passwortdialog_hilfe(lauf, rc)
         a = self.lauf_ansicht
         self.gesicht_lauf = None
         self.lauf_ansicht = None
@@ -872,6 +898,8 @@ class Fenster(Adw.ApplicationWindow):
             erg = lauf.ergebnis or {}
             ok = rc == 0 and bool(erg.get("ok"))
             meldung = (erg.get("hinweis") or erfolg) if ok else lauf.fehlermeldung(rc)
+            if not ok:
+                self.passwortdialog_hilfe(lauf, rc)
             self.melde(meldung)
             self.aktualisieren()
             if danach:

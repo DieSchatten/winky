@@ -6,9 +6,11 @@
 """
 
 import json
+import os
 import signal
 import subprocess
 import threading
+import time
 
 from gi.repository import GLib
 
@@ -26,6 +28,8 @@ class Prozess:
         self.fehlertext = []
         self.ergebnis = None
         self._bild_wartet = False
+        self.mit_pkexec = befehl[:1] == ["pkexec"] or os.environ.get("WINKY_ATTRAPPE") == "1"
+        self.beginn = time.monotonic()
         self.proc = subprocess.Popen(
             befehl, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             stdin=subprocess.PIPE if abbruch_ueber_eingabe or eingabe else subprocess.DEVNULL,
@@ -104,10 +108,18 @@ class Prozess:
         else:
             self.proc.send_signal(signal.SIGTERM)
 
+    def passwortdialog_fehlt(self, rc):
+        """pkexec gab sofort auf, ohne dass ein Passwortdialog erschien: Der Desktop hat gerade
+        keine Passwortabfrage bereit (meist hilft einmal ab- und wieder anmelden)."""
+        return self.mit_pkexec and rc == 127 and time.monotonic() - self.beginn < 2.5
+
     def fehlermeldung(self, rc):
         """Lesbare Meldung für einen fehlgeschlagenen Lauf."""
         if self.ergebnis and self.ergebnis.get("fehler"):
             return self.ergebnis["fehler"]
+        if self.passwortdialog_fehlt(rc):
+            return _("The password dialog could not be shown. Log out and back in once, then "
+                     "try again.")
         if rc == 126:
             return _("Canceled: the password was not entered.")
         if rc == 127:

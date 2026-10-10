@@ -249,6 +249,14 @@ def test(f):
     f.k_geste_zeit.emit("clicked")
     pruefe(fertig(f) and f.zustand.geste_zeit == 20 and f.r_geste_zeit.get_value() == 20,
            "Zeit für das ✌ auf 20 Sekunden gespeichert")
+    os.environ["WINKY_ATTRAPPE_PASSWORT"] = "kein_dialog"
+    f.r_pause.set_active(True)
+    pruefe(fertig(f) and getattr(f, "hilfe_dialog", None) is not None and not f.zustand.pausiert,
+           "kein Passwortdialog: klarer Hinweis mit Abmelden statt stummem Fehlschlag")
+    del os.environ["WINKY_ATTRAPPE_PASSWORT"]
+    f.hilfe_dialog.close()
+    f._hilfe_offen = False
+    f.aktualisieren()
     f.ueber_zeigen()
     pruefe(f.ueber.get_application_name() == "Winky" and f.ueber.get_version(),
            "„Über Winky“ zeigt Name und Version")
