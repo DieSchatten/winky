@@ -96,7 +96,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
-- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 67 Prüfungen): echter Prüfdienst, echte
+- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 68 Prüfungen): echter Prüfdienst, echte
   Kamera, echtes libpam im Wegwerf-System. Einschalten nur mit aktiver Gesichtsentsperrung
   und bestandenem ✌-Test, Zeitlimit, Desktop-Hinweis, gleichzeitige Anfragen, Begrenzung,
   Zurücksetzen per Passwort, ohne Terminal, Schalter aus, su/login/polkit unberührt,

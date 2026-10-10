@@ -170,7 +170,10 @@ pruefe '[ $rc = 1 ] && [ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager 
 t0=$(date +%s%N); $P ubuntu; t=$(( ($(date +%s%N)-t0)/1000000 ))
 pruefe '[ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "zweck=keepassxc grund=pausiert"' "Pause gilt auch für KeePassXC (${t} ms)"
 SUDO_UID=1000 $V fortsetzen </dev/null >/dev/null
-$V regeln-erneuern; rc=$?
+# Regel einer älteren Fassung (mit Netzwerk-Aktion) muss das Paket-Update ersetzen
+sed -i 's/^    var aktionen = {$/    var aktionen = {\n        "org.freedesktop.NetworkManager.reload": true,/' $R
+SUDO_UID=1000 $V regeln-erneuern; rc=$?   # wie postinst unter „sudo apt install“
+pruefe '! grep -q "NetworkManager" $R' "Paket-Update entfernt veraltete Aktionen aus der Regel"
 pruefe '[ $rc = 0 ] && grep -q "\"org.freedesktop.policykit.exec\": true" $R' "Paket-Update erneuert die Regel"
 for g in updates programme system; do SUDO_UID=1000 $V freigabe-aus $g </dev/null >/dev/null; done
 pruefe '[ ! -e $R ] && grep -q "^freigaben = $" /etc/winky/winky.conf' "alle aus: Regel entfernt"

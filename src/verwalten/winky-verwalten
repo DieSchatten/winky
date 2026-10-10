@@ -900,9 +900,9 @@ BEFEHLE = {
 
 def main(argv):
     os.umask(0o022)
-    # Nach Paket-Updates (postinst, root ohne pkexec): Freigaben-Regel neu erzeugen
-    if argv[1:] == ["regeln-erneuern"] and os.getuid() == 0 and "PKEXEC_UID" not in os.environ \
-            and "SUDO_UID" not in os.environ:
+    # Nach Paket-Updates (postinst, als root, auch unter sudo apt): Freigaben-Regel aus der
+    # Konfiguration neu erzeugen; harmlos, ändert keine Einstellung
+    if argv[1:] == ["regeln-erneuern"] and os.getuid() == 0:
         if os.path.exists(FREIGABEN_REGEL):
             schreibe_freigaben_regel(freigaben_gruppen())
         sys.exit(0)
