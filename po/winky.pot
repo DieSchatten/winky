@@ -195,6 +195,16 @@ msgid "Make Winky stricter"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Is the other person ready?"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"After you enter your password, you have 5 seconds to move out of the "
+"picture. Then the other person looks at the camera for 10 seconds."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Winky isn’t fully installed."
 msgstr ""
 
@@ -749,6 +759,10 @@ msgid "✓ Passed: Winky didn’t recognize the other person."
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Was that you?"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Too similar"
 msgstr ""
 
@@ -756,6 +770,12 @@ msgstr ""
 msgid ""
 "To Winky, this person looks too much like you. Make Winky stricter so that "
 "only you can unlock the screen."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"To Winky, this person looks too much like you, and stricter settings would "
+"lock you out as well. Better use only your password."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1081,6 +1101,10 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Too similar. Make it stricter here."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Too similar; Winky can’t reliably tell you apart"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1756,6 +1780,13 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Check with a second person failed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Winky saw a face as similar as your own. Were you still in the picture? Then "
+"check again and step away during the countdown. If not, Winky can’t tell "
+"this person apart from you; better use only your password."
 msgstr ""
 
 #: src/verwalten/winky-verwalten

@@ -12,6 +12,9 @@
   groups are switched over automatically.
   Administrator-Dialoge laufen im Passwortdialog selbst: ein Schalter statt fünf Gruppen.
 - Status messages at the login screen. Statusmeldungen an der Anmeldemaske.
+- Check with a second person: asks first whether the person is ready; recognizes when it was
+  you; only offers stricter settings that still recognize you. Prüfung mit zweiter Person:
+  erst Rückfrage, erkennt „das warst du“, strenger nur, wenn du danach noch erkannt wirst.
 - Clear notice with “Log out now” if the desktop can’t show its password dialog.
   Klarer Hinweis mit „Jetzt abmelden“, wenn der Desktop keinen Passwortdialog zeigen kann.
 - Experimental: after a face login, also unlock the keyring with the login password sealed

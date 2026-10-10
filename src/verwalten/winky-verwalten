@@ -400,6 +400,13 @@ def befehl_gegenprobe(uid, _name):
     erkannt = antwort["status"] == "treffer"
     zu_nah = wert >= schwelle - GEGENPROBE_ABSTAND
     status = lese_status(uid)
+    eigen = status.get("test_wert") or 0
+    if (erkannt or zu_nah) and eigen and wert >= eigen - 0.10:
+        # So ähnlich wie das eigene Gesicht: meist war man noch im Bild. Nicht speichern.
+        fertig(False, wie_eigen=True, fehler=_(
+            "Winky saw a face as similar as your own. Were you still in the picture? Then check "
+            "again and step away during the countdown. If not, Winky can’t tell this person "
+            "apart from you; better use only your password."), **antwort)
     status.update(gegenprobe_zeit=int(time.time()), gegenprobe_wert=wert,
                   gegenprobe_ok=not erkannt and not zu_nah)
     schreibe_status(uid, status)

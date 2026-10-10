@@ -49,6 +49,15 @@ def fertig(f, sekunden=20):
     return warte(lambda: f.aktion is None and f.gesicht_lauf is None, sekunden)
 
 
+def gegenprobe_starten(g):
+    """Startknopf der zweiten Person: erst Rückfrage, dann bestätigen."""
+    g.k_start.emit("clicked")
+    pruefe(getattr(g, "bestaetigung", None) is not None, "zweite Person: erst Rückfrage, nie direkt")
+    g.bestaetigung.emit("response", "los")
+    g.bestaetigung.close()
+    g.bestaetigung = None
+
+
 def schritt(f):
     return f.w_stapel.get_visible_child_name()
 
@@ -148,7 +157,7 @@ def test(f):
     hinweise = []
     alt_hinweis = g.vorschau.hinweis
     g.vorschau.hinweis = lambda x, bis_bild=False: (hinweise.append(x), alt_hinweis(x, bis_bild))
-    g.k_start.emit("clicked")
+    gegenprobe_starten(g)
     pruefe(fertig(f) and any("aus dem Bild" in x for x in hinweise),
            "Countdown: erst aus dem Bild gehen")
     g.vorschau.hinweis = alt_hinweis
@@ -174,9 +183,13 @@ def test(f):
     f.r_spin.set_value(0.65)
     f.k_speichern.emit("clicked")
     fertig(f)
-    os.environ["WINKY_ATTRAPPE_FREMD"] = "0.31"
+    os.environ["WINKY_ATTRAPPE_FREMD"] = "0.88"
     f.w_stapel.set_visible_child_name("gegenprobe")
-    g.k_start.emit("clicked")
+    gegenprobe_starten(g)
+    pruefe(fertig(f) and "noch im Bild" in g.ergebnis.get_label()
+           and f.zustand.gegenprobe_wert != 0.88, "so ähnlich wie das eigene Gesicht: „warst du das?“, nichts gespeichert")
+    os.environ["WINKY_ATTRAPPE_FREMD"] = "0.31"
+    gegenprobe_starten(g)
     pruefe(fertig(f) and "Bestanden" in g.ergebnis.get_label() and f.w_weiter.get_label() == "Weiter",
            "zweite Person klar fremd: bestanden")
     weiter(f)

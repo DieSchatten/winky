@@ -155,6 +155,10 @@ def main():
             time.sleep(0.05)
         strom("testen", 1.0, wert=fremd)
         st = lese_status()
+        if fremd >= schwelle - 0.10 and st.get("test_wert") and fremd >= st["test_wert"] - 0.10:
+            fertig(False, wie_eigen=True, wert=fremd, status="treffer",
+                   fehler="Winky hat ein Gesicht gesehen, so ähnlich wie dein eigenes. "
+                          "Warst du noch im Bild?")
         ok = fremd < schwelle - 0.10
         st.update(gegenprobe_zeit=int(time.time()), gegenprobe_wert=fremd, gegenprobe_ok=ok)
         schreibe_status(st)

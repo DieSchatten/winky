@@ -158,8 +158,9 @@ def stand(z):
     """Was von der Einrichtung erledigt ist (für Assistent und Startseite)."""
     test = (z.eingelernt and z.test_ok > 0 and z.test_ok >= z.eingelernt_am
             and not (z.schwelle > 0 and 0 < z.test_wert < z.schwelle))
-    if z.gegenprobe_wert is None or not z.eingelernt:
-        gegenprobe = None
+    if z.gegenprobe_wert is None or not z.eingelernt or \
+            (z.test_wert and z.gegenprobe_wert >= z.test_wert - 0.10):
+        gegenprobe = None   # so ähnlich wie das eigene Gesicht: zählt nicht (meist man selbst)
     else:
         gegenprobe = z.gegenprobe_wert < z.schwelle - GEGENPROBE_ABSTAND
     geste = z.eingelernt and z.geste_ok > 0 and z.geste_ok >= z.eingelernt_am
@@ -170,6 +171,14 @@ def stand(z):
 def strengere_schwelle(wert):
     """Schwelle, bei der eine Person mit diesem Wert genug Abstand hat."""
     return math.ceil((wert + GEGENPROBE_ABSTAND + 0.02) * 100) / 100
+
+
+def strenger_moeglich(z):
+    """Nur strenger stellen, wenn das eigene Gesicht danach noch sicher erkannt wird."""
+    if z.gegenprobe_wert is None:
+        return False
+    neu = strengere_schwelle(z.gegenprobe_wert)
+    return neu <= SCHWELLE_MAX and (not z.test_wert or neu <= z.test_wert - 0.05)
 
 
 
@@ -232,7 +241,21 @@ class KameraAblauf(Gtk.Box):
         self.fortschritt.set_visible(False)
 
     def starten(self):
-        self.fenster.lauf_starten(self)
+        if self.art != "gegenprobe":
+            self.fenster.lauf_starten(self)
+            return
+        # Nie aus Versehen: erst bestätigen, dass die andere Person bereitsteht
+        dialog = Adw.AlertDialog.new(
+            _("Is the other person ready?"),
+            _("After you enter your password, you have 5 seconds to move out of the picture. "
+              "Then the other person looks at the camera for 10 seconds."))
+        dialog.add_response("abbrechen", _("Cancel"))
+        dialog.add_response("los", _("Start check"))
+        dialog.set_response_appearance("los", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("abbrechen")
+        dialog.connect("response", lambda _d, r: r == "los" and self.fenster.lauf_starten(self))
+        dialog.present(self.fenster)
+        self.bestaetigung = dialog
 
     def abbrechen(self):
         if self.fenster.gesicht_lauf and self.fenster.lauf_ansicht is self:
@@ -248,7 +271,8 @@ class KameraAblauf(Gtk.Box):
         self.k_start.set_sensitive(moeglich and not laeuft)
         self.k_start.set_visible(not meiner)
         self.k_abbruch.set_visible(meiner)
-        self.k_strenger.set_visible(self.art == "gegenprobe" and s["gegenprobe"] is False)
+        self.k_strenger.set_visible(self.art == "gegenprobe" and s["gegenprobe"] is False
+                                    and strenger_moeglich(z))
         self.k_strenger.set_sensitive(not laeuft)
         if not meiner and not self.live.get_label():
             if not bereit:
@@ -853,10 +877,16 @@ class Fenster(Adw.ApplicationWindow):
             if erg.get("ok"):
                 a.vorschau.hinweis(_("✓ Passed"))
                 a.ergebnis.set_label(_("✓ Passed: Winky didn’t recognize the other person."))
+            elif erg.get("wie_eigen"):
+                a.vorschau.hinweis(_("Was that you?"))
+                a.ergebnis.set_label(lauf.fehlermeldung(rc))
             elif wert is not None and wert >= 0 and erg.get("status") != "kein_gesicht":
                 a.vorschau.hinweis(_("Too similar"))
-                a.ergebnis.set_label(_("To Winky, this person looks too much like you. Make "
-                                       "Winky stricter so that only you can unlock the screen."))
+                a.ergebnis.set_label(
+                    _("To Winky, this person looks too much like you. Make Winky stricter so "
+                      "that only you can unlock the screen.") if strenger_moeglich(system.lese_zustand())
+                    else _("To Winky, this person looks too much like you, and stricter settings "
+                           "would lock you out as well. Better use only your password."))
             else:
                 a.vorschau.hinweis(_("Not checked"))
                 a.ergebnis.set_label(lauf.fehlermeldung(rc))
@@ -867,7 +897,7 @@ class Fenster(Adw.ApplicationWindow):
         if z.gegenprobe_wert is None:
             return
         neu = strengere_schwelle(z.gegenprobe_wert)
-        if neu > SCHWELLE_MAX:
+        if not strenger_moeglich(z):
             self.melde(_("This person looks too much like you. Winky can’t reliably tell you "
                          "apart, so it’s better to use only your password."))
             return
@@ -1247,7 +1277,9 @@ class Fenster(Adw.ApplicationWindow):
             r.set_sensitive(not laeuft)
         self.r_zweite.set_subtitle({None: _("Recommended: checks that Winky only recognizes you"),
                                     True: _("Passed, Winky only recognizes you"),
-                                    False: _("Too similar. Make it stricter here.")}
+                                    False: _("Too similar. Make it stricter here.")
+                                    if strenger_moeglich(z) else
+                                    _("Too similar; Winky can’t reliably tell you apart")}
                                    [s["gegenprobe"]])
         self.r_geste.set_subtitle(_("Passed ({date})").format(date=datum(z.geste_ok))
                                   if s["geste"] else

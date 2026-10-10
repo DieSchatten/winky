@@ -199,6 +199,18 @@ msgid "Make Winky stricter"
 msgstr "Winky strenger einstellen"
 
 #: src/app/gesicht_app.py
+msgid "Is the other person ready?"
+msgstr "Ist die andere Person bereit?"
+
+#: src/app/gesicht_app.py
+msgid ""
+"After you enter your password, you have 5 seconds to move out of the "
+"picture. Then the other person looks at the camera for 10 seconds."
+msgstr ""
+"Nach deiner Passworteingabe hast du 5 Sekunden, um aus dem Bild zu gehen. "
+"Dann schaut die andere Person 10 Sekunden in die Kamera."
+
+#: src/app/gesicht_app.py
 msgid "Winky isn’t fully installed."
 msgstr "Winky ist nicht vollständig installiert."
 
@@ -799,6 +811,10 @@ msgid "✓ Passed: Winky didn’t recognize the other person."
 msgstr "✓ Bestanden: Winky hat die andere Person nicht erkannt."
 
 #: src/app/gesicht_app.py
+msgid "Was that you?"
+msgstr "Warst du das?"
+
+#: src/app/gesicht_app.py
 msgid "Too similar"
 msgstr "Zu ähnlich"
 
@@ -809,6 +825,14 @@ msgid ""
 msgstr ""
 "Diese Person ähnelt dir für Winky zu sehr. Stell Winky strenger ein, damit "
 "nur du die Sperre öffnen kannst."
+
+#: src/app/gesicht_app.py
+msgid ""
+"To Winky, this person looks too much like you, and stricter settings would "
+"lock you out as well. Better use only your password."
+msgstr ""
+"Für Winky sieht diese Person dir zu ähnlich, und strenger eingestellt würde "
+"Winky auch dich aussperren. Nutze besser nur dein Passwort."
 
 #: src/app/gesicht_app.py
 msgid "Not checked"
@@ -1173,6 +1197,10 @@ msgstr "Bestanden, Winky erkennt nur dich"
 #: src/app/gesicht_app.py
 msgid "Too similar. Make it stricter here."
 msgstr "Zu ähnlich. Hier strenger einstellen."
+
+#: src/app/gesicht_app.py
+msgid "Too similar; Winky can’t reliably tell you apart"
+msgstr "Zu ähnlich; Winky kann euch nicht sicher unterscheiden"
 
 #: src/app/gesicht_app.py
 #, python-brace-format
@@ -1899,6 +1927,17 @@ msgstr ""
 #: src/verwalten/winky-verwalten
 msgid "Check with a second person failed"
 msgstr "Gegenprobe fehlgeschlagen"
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Winky saw a face as similar as your own. Were you still in the picture? Then "
+"check again and step away during the countdown. If not, Winky can’t tell "
+"this person apart from you; better use only your password."
+msgstr ""
+"Winky hat ein Gesicht gesehen, so ähnlich wie dein eigenes. Warst du noch im "
+"Bild? Dann noch einmal prüfen und während des Countdowns aus dem Bild gehen. "
+"Falls nicht, kann Winky diese Person nicht von dir unterscheiden; nutze dann "
+"besser nur dein Passwort."
 
 #: src/verwalten/winky-verwalten
 msgid ""
