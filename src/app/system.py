@@ -34,6 +34,8 @@ class Zustand:
     freigaben: tuple = ()     # Administrator-Dialoge mit Gesicht und ✌ (Gruppen)
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
     geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
+    schluesselbund: int = 0   # Anmeldepasswort im TPM versiegelt (Zeitpunkt)
+    schluesselbund_veraltet: int = 0  # Versiegelung verworfen, weil das Passwort sich änderte
 
 
 def _konfig(text, schluessel):
@@ -44,6 +46,16 @@ def _konfig(text, schluessel):
             if k == schluessel:
                 return v
     return None
+
+
+def secure_boot():
+    """True/False aus der EFI-Variable SecureBoot (für alle lesbar), None ohne EFI."""
+    pfad = umgebung.systempfad(
+        "/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-e2b6eac5b2ae")
+    try:
+        return pfad.read_bytes()[-1:] == b"\x01"
+    except OSError:
+        return None
 
 
 def lese_zustand(uid=None) -> Zustand:
@@ -63,6 +75,8 @@ def lese_zustand(uid=None) -> Zustand:
         if status.get("gegenprobe_wert") is not None:
             z.gegenprobe_wert = float(status["gegenprobe_wert"])
         z.geste_ok = int(status.get("geste_ok") or 0)
+    z.schluesselbund = int(status.get("schluesselbund") or 0)
+    z.schluesselbund_veraltet = int(status.get("schluesselbund_veraltet") or 0)
     try:
         text = w("/etc/winky/winky.conf").read_text()
         z.schwelle = float(_konfig(text, "schwelle") or 0)

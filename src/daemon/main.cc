@@ -822,6 +822,7 @@ int main(int argc, char** argv) {
     l.kamera->stop();
     if (erg.status == WINKY_TREFFER) {
       winky::schreibeFehlversuche(o.sperre, uid, 0);
+      if (q.op == WINKY_OP_ANMELDUNG) winky::markiereAnmeldung(o.sperre, uid);
     } else if (erg.status == WINKY_KEIN_TREFFER) {
       winky::schreibeFehlversuche(o.sperre, uid, winky::leseFehlversuche(o.sperre, uid) + 1);
     }

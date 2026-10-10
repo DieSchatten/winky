@@ -13,6 +13,9 @@ System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.4
   freigabe-an / freigabe-aus GRUPPE (Administrator-Dialoge mit Gesicht und ✌),
   anmeldung an|aus (auch die erste Anmeldung nach dem Start per Gesicht),
   geste-zeit SEKUNDEN (Wartezeit auf das ✌, 5 bis 30; Polkit-Wege höchstens 9)
+Eigenes Gesicht, zusätzlich: schluesselbund an|aus (Anmeldepasswort im TPM versiegeln, damit
+  die Erstanmeldung per Gesicht auch den Schlüsselbund öffnet; Passwort als erste Zeile auf
+  der Standardeingabe)
 
 Ausgabe zeilenweise: STATUS {json}, BILD <breite> <hoehe> <bytes>\\n<RGB>, ERGEBNIS {json}.
 Schließt der Aufrufer die Standardeingabe, endet ein laufender Vorgang.
@@ -85,7 +88,7 @@ OP_EINLERNEN, OP_TESTEN, OP_KAMERAS, OP_GESTE_TESTEN = 3, 4, 5, 8
 GEGENPROBE_ABSTAND = 0.10  # so weit muss eine fremde Person unter der Schwelle bleiben
 GEGENPROBE_COUNTDOWN = 5  # Sekunden, um nach der Passworteingabe aus dem Bild zu gehen
 GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "testen", "gegenprobe", "geste-testen",
-                   "entfernen"}
+                   "entfernen", "schluesselbund"}
 STATUS_TEXT = {0: "treffer", 1: "kein_treffer", 2: "kein_gesicht", 3: "nicht_eingerichtet",
                4: "gesperrt", 5: "fehler", 6: "abgelehnt", 7: "ok"}
 KONFIG_VORGABE = """\
@@ -531,7 +534,8 @@ def befehl_kamera(uid, _name, wahl=None):
 
 
 def befehl_entfernen(uid, _name):
-    for pfad in (vorlagen_pfad(uid), geste_pfad(uid), f"{STATUS_ORDNER}/{uid}.json"):
+    for pfad in (vorlagen_pfad(uid), geste_pfad(uid), schluesselbund_pfad(uid),
+                 f"{STATUS_ORDNER}/{uid}.json"):
         try:
             os.unlink(pfad)
         except FileNotFoundError:
@@ -772,6 +776,68 @@ def befehl_geste_zeit(_uid, _name, wert):
     fertig(True, geste_zeit=sekunden)
 
 
+def schluesselbund_pfad(uid):
+    return f"{BASIS}/{uid}/schluesselbund.cred"
+
+
+def secure_boot():
+    """True/False aus der EFI-Variable SecureBoot, None ohne EFI."""
+    try:
+        with open("/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-e2b6eac5b2ae",
+                  "rb") as f:
+            return f.read()[-1:] == b"\x01"
+    except OSError:
+        return None
+
+
+def befehl_schluesselbund(uid, name, wahl=None):
+    """Anmeldepasswort im TPM versiegeln (host+tpm2, PCR 7), damit die Erstanmeldung per
+    Gesicht auch den Schlüsselbund öffnet. Das Passwort kommt als erste Zeile über stdin und
+    wird vorher mit unix_chkpwd geprüft; es landet nie in Argumenten, Umgebung oder Protokoll."""
+    if wahl == "aus":
+        loeschen(schluesselbund_pfad(uid))
+        status = lese_status(uid)
+        status.pop("schluesselbund", None)
+        status.pop("schluesselbund_veraltet", None)
+        schreibe_status(uid, status)
+        fertig(True)
+    if wahl != "an":
+        fertig(False, fehler=_("Usage: {usage}").format(usage="schluesselbund an|aus"))
+    passwort = sys.stdin.buffer.readline(1100).rstrip(b"\n")
+    if not os.path.exists(ANMELDUNG_SCHALTER):
+        fertig(False, fehler=_("Turn on login after startup first"))
+    if not passwort or len(passwort) > 1024:
+        fertig(False, fehler=_("No password given"))
+    if subprocess.run(["systemd-creds", "has-tpm2"], capture_output=True).returncode != 0:
+        fertig(False, fehler=_("No usable TPM chip found on this computer"))
+    pruefung = subprocess.run(["/usr/sbin/unix_chkpwd", name, "nullok"], input=passwort + b"\0",
+                              capture_output=True)
+    if pruefung.returncode != 0:
+        fertig(False, fehler=_("That is not your login password"))
+    ordner = f"{BASIS}/{uid}"
+    sicherer_ordner(ordner, 0o750, grp.getgrnam(GRUPPE).gr_gid)
+    neu = schluesselbund_pfad(uid) + ".neu"
+    loeschen(neu)
+    alt = os.umask(0o077)
+    try:
+        r = subprocess.run(["systemd-creds", "encrypt", "--with-key=host+tpm2", "--tpm2-pcrs=7",
+                            f"--name=winky-schluesselbund-{uid}", "-", neu], input=passwort,
+                           capture_output=True)
+    finally:
+        os.umask(alt)
+    if r.returncode != 0:
+        loeschen(neu)
+        fertig(False, fehler=_("Sealing in the TPM chip failed"),
+               ausgabe=r.stderr.decode(errors="replace")[-300:])
+    os.chmod(neu, 0o600)
+    os.rename(neu, schluesselbund_pfad(uid))
+    status = lese_status(uid)
+    status["schluesselbund"] = int(time.time())
+    status.pop("schluesselbund_veraltet", None)
+    schreibe_status(uid, status)
+    fertig(True, secure_boot=secure_boot())
+
+
 def befehl_deaktivieren(_uid, _name):
     # sudo per ✌ und die erste Anmeldung hängen am Profil: mit ausschalten
     loeschen(SUDO_SCHALTER)
@@ -811,6 +877,7 @@ def befehl_status(uid, name):
            sudo=os.path.exists(SUDO_SCHALTER), freigaben=freigaben_gruppen(),
            anmeldung=os.path.exists(ANMELDUNG_SCHALTER),
            geste_zeit=int(konfig_wert(lese_konfig(), "sudo_ms") or 8000) // 1000,
+           schluesselbund=os.path.exists(schluesselbund_pfad(uid)), secure_boot=secure_boot(),
            geste_ok=os.path.exists(geste_pfad(uid)),
            gegenprobe_ok=status.get("gegenprobe_ok"),
            aktiv=pam_aktiv(), pausiert=os.path.exists(NOTSCHALTER), dienst=socket_aktiv)
@@ -824,6 +891,7 @@ BEFEHLE = {
     "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
     "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
     "freigabe-an": None, "freigabe-aus": None, "anmeldung": None, "geste-zeit": None,
+    "schluesselbund": None,
 }
 
 
@@ -836,7 +904,7 @@ def main(argv):
             schreibe_freigaben_regel(freigaben_gruppen())
         sys.exit(0)
     mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "freigabe-an", "freigabe-aus",
-                "anmeldung", "geste-zeit"}
+                "anmeldung", "geste-zeit", "schluesselbund"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
         fertig(False, fehler=_("Usage: winky-verwalten {commands} [VALUE]").format(
@@ -856,6 +924,8 @@ def main(argv):
         befehl_anmeldung(uid, name, argv[2])
     if argv[1] == "geste-zeit":
         befehl_geste_zeit(uid, name, argv[2])
+    if argv[1] == "schluesselbund":
+        befehl_schluesselbund(uid, name, argv[2])
     if argv[1] in ("freigabe-an", "freigabe-aus"):
         befehl_freigabe(uid, name, argv[2], argv[1] == "freigabe-an")
     BEFEHLE[argv[1]](uid, name)

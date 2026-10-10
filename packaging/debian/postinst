@@ -27,7 +27,7 @@ if [ "$1" = "configure" ]; then
         [ -d "$d" ] && [ ! -L "$d" ] && chown -R root:_winky "$d" && chmod 0750 "$d"
     done
     systemctl daemon-reload >/dev/null 2>&1 || true
-    systemctl enable --now winky.socket >/dev/null 2>&1 || true
+    systemctl enable --now winky.socket winky-schluessel.socket >/dev/null 2>&1 || true
     # "Default: no": Profil bleibt aus, bis die App es einschaltet; ein aktives wird erneuert
     pam-auth-update --package
     # Freigaben-Regel an neue Programmversion und neu installierte Polkit-Aktionen anpassen

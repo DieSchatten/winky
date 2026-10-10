@@ -28,4 +28,8 @@ int sudoSperren(const std::string& basis, uid_t uid);
 bool sudoAbbruchGesetzt(const std::string& basis, uid_t uid);
 void sudoEntsperren(const std::string& basis, uid_t uid, int fd);
 
+// Erkannte Erstanmeldung: Marke anmeldung-<uid>; der Schlüsselbund-Dienst nimmt sie nur
+// wenige Sekunden lang an und löscht sie dabei.
+void markiereAnmeldung(const std::string& basis, uid_t uid);
+
 }  // namespace winky

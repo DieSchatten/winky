@@ -72,7 +72,12 @@ This is in your own hands:
    face gets in after a restart too, not just into the locked session. Your login keyring
    stays locked, because only the password opens it. Without disk encryption, the extra risk
    is small: whoever has the computer can read the disk anyway.
-10. **Administrator dialogs with ✌.** Every group you turn on works like sudo with ✌: a
+10. **Keyring password in the TPM chip** (experimental, off by default). Your login password
+    is stored sealed and can be recovered on this computer. Without Secure Boot, someone with
+    physical access may be able to read it, and with it the password itself, which many
+    people also use elsewhere. Winky only hands it out right after a recognized face login,
+    checks it against `/etc/shadow` first and discards it after a password change.
+11. **Administrator dialogs with ✌.** Every group you turn on works like sudo with ✌: a
    harmful program running as you can trigger such a dialog, and a ✌ at the wrong moment
    approves it. Updates and software from your package sources only install signed packages.
    Downloaded packages, `pkexec` and “all other administrator dialogs” give full

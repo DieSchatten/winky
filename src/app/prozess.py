@@ -17,7 +17,7 @@ from sprache import _
 
 class Prozess:
     def __init__(self, befehl, bei_bild=None, bei_status=None, bei_ende=None,
-                 abbruch_ueber_eingabe=False, cwd=None):
+                 abbruch_ueber_eingabe=False, cwd=None, eingabe=None):
         self.bei_bild = bei_bild
         self.bei_status = bei_status
         self.bei_ende = bei_ende
@@ -28,8 +28,14 @@ class Prozess:
         self._bild_wartet = False
         self.proc = subprocess.Popen(
             befehl, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            stdin=subprocess.PIPE if abbruch_ueber_eingabe else subprocess.DEVNULL,
+            stdin=subprocess.PIPE if abbruch_ueber_eingabe or eingabe else subprocess.DEVNULL,
             cwd=cwd, start_new_session=True)
+        if eingabe:  # z. B. das Anmeldepasswort fürs Versiegeln, nie als Argument
+            try:
+                self.proc.stdin.write(eingabe)
+                self.proc.stdin.flush()
+            except OSError:
+                pass
         self._t_err = threading.Thread(target=self._lese_stderr, daemon=True)
         self._t_err.start()
         threading.Thread(target=self._lese_stdout, daemon=True).start()

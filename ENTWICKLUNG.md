@@ -55,6 +55,7 @@ Store-Beschreibung tragen Englisch und Deutsch direkt in sich.
 | Prüfdienst | `src/daemon/` | `winky-matcher`, je Anfrage per Socket gestartet, als `_winky` in einer systemd-Sandbox (Bewertung 1,0); Kamera, Erkennung, Entscheidung, Sperrzähler |
 | Erkennungskern | `src/core/`, `src/capture/` | YuNet (Gesichtssuche mit 5 Punkten), 5-Punkt-Ausrichtung, SFace (Vergleich, 128 Werte), MediaPipe-Handzeichen, V4L2-Infrarot |
 | Verwaltungshelfer | `src/verwalten/winky-verwalten` | root über Polkit: als `winky-gesicht` mit dem eigenen Passwort, als `winky-verwalten` mit dem Administratorpasswort |
+| Schlüsselbund | `src/schluessel/winky-schluessel` | root, abgeschottet (systemd-analyze security 1,7), je Anfrage gestartet: gibt das im TPM versiegelte Anmeldepasswort nach frisch erkannter Erstanmeldung an pam_winky (PAM_AUTHTOK für pam_gnome_keyring) |
 | Polkit-Prüfung | `src/polkit/winky_polkit_pruefung.c` | für die Polkit-Regeln (KeePassXC, Administrator-Dialoge), nur libc |
 | Hinweise | `src/hinweis/winky-hinweis` | Hinweisfenster mit großem ✌ zu jeder Anfrage (sudo, KeePassXC), ohne Fokus über XWayland; Benachrichtigung bei Fehlschlag (Autostart) |
 | App | `src/app/` | GTK4/libadwaita: Assistent, Startseite, Kamera, Sicherheit, Erweitert |
@@ -66,6 +67,7 @@ Dateien auf dem System:
 - `/etc/winky/sudo-ein`, `/etc/winky/disabled`: Schalter für sudo mit ✌ und Notschalter.
 - `/var/lib/winky/<uid>/vorlagen.bin`: Merkmalsvektoren je Benutzer, root:_winky 0640.
 - `/var/lib/winky/<uid>/geste-ok`: bestandener ✌-Test.
+- `/var/lib/winky/<uid>/schluesselbund.cred`: Anmeldepasswort, versiegelt mit `systemd-creds` (host+tpm2, PCR 7), root 0600.
 - `/var/lib/winky/status/<uid>.json`: Stand für die App (Aufnahme, Test, zweite Person).
 - `/run/winky/sperre/`: Fehlversuchs- und sudo-Zähler, flüchtig.
 - `/run/winky/anfrage/<uid>.json`: laufende Anfrage mit ✌ (Zweck, Befehl, Stand) für das Hinweisfenster.
@@ -77,9 +79,9 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Komponenten** (`tests/test_dienst.cc`, 75 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
-- **PAM** (`tests/pam_test.py`, 42 Prüfungen): echtes libpam mit pamtester und
+- **PAM** (`tests/pam_test.py`, 46 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
-- **App** (`werkzeuge/test/gui_logik_test.py`, 73 Prüfungen): spielt den Assistenten von
+- **App** (`werkzeuge/test/gui_logik_test.py`, 77 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 
@@ -94,7 +96,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
-- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 59 Prüfungen): echter Prüfdienst, echte
+- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 66 Prüfungen): echter Prüfdienst, echte
   Kamera, echtes libpam im Wegwerf-System. Einschalten nur mit aktiver Gesichtsentsperrung
   und bestandenem ✌-Test, Zeitlimit, Desktop-Hinweis, gleichzeitige Anfragen, Begrenzung,
   Zurücksetzen per Passwort, ohne Terminal, Schalter aus, su/login/polkit unberührt,

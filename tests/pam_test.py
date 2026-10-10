@@ -165,6 +165,53 @@ def main():
     pruefe(len(a.anfragen) == vorher, "Schalter gilt nur für gdm-password")
     ok, _ = pam("gdm-password")
     pruefe(ok and a.anfragen[-1] == (10, 1000), "Erstanmeldung mit Schalter: Operation ANMELDUNG")
+    # Schlüsselbund: nach erkannter Erstanmeldung Passwort vom Schlüsselbund-Dienst als AUTHTOK
+    schluessel = []
+
+    def schluessel_dienst(s):
+        while True:
+            c, _ = s.accept()
+            with c:
+                daten = c.recv(64)
+                schluessel.append(struct.unpack("IIII", daten)[1:3] if len(daten) == 16 else None)
+                c.send(b"Kgeheim")
+    if os.path.exists("/run/winky-schluessel.sock"):
+        os.unlink("/run/winky-schluessel.sock")
+    ss = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    ss.bind("/run/winky-schluessel.sock")
+    ss.listen(4)
+    threading.Thread(target=schluessel_dienst, args=(ss,), daemon=True).start()
+    with open("/root/authtok.sh", "w") as f:
+        f.write("#!/bin/sh\ncat > /root/authtok.txt\n")
+    os.chmod("/root/authtok.sh", 0o755)
+    dienst("gdm-password", [
+        f"auth [success=ok default=ignore] {modul} services=gdm-password timeout_ms=1500",
+        "auth optional pam_exec.so expose_authtok quiet /root/authtok.sh"])
+    for alt_datei in ("/root/authtok.txt",):
+        if os.path.exists(alt_datei):
+            os.unlink(alt_datei)
+    ok, _ = pam("gdm-password")
+    pruefe(not schluessel, "ohne versiegeltes Passwort kein Kontakt zum Schlüsselbund-Dienst")
+    os.makedirs("/var/lib/winky/1000", exist_ok=True)
+    open("/var/lib/winky/1000/schluesselbund.cred", "w").close()
+    ok, _ = pam("gdm-password")
+    pruefe(schluessel and schluessel[-1] == (11, 1000), "Erstanmeldung holt das Schlüsselbund-Passwort")
+    try:
+        with open("/root/authtok.txt") as f:
+            uebergeben = f.read().rstrip("\0\n")
+    except OSError:
+        uebergeben = ""
+    pruefe(uebergeben == "geheim", "Passwort kommt als AUTHTOK beim nächsten Modul an (Schlüsselbund)")
+    a.modus = "kein"
+    vorher = len(schluessel)
+    pam("gdm-password")
+    pruefe(len(schluessel) == vorher, "ohne erkanntes Gesicht kein Kontakt zum Schlüsselbund-Dienst")
+    a.modus = "treffer"
+    os.unlink("/var/lib/winky/1000/schluesselbund.cred")
+    dienst("gdm-password", [
+        f"auth [success=done default=ignore] {modul} services=gdm-password timeout_ms=1500",
+        "auth required pam_permit.so"])
+
     os.chmod("/etc/winky/anmeldung-ein", 0o666)
     vorher = len(a.anfragen)
     ok, _ = pam("gdm-password")

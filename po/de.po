@@ -301,6 +301,10 @@ msgstr ""
 "Programm ihn braucht."
 
 #: src/app/gesicht_app.py
+msgid "Also unlock the keyring (experimental)"
+msgstr "Auch den Schlüsselbund entsperren (experimentell)"
+
+#: src/app/gesicht_app.py
 msgid "sudo in the terminal"
 msgstr "sudo im Terminal"
 
@@ -969,6 +973,47 @@ msgstr ""
 "Nutzung auf eigenes Risiko."
 
 #: src/app/gesicht_app.py
+msgid "The keyring password has been removed from the TPM chip"
+msgstr "Das Schlüsselbund-Passwort ist aus dem TPM-Chip entfernt"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky stores your login password sealed in this computer’s TPM chip and "
+"hands it to the keyring after you log in with your face. Only on this "
+"computer, only right after your face was recognized at the login screen."
+msgstr ""
+"Winky speichert dein Anmeldepasswort versiegelt im TPM-Chip dieses Rechners "
+"und gibt es dem Schlüsselbund, wenn du dich mit dem Gesicht anmeldest. Nur "
+"auf diesem Rechner, nur direkt nachdem die Anmeldemaske dein Gesicht erkannt "
+"hat."
+
+#: src/app/gesicht_app.py
+msgid ""
+"Secure Boot is off. Then the TPM chip protects your password only weakly: "
+"someone who has this computer may be able to read it. Do not use this "
+"password anywhere else."
+msgstr ""
+"Secure Boot ist aus. Dann schützt der TPM-Chip dein Passwort nur schwach: "
+"Wer diesen Rechner hat, kann es unter Umständen auslesen. Nutze dieses "
+"Passwort nirgends sonst."
+
+#: src/app/gesicht_app.py
+msgid "Unlock the keyring with your face?"
+msgstr "Schlüsselbund mit dem Gesicht entsperren?"
+
+#: src/app/gesicht_app.py
+msgid "Your login password"
+msgstr "Dein Anmeldepasswort"
+
+#: src/app/gesicht_app.py
+msgid "Seal"
+msgstr "Versiegeln"
+
+#: src/app/gesicht_app.py
+msgid "After the next restart, your face also opens the keyring"
+msgstr "Nach dem nächsten Neustart öffnet dein Gesicht auch den Schlüsselbund"
+
+#: src/app/gesicht_app.py
 msgid "Your face now also logs you in after a restart"
 msgstr "Dein Gesicht meldet dich jetzt auch nach einem Neustart an"
 
@@ -1076,6 +1121,20 @@ msgstr ""
 #: src/app/gesicht_app.py
 msgid "Continue setup"
 msgstr "Einrichtung fortsetzen"
+
+#: src/app/gesicht_app.py
+msgid "Your password has changed. Turn this on again to keep using it."
+msgstr ""
+"Dein Passwort hat sich geändert. Schalte das wieder ein, um es weiter zu "
+"nutzen."
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your login password is stored sealed in the TPM chip. Caution: weaker "
+"without Secure Boot."
+msgstr ""
+"Dein Anmeldepasswort liegt versiegelt im TPM-Chip. Vorsicht: ohne Secure "
+"Boot schwächer geschützt."
 
 #: src/app/gesicht_app.py
 msgid "Confirm commands with face and ✌"
@@ -1307,11 +1366,12 @@ msgstr "Die Bildschirmsperre mit deinem Gesicht öffnen"
 #: src/app/gesicht_app.py
 msgid ""
 "Only the lock of a running session, unless you also turn on login after "
-"startup. Then your keyring stays locked until you type your password."
+"startup. The keyring then stays locked, unless you also let Winky unlock it "
+"(experimental)."
 msgstr ""
 "Nur die Sperre einer laufenden Sitzung, außer du schaltest auch die "
-"Anmeldung nach dem Start ein. Dann bleibt der Schlüsselbund zu, bis du dein "
-"Passwort eingibst."
+"Anmeldung nach dem Start ein. Der Schlüsselbund bleibt dann zu, außer du "
+"lässt ihn auch von Winky entsperren (experimentell)."
 
 #: src/app/gesicht_app.py
 msgid "Optionally confirm sudo with face and ✌"
@@ -1983,6 +2043,26 @@ msgstr "Zuerst Gesicht und ✌ erfolgreich testen"
 #: src/verwalten/winky-verwalten
 msgid "The time must be between 5 and 30 seconds"
 msgstr "Die Zeit muss zwischen 5 und 30 Sekunden liegen"
+
+#: src/verwalten/winky-verwalten
+msgid "Turn on login after startup first"
+msgstr "Zuerst die Anmeldung nach dem Start einschalten"
+
+#: src/verwalten/winky-verwalten
+msgid "No password given"
+msgstr "Kein Passwort angegeben"
+
+#: src/verwalten/winky-verwalten
+msgid "No usable TPM chip found on this computer"
+msgstr "Auf diesem Rechner wurde kein nutzbarer TPM-Chip gefunden"
+
+#: src/verwalten/winky-verwalten
+msgid "That is not your login password"
+msgstr "Das ist nicht dein Anmeldepasswort"
+
+#: src/verwalten/winky-verwalten
+msgid "Sealing in the TPM chip failed"
+msgstr "Versiegeln im TPM-Chip fehlgeschlagen"
 
 #: src/verwalten/winky-verwalten
 msgid "The profile could not be removed"

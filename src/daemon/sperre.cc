@@ -138,4 +138,14 @@ void sudoEntsperren(const std::string& basis, uid_t uid, int fd) {
   if (fd >= 0) ::close(fd);  // gibt die Sperre frei
 }
 
+void markiereAnmeldung(const std::string& basis, uid_t uid) {
+  const int dir = ::open(basis.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+  if (dir < 0) return;
+  const std::string name = "anmeldung-" + std::to_string(uid);
+  const int fd =
+      ::openat(dir, name.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_CLOEXEC, 0600);
+  ::close(dir);
+  if (fd >= 0) ::close(fd);
+}
+
 }  // namespace winky

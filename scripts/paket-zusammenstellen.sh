@@ -21,6 +21,10 @@ install -Dm0755 src/verwalten/winky-verwalten "$P"/usr/libexec/winky/winky-verwa
 install -Dm0755 src/verwalten/winky-verwalten "$P"/usr/libexec/winky/winky-gesicht
 # Desktop-Hinweis zu sudo-Anfragen, startet in jeder Sitzung
 install -Dm0755 src/hinweis/winky-hinweis "$P"/usr/libexec/winky/winky-hinweis
+# Schlüsselbund-Passwort aus dem TPM für die Erstanmeldung (eigener, abgeschotteter Dienst)
+install -Dm0755 src/schluessel/winky-schluessel "$P"/usr/libexec/winky/winky-schluessel
+install -Dm0644 packaging/systemd/winky-schluessel.socket "$P"/usr/lib/systemd/system/winky-schluessel.socket
+install -Dm0644 packaging/systemd/winky-schluessel@.service "$P"/usr/lib/systemd/system/winky-schluessel@.service
 install -Dm0644 packaging/winky-hinweis.desktop "$P"/etc/xdg/autostart/io.github.dieschatten.Winky.Hinweis.desktop
 install -Dm0644 vendor/onnxruntime/lib/libonnxruntime.so.1.30.0 "$P"/usr/lib/winky/libonnxruntime.so.1
 # Modelle: Gesichtssuche, Erkennung, Handzeichen (MediaPipe)

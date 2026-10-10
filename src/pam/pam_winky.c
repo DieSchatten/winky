@@ -172,6 +172,51 @@ static int frage_dienst(uint32_t op, uid_t uid, int timeout_ms, uint32_t *status
   return frage(op, uid, timeout_ms, NULL, 0, NULL, NULL, NULL, status);
 }
 
+/* Schlüsselbund: nach erkannter Erstanmeldung das im TPM versiegelte Passwort beim
+ * Schlüsselbund-Dienst holen und als PAM_AUTHTOK für pam_gnome_keyring bereitstellen. */
+static void schluessel_holen(pam_handle_t *pamh, uid_t uid) {
+  char pfad[80];
+  snprintf(pfad, sizeof(pfad), "/var/lib/winky/%u/schluesselbund.cred", (unsigned)uid);
+  struct stat st;
+  if (lstat(pfad, &st) != 0 || !S_ISREG(st.st_mode) || st.st_uid != 0) return;
+  struct timespec start;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  const int fd = socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
+  if (fd < 0) return;
+  struct sockaddr_un sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sun_family = AF_UNIX;
+  strncpy(sa.sun_path, WINKY_SCHLUESSEL_SOCKET, sizeof(sa.sun_path) - 1);
+  struct ucred cred;
+  socklen_t len = sizeof(cred);
+  struct winky_anfrage q = {WINKY_MAGIC, WINKY_OP_SCHLUESSEL, (uint32_t)uid, 0};
+  if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0 ||
+      getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) != 0 || cred.uid != 0 ||
+      send(fd, &q, sizeof(q), MSG_NOSIGNAL) != (ssize_t)sizeof(q)) {
+    close(fd);
+    return;
+  }
+  char puf[WINKY_SCHLUESSEL_MAX + 2];
+  for (;;) {
+    const long rest = 6000 - ms_seit(&start); /* TPM und Prüfung brauchen etwas */
+    if (rest <= 0) break;
+    struct pollfd p = {fd, POLLIN, 0};
+    const int r = poll(&p, 1, (int)rest);
+    if (r < 0 && errno == EINTR) continue;
+    if (r <= 0) break;
+    const ssize_t n = recv(fd, puf, sizeof(puf) - 1, MSG_DONTWAIT);
+    if (n < 0 && (errno == EAGAIN || errno == EINTR)) continue;
+    if (n > 1 && n <= WINKY_SCHLUESSEL_MAX && puf[0] == 'K') {
+      puf[n] = '\0';
+      if (pam_set_item(pamh, PAM_AUTHTOK, puf + 1) == PAM_SUCCESS)
+        pam_syslog(pamh, LOG_INFO, "Schlüsselbund-Passwort bereitgestellt");
+    }
+    break;
+  }
+  explicit_bzero(puf, sizeof(puf));
+  close(fd);
+}
+
 /* Befehlszeile dieses Prozesses (sudo ...), Nullbytes als Leerzeichen, gekürzt */
 static void befehlszeile(char *out, size_t max) {
   out[0] = '\0';
@@ -292,6 +337,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
 
   uint32_t status = WINKY_FEHLER;
   if (frage_dienst(op, uid, timeout_ms, &status) == 0 && status == WINKY_TREFFER) {
+    if (op == WINKY_OP_ANMELDUNG) schluessel_holen(pamh, uid);
     pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
     pam_syslog(pamh, LOG_INFO, "per Gesicht entsperrt");
     return PAM_SUCCESS;

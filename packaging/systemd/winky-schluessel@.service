@@ -1,0 +1,43 @@
+[Unit]
+Description=Winky: Schlüsselbund-Passwort aus dem TPM (Verbindung %i)
+Documentation=file:/usr/share/doc/winky/README.md
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/winky/winky-schluessel
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=winky
+User=root
+UMask=0077
+
+# Sandbox: root nur für TPM, /etc/shadow (Passwortprüfung) und die Ordner von Winky
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH
+AmbientCapabilities=
+PrivateNetwork=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+DevicePolicy=closed
+DeviceAllow=/dev/tpmrm0 rw
+ReadWritePaths=/var/lib/winky /run/winky/sperre
+RuntimeMaxSec=20
+MemoryMax=256M
+TasksMax=16

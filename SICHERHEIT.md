@@ -76,7 +76,13 @@ Das hast du selbst in der Hand:
    kann, kommt dann auch nach einem Neustart hinein, nicht nur in die gesperrte Sitzung. Der
    Schlüsselbund bleibt zu, weil ihn nur das Passwort öffnet. Ohne verschlüsselte Festplatte
    ist das zusätzliche Risiko klein: Wer den Rechner hat, kann die Festplatte ohnehin lesen.
-10. **Administrator-Dialoge mit ✌.** Jede eingeschaltete Gruppe wirkt wie sudo mit ✌: Ein
+10. **Schlüsselbund-Passwort im TPM-Chip** (experimentell, ab Werk aus). Dein
+    Anmeldepasswort liegt versiegelt auf dem Rechner und ist dort wiederherstellbar. Ohne
+    Secure Boot kann es jemand mit dem Gerät in der Hand unter Umständen auslesen, und damit
+    das Passwort selbst, das viele auch anderswo nutzen. Winky gibt es nur direkt nach einer
+    erkannten Gesichtsanmeldung heraus, prüft es vorher gegen `/etc/shadow` und verwirft es
+    nach einer Passwortänderung.
+11. **Administrator-Dialoge mit ✌.** Jede eingeschaltete Gruppe wirkt wie sudo mit ✌: Ein
    Schadprogramm unter deinem Konto kann so einen Dialog auslösen, und ein ✌ im falschen
    Moment gibt ihn frei. Updates und Software aus deinen Paketquellen installieren nur
    unterschriebene Pakete. Heruntergeladene Pakete, `pkexec` und „alle anderen

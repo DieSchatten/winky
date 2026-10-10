@@ -18,7 +18,7 @@ from pathlib import Path
 W = Path(os.environ["WINKY_TESTWURZEL"])
 UID = os.getuid()
 GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "testen", "gegenprobe", "geste-testen",
-                   "entfernen"}
+                   "entfernen", "schluesselbund"}
 KAMERA = {"geraet": "/dev/video2", "pfad": "/dev/v4l/by-path/test-usb-0:1:1.2-video-index0",
           "name": "Test-Kamera: IR Camera", "breite": 640, "hoehe": 360, "blinkt": True,
           "hell": 74.9, "dunkel": 0.0}
@@ -177,6 +177,17 @@ def main():
         else:
             setze("sudo", "nein")
             p("/etc/winky/sudo-ein").unlink(missing_ok=True)
+        fertig(True)
+    if befehl == "schluesselbund":
+        st = lese_status()
+        if args[1] == "an":
+            passwort = sys.stdin.readline().rstrip("\n")
+            if passwort != "richtig":
+                fertig(False, fehler="Das ist nicht dein Anmeldepasswort")
+            st["schluesselbund"] = int(time.time())
+        else:
+            st.pop("schluesselbund", None)
+        schreibe_status(st)
         fertig(True)
     if befehl == "geste-zeit":
         if not 5 <= int(args[1]) <= 30:

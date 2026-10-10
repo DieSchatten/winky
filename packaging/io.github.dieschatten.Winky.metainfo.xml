@@ -144,6 +144,8 @@
         <ul>
           <li>Optional: log in after startup with your face. The login keyring then stays locked.</li>
           <li xml:lang="de">Wahlweise Anmeldung nach dem Start mit dem Gesicht. Der Schlüsselbund bleibt dann zu.</li>
+          <li>Experimental: also unlock the login keyring after a face login (password sealed in the TPM chip).</li>
+          <li xml:lang="de">Experimentell: nach der Gesichtsanmeldung auch den Schlüsselbund entsperren (Passwort versiegelt im TPM-Chip).</li>
           <li>Adjustable time for the ✌; the ✌ window shows what you are approving.</li>
           <li xml:lang="de">Einstellbare Zeit für das ✌; das ✌-Fenster zeigt, was du freigibst.</li>
           <li>“About Winky” with version, license and project page.</li>

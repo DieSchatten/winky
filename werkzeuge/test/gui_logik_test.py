@@ -257,6 +257,15 @@ def test(f):
            "Erstanmeldung: ab Werk aus, schaltbar")
     f.r_anmeldung.set_active(True)
     pruefe(fertig(f) and f.zustand.anmeldung, "Erstanmeldung per Gesicht eingeschaltet")
+    pruefe(f.r_schluesselbund.get_visible() and not f.r_schluesselbund.get_active(),
+           "Schlüsselbund-Schalter erscheint mit der Erstanmeldung, ab Werk aus")
+    f.schluesselbund_versiegeln("falsch")
+    pruefe(fertig(f) and not f.zustand.schluesselbund, "falsches Passwort: nichts versiegelt")
+    f.schluesselbund_versiegeln("richtig")
+    pruefe(fertig(f) and f.zustand.schluesselbund and f.r_schluesselbund.get_active(),
+           "Passwort versiegelt, Schalter an")
+    f.r_schluesselbund.set_active(False)
+    pruefe(fertig(f) and not f.zustand.schluesselbund, "Versiegelung wieder entfernt")
     f.r_anmeldung.set_active(False)
     pruefe(fertig(f) and not f.zustand.anmeldung, "Erstanmeldung wieder mit Passwort")
     pruefe(f.g_freigaben.get_visible() and not any(z.get_active() for z in f.r_freigaben.values()),

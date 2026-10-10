@@ -211,6 +211,24 @@ and ✌ instead. Each group has its own switch on the home page, all are off by 
   afterwards. Winky's own settings always require the password.
 - The rule is `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; Pause turns it off, too.
 
+## Login after startup and keyring (experimental)
+
+With **Login after startup** on the home page, your face also logs you in after a restart.
+Normally the login keyring (saved passwords of browsers, Wi-Fi, mail) then stays locked,
+because only your password opens it.
+
+**Also unlock the keyring (experimental)** solves this like Windows Hello: you enter your
+login password once in the app, Winky checks it and stores it sealed in the computer's TPM
+chip (`systemd-creds`, bound to this installation and the Secure Boot state). After a face
+login, a small isolated service hands it to the keyring, only right after your face was
+recognized at the login screen and only after checking it is still correct. If you change
+your password, Winky discards the sealed copy and the app asks you to set it up again.
+
+**Risk:** your login password can then be recovered on this computer. Without Secure Boot,
+the TPM chip protects it only weakly; someone who has the computer may be able to read it.
+Only use this with a password you use nowhere else, ideally with Secure Boot and disk
+encryption.
+
 ## Emergency and uninstalling
 
 Fastest way first:

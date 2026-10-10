@@ -211,6 +211,25 @@ aus:
 - Die Regel liegt in `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; die Pause schaltet
   auch sie ab.
 
+## Anmeldung nach dem Start und Schlüsselbund (experimentell)
+
+Mit **Anmeldung nach dem Start** auf der Startseite meldet dich dein Gesicht auch nach einem
+Neustart an. Der Schlüsselbund (gespeicherte Passwörter von Browser, WLAN, Mail) bleibt dann
+normalerweise zu, weil ihn nur dein Passwort öffnet.
+
+**Auch den Schlüsselbund entsperren (experimentell)** löst das wie Windows Hello: Du gibst
+dein Anmeldepasswort einmal in der App ein, Winky prüft es und speichert es versiegelt im
+TPM-Chip des Rechners (`systemd-creds`, gebunden an diese Installation und den
+Secure-Boot-Zustand). Nach einer Gesichtsanmeldung gibt ein kleiner, abgeschotteter Dienst es
+an den Schlüsselbund weiter, nur direkt nachdem die Anmeldemaske dein Gesicht erkannt hat und
+nur nach einer Prüfung, ob es noch stimmt. Änderst du dein Passwort, verwirft Winky die
+versiegelte Kopie, und die App bittet dich, es neu einzurichten.
+
+**Risiko:** Dein Anmeldepasswort ist dann auf diesem Rechner wiederherstellbar. Ohne Secure
+Boot schützt der TPM-Chip es nur schwach; wer den Rechner hat, kann es unter Umständen
+auslesen. Nutze das nur mit einem Passwort, das du nirgends sonst verwendest, am besten mit
+Secure Boot und verschlüsselter Festplatte.
+
 ## Notfall und Deinstallieren
 
 Schnellster Weg zuerst:

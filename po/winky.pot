@@ -286,6 +286,10 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Also unlock the keyring (experimental)"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "sudo in the terminal"
 msgstr ""
 
@@ -905,6 +909,40 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "The keyring password has been removed from the TPM chip"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky stores your login password sealed in this computer’s TPM chip and "
+"hands it to the keyring after you log in with your face. Only on this "
+"computer, only right after your face was recognized at the login screen."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Secure Boot is off. Then the TPM chip protects your password only weakly: "
+"someone who has this computer may be able to read it. Do not use this "
+"password anywhere else."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlock the keyring with your face?"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your login password"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Seal"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "After the next restart, your face also opens the keyring"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Your face now also logs you in after a restart"
 msgstr ""
 
@@ -999,6 +1037,16 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Continue setup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your password has changed. Turn this on again to keep using it."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your login password is stored sealed in the TPM chip. Caution: weaker "
+"without Secure Boot."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1220,7 +1268,8 @@ msgstr ""
 #: src/app/gesicht_app.py
 msgid ""
 "Only the lock of a running session, unless you also turn on login after "
-"startup. Then your keyring stays locked until you type your password."
+"startup. The keyring then stays locked, unless you also let Winky unlock it "
+"(experimental)."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1841,6 +1890,26 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "The time must be between 5 and 30 seconds"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Turn on login after startup first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "No password given"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "No usable TPM chip found on this computer"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "That is not your login password"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Sealing in the TPM chip failed"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

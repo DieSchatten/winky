@@ -190,6 +190,30 @@ SUDO_UID=1000 $V anmeldung aus </dev/null >/dev/null
 pruefe '[ ! -e /etc/winky/anmeldung-ein ] && grep -q "^anmeldung = nein" /etc/winky/winky.conf' "Erstanmeldung wieder aus"
 SUDO_UID=1000 $V anmeldung an </dev/null >/dev/null
 
+# 9b. Schlüsselbund aus dem TPM (im Container ohne TPM: Hostschlüssel für die Logik)
+pruefe 'systemctl is-active -q winky-schluessel.socket && [ "$(stat -c %a /run/winky-schluessel.sock)" = 600 ]' "Schlüsselbund-Dienst: Socket aktiv, nur root"
+pruefe 'echo geheim | SUDO_UID=1000 $G schluesselbund an | erg | grep -q "TPM"' "ohne TPM-Chip: klare Meldung, nichts versiegelt"
+echo "ubuntu:Testpasswort1" | chpasswd
+printf "Testpasswort1" | systemd-creds encrypt --with-key=host --name=winky-schluesselbund-1000 - /var/lib/winky/1000/schluesselbund.cred
+chmod 600 /var/lib/winky/1000/schluesselbund.cred
+schluessel_frage() { python3 -c "
+import socket,struct
+s=socket.socket(socket.AF_UNIX,socket.SOCK_SEQPACKET); s.connect('/run/winky-schluessel.sock')
+s.send(struct.pack('IIII',0x314B4E57,11,1000,0)); s.settimeout(15); print(s.recv(2000)[:1].decode())"; }
+pruefe '[ "$(schluessel_frage)" = N ] && journalctl -t winky -o cat --no-pager | tail -3 | grep -q "keine frisch erkannte Erstanmeldung"' "ohne frische Gesichtserkennung kein Passwort"
+touch /run/winky/sperre/anmeldung-1000
+pruefe '[ "$(schluessel_frage)" = N ] && [ ! -e /run/winky/sperre/anmeldung-1000 ] && journalctl -t winky -o cat --no-pager | tail -3 | grep -q "keine Anmeldemaske"' "ohne Anmeldemaske kein Passwort, Marke verbraucht"
+S=/usr/libexec/winky/winky-schluessel
+entsiegeln() { python3 -c "
+import importlib.machinery as m, importlib.util as u
+l=m.SourceFileLoader('s','$S'); s=u.module_from_spec(u.spec_from_loader('s',l)); l.exec_module(s)
+p=s.entsiegeln(1000,'ubuntu'); print(p.decode() if p else '-')" 2>/dev/null; }
+pruefe '[ "$(entsiegeln)" = Testpasswort1 ]' "Entsiegeln und Prüfung gegen /etc/shadow"
+echo "ubuntu:AnderesPasswort2" | chpasswd
+pruefe '[ "$(entsiegeln)" = - ] && [ ! -e /var/lib/winky/1000/schluesselbund.cred ] && grep -q schluesselbund_veraltet /var/lib/winky/status/1000.json' "geändertes Passwort: Versiegelung gelöscht, App erfährt es"
+U=/usr/lib/systemd/system/winky-schluessel@.service
+pruefe 'systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -q "OK"' "Sandbox des Schlüsselbund-Dienstes: $(systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -o "[0-9.]* OK")"
+
 # 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1

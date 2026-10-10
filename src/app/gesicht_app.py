@@ -351,6 +351,12 @@ class Fenster(Adw.ApplicationWindow):
         self.r_anmeldung.add_prefix(warnsymbol)
         self.r_anmeldung.connect("notify::active", self._anmeldung_umgeschaltet)
         self.g_schalter.add(self.r_anmeldung)
+        self.r_schluesselbund = Adw.SwitchRow(title=_("Also unlock the keyring (experimental)"))
+        symbol = Gtk.Image(icon_name="dialog-warning-symbolic")
+        symbol.add_css_class("warning")
+        self.r_schluesselbund.add_prefix(symbol)
+        self.r_schluesselbund.connect("notify::active", self._schluesselbund_umgeschaltet)
+        self.g_schalter.add(self.r_schluesselbund)
         # Kein SwitchRow: „Einrichten“ muss bedienbar sein, solange der Schalter gesperrt ist
         self.r_sudo = Adw.ActionRow(title=_("sudo in the terminal"))
         self.r_sudo.add_prefix(Gtk.Image(icon_name="utilities-terminal-symbolic"))
@@ -883,7 +889,7 @@ class Fenster(Adw.ApplicationWindow):
         except GLib.Error:
             self.melde(_("Couldn’t open the Software app"))
 
-    def _verwalten(self, args, erfolg, admin=False, danach=None):
+    def _verwalten(self, args, erfolg, admin=False, danach=None, eingabe=None):
         if self.beschaeftigt():
             self.melde(_("Please wait, something else is still running"))
             return
@@ -900,7 +906,7 @@ class Fenster(Adw.ApplicationWindow):
 
         try:
             self.aktion = Prozess(umgebung.verwalten_befehl(args, admin=admin), bei_ende=ende,
-                                  abbruch_ueber_eingabe=True)
+                                  abbruch_ueber_eingabe=True, eingabe=eingabe)
         except OSError as e:
             self.melde(_("Could not start: {error}").format(error=e))
         self.aktualisieren()
@@ -1024,6 +1030,47 @@ class Fenster(Adw.ApplicationWindow):
         self.ueber.add_legal_section("SFace, MediaPipe", None, Gtk.License.APACHE_2_0, None)
         self.ueber.present(self)
 
+    def _schluesselbund_umgeschaltet(self, zeile, _pspec):
+        if self._schalter_sperre:
+            return
+        if not zeile.get_active():
+            self._verwalten(["schluesselbund", "aus"],
+                            _("The keyring password has been removed from the TPM chip"))
+            return
+        text = _("Winky stores your login password sealed in this computer’s TPM chip and "
+                 "hands it to the keyring after you log in with your face. Only on this "
+                 "computer, only right after your face was recognized at the login screen.")
+        if system.secure_boot() is not True:
+            text += "\n\n" + _("Secure Boot is off. Then the TPM chip protects your password "
+                               "only weakly: someone who has this computer may be able to "
+                               "read it. Do not use this password anywhere else.")
+        dialog = Adw.AlertDialog.new(_("Unlock the keyring with your face?"), text)
+        self.e_passwort = Adw.PasswordEntryRow(title=_("Your login password"))
+        liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        liste.add_css_class("boxed-list")
+        liste.append(self.e_passwort)
+        dialog.set_extra_child(liste)
+        dialog.add_response("abbrechen", _("Cancel"))
+        dialog.add_response("ok", _("Seal"))
+        dialog.set_response_appearance("ok", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_close_response("abbrechen")
+
+        def antwort(_d, r):
+            passwort = self.e_passwort.get_text()
+            self.e_passwort.set_text("")
+            if r == "ok" and passwort:
+                GLib.idle_add(lambda: self.schluesselbund_versiegeln(passwort) and False)
+            else:
+                self.aktualisieren()
+
+        dialog.connect("response", antwort)
+        dialog.present(self)
+
+    def schluesselbund_versiegeln(self, passwort):
+        self._verwalten(["schluesselbund", "an"],
+                        _("After the next restart, your face also opens the keyring"),
+                        eingabe=passwort.encode() + b"\n")
+
     def _anmeldung_umgeschaltet(self, zeile, _pspec):
         if self._schalter_sperre:
             return
@@ -1136,6 +1183,14 @@ class Fenster(Adw.ApplicationWindow):
                                   else grund)
         self.r_anmeldung.set_active(z.anmeldung)
         self.r_anmeldung.set_sensitive((z.aktiv or z.anmeldung) and not laeuft)
+        self.r_schluesselbund.set_visible(z.anmeldung or bool(z.schluesselbund))
+        self.r_schluesselbund.set_active(bool(z.schluesselbund))
+        self.r_schluesselbund.set_sensitive(not laeuft)
+        self.r_schluesselbund.set_subtitle(
+            _("Your password has changed. Turn this on again to keep using it.")
+            if z.schluesselbund_veraltet and not z.schluesselbund else
+            _("Your login password is stored sealed in the TPM chip. Caution: weaker without "
+              "Secure Boot."))
         self.s_sudo.set_active(z.sudo)
         self.s_sudo.set_sensitive(((z.aktiv and s["geste"]) or z.sudo) and not laeuft)
         self.k_sudo_einrichten.set_visible(not s["geste"] and not z.sudo)
@@ -1322,7 +1377,7 @@ SICHERHEIT = [
     (_("What Winky can do"), None, "emblem-ok-symbolic", [
         (_("Unlock the lock screen with your face"),
          _("Only the lock of a running session, unless you also turn on login after startup. "
-           "Then your keyring stays locked until you type your password.")),
+           "The keyring then stays locked, unless you also let Winky unlock it (experimental).")),
         (_("Optionally confirm sudo with face and ✌"),
          _("Only in a terminal on the computer itself, only with both together, and only if "
            "you turn it on.")),

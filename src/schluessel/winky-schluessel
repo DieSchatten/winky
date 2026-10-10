@@ -1,0 +1,147 @@
+#!/usr/bin/python3 -I
+"""winky-schluessel: gibt das im TPM versiegelte Schlüsselbund-Passwort an pam_winky heraus.
+
+Je Verbindung gestartet (winky-schluessel.socket, root 0600, abgeschottet). Herausgegeben wird
+nur, wenn an seat0 die Anmeldemaske aktiv ist, der Prüfdienst die Erstanmeldung gerade eben
+erkannt hat (Marke, höchstens 15 s alt, wird verbraucht) und das Passwort noch stimmt. Ein
+veraltetes Passwort wird gelöscht; dann fragt der Schlüsselbund wie gewohnt selbst.
+"""
+
+import json
+import os
+import pwd
+import select
+import socket
+import stat
+import struct
+import subprocess
+import sys
+import time
+
+MAGIC, OP_SCHLUESSEL, MAX = 0x314B4E57, 11, 1024
+BASIS = "/var/lib/winky"
+SPERRE = "/run/winky/sperre"
+MARKE_ALTER = 15
+
+
+def log(prio, text):
+    print(f"<{prio}>{text}", file=sys.stderr, flush=True)
+
+
+def antworten(verbindung, daten):
+    try:
+        verbindung.send(daten)
+    except OSError:
+        pass
+
+
+def anmeldemaske_aktiv():
+    def wert(*args):
+        r = subprocess.run(["loginctl", *args, "--value"], capture_output=True, text=True,
+                           timeout=3)
+        return r.stdout.strip()
+    sitzung = wert("show-seat", "seat0", "-p", "ActiveSession")
+    return bool(sitzung) and wert("show-session", sitzung, "-p", "Class") == "greeter" and \
+        wert("show-session", sitzung, "-p", "Remote") == "no"
+
+
+def marke_verbrauchen(uid):
+    """Marke des Prüfdienstes (_winky) prüfen und löschen; nur frisch gültig."""
+    pfad = f"{SPERRE}/anmeldung-{uid}"
+    try:
+        st = os.lstat(pfad)
+        os.unlink(pfad)
+    except OSError:
+        return False
+    try:
+        besitzer = pwd.getpwnam("_winky").pw_uid
+    except KeyError:
+        return False
+    return stat.S_ISREG(st.st_mode) and st.st_uid in (besitzer, 0) and \
+        0 <= time.time() - st.st_mtime <= MARKE_ALTER
+
+
+def status_vermerken(uid, **felder):
+    pfad = f"{BASIS}/status/{uid}.json"
+    try:
+        with open(pfad, encoding="utf-8") as f:
+            daten = json.load(f)
+    except (OSError, ValueError):
+        daten = {}
+    daten.update(felder)
+    neu = pfad + ".neu"
+    try:
+        with open(os.open(neu, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o644),
+                  "w", encoding="utf-8") as f:
+            json.dump(daten, f)
+        os.rename(neu, pfad)
+    except OSError:
+        pass
+
+
+def entsiegeln(uid, name):
+    """Passwort aus der TPM-Versiegelung; None bei Fehler oder wenn es nicht mehr stimmt."""
+    pfad = f"{BASIS}/{uid}/schluesselbund.cred"
+    try:
+        st = os.lstat(pfad)
+    except OSError:
+        return None
+    if not stat.S_ISREG(st.st_mode) or st.st_uid != 0 or st.st_mode & 0o077:
+        log(4, f"Schlüsselbund uid={uid}: Versiegelung mit falschen Rechten, nicht benutzt")
+        return None
+    r = subprocess.run(["systemd-creds", "decrypt", f"--name=winky-schluesselbund-{uid}", pfad,
+                        "-"], capture_output=True, timeout=8)
+    if r.returncode != 0 or not r.stdout or len(r.stdout) > MAX:
+        log(4, f"Schlüsselbund uid={uid}: Entsiegeln fehlgeschlagen (TPM-Zustand geändert?)")
+        return None
+    passwort = r.stdout
+    pruefung = subprocess.run(["/usr/sbin/unix_chkpwd", name, "nullok"], input=passwort + b"\0",
+                              capture_output=True, timeout=5)
+    if pruefung.returncode != 0:
+        log(5, f"Schlüsselbund uid={uid}: Passwort hat sich geändert, Versiegelung gelöscht")
+        try:
+            os.unlink(pfad)
+        except OSError:
+            pass
+        status_vermerken(uid, schluesselbund=None, schluesselbund_veraltet=int(time.time()))
+        return None
+    return passwort
+
+
+def main():
+    verbindung = socket.socket(fileno=0)
+    if struct.unpack("3i", verbindung.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED,
+                                                 struct.calcsize("3i")))[1] != 0:
+        return 1
+    if not select.select([verbindung], [], [], 2)[0]:
+        return 1
+    daten = verbindung.recv(64)
+    if len(daten) != 16:
+        return 1
+    magic, op, uid, _rest = struct.unpack("IIII", daten)
+    try:
+        name = pwd.getpwuid(uid).pw_name
+    except KeyError:
+        name = None
+    if magic != MAGIC or op != OP_SCHLUESSEL or uid < 1000 or not name:
+        antworten(verbindung, b"N")
+        return 1
+    if not marke_verbrauchen(uid):
+        log(4, f"Schlüsselbund uid={uid}: keine frisch erkannte Erstanmeldung, abgelehnt")
+        antworten(verbindung, b"N")
+        return 1
+    if not anmeldemaske_aktiv():
+        log(4, f"Schlüsselbund uid={uid}: keine Anmeldemaske an seat0, abgelehnt")
+        antworten(verbindung, b"N")
+        return 1
+    passwort = entsiegeln(uid, name)
+    if passwort is None:
+        antworten(verbindung, b"N")
+        return 1
+    antworten(verbindung, b"K" + passwort)
+    log(5, f"Schlüsselbund uid={uid}: Passwort an die Anmeldung übergeben")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
