@@ -132,7 +132,7 @@ bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
       ok = val == "ja" || val == "nein";
       neu.anmeldung = val == "ja";
     } else if (key == "sudo_ms") {
-      ok = zahl(val, 3000, 9500, d);  // unter dem Zeitlimit des PAM-Moduls (10 s)
+      ok = zahl(val, 3000, 30000, d);  // unter dem Zeitlimit des PAM-Profils (35 s)
       neu.sudo_ms = static_cast<int>(d);
     } else if (key == "threads") {
       ok = zahl(val, 1, 16, d);

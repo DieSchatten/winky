@@ -40,7 +40,7 @@ std::string json(const std::string& s) {
 
 void schreibeAnfrage(const std::string& basis, uid_t uid, const std::string& stand,
                      const std::string& befehl, const std::string& terminal, long zeit,
-                     const std::string& zweck) {
+                     const std::string& zweck, int frist_ms) {
   const int dir = ::open(basis.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
   if (dir < 0) return;
   const std::string name = std::to_string(uid) + ".json";
@@ -53,7 +53,7 @@ void schreibeAnfrage(const std::string& basis, uid_t uid, const std::string& sta
   ::fchmod(fd, 0644);
   const std::string inhalt = "{\"zeit\":" + std::to_string(zeit) + ",\"stand\":" + json(stand) +
                              ",\"befehl\":" + json(befehl) + ",\"terminal\":" + json(terminal) +
-                             ",\"zweck\":" + json(zweck) + "}\n";
+                             ",\"zweck\":" + json(zweck) + ",\"frist\":" + std::to_string(frist_ms) + "}\n";
   const bool ok = ::write(fd, inhalt.data(), inhalt.size()) == static_cast<ssize_t>(inhalt.size());
   ::close(fd);
   if (ok) ::renameat(dir, tmp.c_str(), dir, name.c_str());

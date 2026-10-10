@@ -673,6 +673,23 @@ class Fenster(Adw.ApplicationWindow):
         strenge.add(self.r_messwerte)
         s.add(strenge)
 
+        zeit = Adw.PreferencesGroup(
+            title=_("Time for the ✌"),
+            description=_("How long Winky waits for your ✌. More time lets you read calmly what "
+                          "you are approving. For sudo up to 30 seconds; KeePassXC and "
+                          "administrator dialogs end after 9 seconds at most, a limit set by "
+                          "the system."))
+        self.r_geste_zeit = Adw.SpinRow.new_with_range(5, 30, 1)
+        self.r_geste_zeit.set_title(_("Seconds"))
+        zeit.add(self.r_geste_zeit)
+        self.r_geste_zeit_speichern = Adw.ActionRow(title=_("Apply the chosen value"))
+        self.k_geste_zeit = knopf(_("Save"), lambda: self._verwalten(
+            ["geste-zeit", str(int(self.r_geste_zeit.get_value()))], _("Time for the ✌ saved"),
+            admin=True))
+        self.r_geste_zeit_speichern.add_suffix(self.k_geste_zeit)
+        zeit.add(self.r_geste_zeit_speichern)
+        s.add(zeit)
+
         kp = Adw.PreferencesGroup(
             title="KeePassXC",
             description=_("Only KeePassXC 2.8 or later, installed as a normal package. Older "
@@ -1211,6 +1228,12 @@ class Fenster(Adw.ApplicationWindow):
             self.r_spin.set_value(z.schwelle)
         self.r_spin.set_sensitive(bereit and not laeuft)
         self.k_speichern.set_sensitive(bereit and not laeuft)
+        if not self.r_geste_zeit.has_focus():
+            self.r_geste_zeit.set_value(z.geste_zeit)
+        self.r_geste_zeit.set_sensitive(bereit and not laeuft)
+        self.k_geste_zeit.set_sensitive(bereit and not laeuft)
+        self.r_geste_zeit_speichern.set_subtitle(
+            _("Currently set: {value} seconds").format(value=z.geste_zeit))
         self.r_speichern.set_subtitle(
             _("Currently set: {value}").format(value=komma(z.schwelle, 2)) if z.schwelle > 0
             else _("Not set yet"))

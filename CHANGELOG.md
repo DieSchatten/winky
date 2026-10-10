@@ -4,6 +4,9 @@
 
 - Optional: login after startup with your face (keyring stays locked).
   Wahlweise Anmeldung nach dem Start mit dem Gesicht (Schlüsselbund bleibt zu).
+- Adjustable time for the ✌ (5 to 30 seconds for sudo); the ✌ window shows “You are
+  approving:” with the full command or action.
+  Einstellbare Zeit für das ✌; das ✌-Fenster zeigt „Du gibst frei:“ mit Befehl oder Aktion.
 - “About Winky” with version; release notes in the software manager.
   „Über Winky“ mit Version; Versionshinweise in der Software-Verwaltung.
 

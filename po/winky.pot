@@ -579,6 +579,25 @@ msgid "Your measurements"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Time for the ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"How long Winky waits for your ✌. More time lets you read calmly what you are "
+"approving. For sudo up to 30 seconds; KeePassXC and administrator dialogs "
+"end after 9 seconds at most, a limit set by the system."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Seconds"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Time for the ✌ saved"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid ""
 "Only KeePassXC 2.8 or later, installed as a normal package. Older versions "
 "don’t have quick unlock on Linux, and the Flatpak version can’t register it "
@@ -1069,6 +1088,11 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "None set up yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Currently set: {value} seconds"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1605,6 +1629,10 @@ msgid "Confirm"
 msgstr ""
 
 #: src/hinweis/winky-hinweis
+msgid "You are approving:"
+msgstr ""
+
+#: src/hinweis/winky-hinweis
 msgid "Confirmed"
 msgstr ""
 
@@ -1809,6 +1837,10 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Test your face and ✌ successfully first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The time must be between 5 and 30 seconds"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

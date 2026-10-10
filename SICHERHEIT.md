@@ -19,7 +19,8 @@ Person.
 - **sudo im Terminal** lässt sich wahlweise mit Gesicht **und** dem Handzeichen ✌
   bestätigen. Das ist ausgeschaltet, bis ein Administrator es einschaltet.
 - **Das Passwort funktioniert immer.** Erkennt Winky dich nicht, erscheint spätestens nach
-  drei Sekunden (Sperrbildschirm) bzw. nach etwa acht, höchstens zehn Sekunden (sudo) die gewohnte Abfrage.
+  drei Sekunden (Sperrbildschirm) bzw. nach der eingestellten Zeit für das ✌ (8 bis 30
+  Sekunden, sudo) die gewohnte Abfrage.
 - Das Sicherheitsniveau entspricht etwa **Windows Hello ohne erweiterten
   Täuschungsschutz**: Fotos auf Bildschirmen scheitern. Einen gezielt gemachten
   Infrarot-Ausdruck oder eine Maske hält Winky nicht sicher auf.
@@ -152,7 +153,8 @@ Das lässt sich durch Bedienung nicht abstellen:
 - **Freigabeliste im PAM-Modul:** nur Sperrbildschirm (erkannt am GDM-Merkmal für die
   Wiederanmeldung) und, wenn eingeschaltet, sudo. Kein Fernzugriff (`PAM_RHOST`), nicht für
   root, Notschalter `/etc/winky/disabled`, Deckel zu = sofort Passwort.
-- **Feste Zeitgrenzen:** 3 Sekunden am Sperrbildschirm, 10 Sekunden für sudo. Kein `fork`,
+- **Feste Zeitgrenzen:** 3 Sekunden am Sperrbildschirm, höchstens 30 Sekunden für sudo,
+  höchstens 9 Sekunden über Polkit. Kein `fork`,
   keine Abhängigkeit von Dateien im Home-Verzeichnis.
 - **Abgeschotteter Prüfdienst:** startet nur bei Bedarf, prüft den Aufrufer über den
   Socket und logind (lokale, aktive, grafische Sitzung an seat0).

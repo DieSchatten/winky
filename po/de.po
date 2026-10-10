@@ -620,6 +620,28 @@ msgid "Your measurements"
 msgstr "Deine Messwerte"
 
 #: src/app/gesicht_app.py
+msgid "Time for the ✌"
+msgstr "Zeit für das ✌"
+
+#: src/app/gesicht_app.py
+msgid ""
+"How long Winky waits for your ✌. More time lets you read calmly what you are "
+"approving. For sudo up to 30 seconds; KeePassXC and administrator dialogs "
+"end after 9 seconds at most, a limit set by the system."
+msgstr ""
+"Wie lange Winky auf dein ✌ wartet. Mit mehr Zeit kannst du in Ruhe lesen, "
+"was du freigibst. Für sudo bis 30 Sekunden; KeePassXC und Administrator-"
+"Dialoge enden spätestens nach 9 Sekunden, das gibt das System vor."
+
+#: src/app/gesicht_app.py
+msgid "Seconds"
+msgstr "Sekunden"
+
+#: src/app/gesicht_app.py
+msgid "Time for the ✌ saved"
+msgstr "Zeit für das ✌ gespeichert"
+
+#: src/app/gesicht_app.py
 msgid ""
 "Only KeePassXC 2.8 or later, installed as a normal package. Older versions "
 "don’t have quick unlock on Linux, and the Flatpak version can’t register it "
@@ -1149,6 +1171,11 @@ msgstr "✓ Eingeschaltet"
 #: src/app/gesicht_app.py
 msgid "None set up yet"
 msgstr "noch keine eingerichtet"
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Currently set: {value} seconds"
+msgstr "Gerade eingestellt: {value} Sekunden"
 
 #: src/app/gesicht_app.py
 #, python-brace-format
@@ -1728,6 +1755,10 @@ msgid "Confirm"
 msgstr "Bestätigen"
 
 #: src/hinweis/winky-hinweis
+msgid "You are approving:"
+msgstr "Du gibst frei:"
+
+#: src/hinweis/winky-hinweis
 msgid "Confirmed"
 msgstr "Bestätigt"
 
@@ -1948,6 +1979,10 @@ msgstr "Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten"
 #: src/verwalten/winky-verwalten
 msgid "Test your face and ✌ successfully first"
 msgstr "Zuerst Gesicht und ✌ erfolgreich testen"
+
+#: src/verwalten/winky-verwalten
+msgid "The time must be between 5 and 30 seconds"
+msgstr "Die Zeit muss zwischen 5 und 30 Sekunden liegen"
 
 #: src/verwalten/winky-verwalten
 msgid "The profile could not be removed"

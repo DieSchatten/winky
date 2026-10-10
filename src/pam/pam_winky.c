@@ -2,7 +2,7 @@
  * Bewusst klein (nur libc/libpam, kein fork, nichts aus dem Home); geprüft wird im Prüfdienst.
  * Jede unerfüllte Vorbedingung und jeder Fehler ergibt PAM_IGNORE, dann fragt pam_unix (Passwort).
  * Argumente: services=a,b timeout_ms=500..5000 geste=<Dienste, auch in services>
- * geste_timeout_ms=3000..15000; Unbekanntes schaltet das Modul ab. Testdienste für pamtester:
+ * geste_timeout_ms=3000..60000; Unbekanntes schaltet das Modul ab. Testdienste für pamtester:
  * winky-test (ohne GDM-Prüfung), winky-test-geste (ohne Terminalprüfung). */
 #define PAM_SM_AUTH
 #define _GNU_SOURCE
@@ -64,7 +64,7 @@ static int lese_argumente(int argc, const char **argv, struct argumente *a) {
     } else if (strncmp(arg, "geste_timeout_ms=", 17) == 0) {
       char *ende = NULL;
       const long v = strtol(arg + 17, &ende, 10);
-      if (!ende || *ende != '\0' || v < 3000 || v > 15000) return 0;
+      if (!ende || *ende != '\0' || v < 3000 || v > 60000) return 0;
       a->geste_timeout_ms = (int)v;
     } else {
       return 0; /* unbekanntes Argument: lieber gar nichts tun */

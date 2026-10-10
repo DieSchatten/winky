@@ -33,6 +33,7 @@ class Zustand:
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
     freigaben: tuple = ()     # Administrator-Dialoge mit Gesicht und ✌ (Gruppen)
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
+    geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
 
 
 def _konfig(text, schluessel):
@@ -70,6 +71,7 @@ def lese_zustand(uid=None) -> Zustand:
         z.keepassxc = _konfig(text, "keepassxc") == "ja"
         z.keepassxc_geste = _konfig(text, "keepassxc_geste") != "nein"
         z.freigaben = tuple(g for g in (_konfig(text, "freigaben") or "").split(",") if g)
+        z.geste_zeit = int(_konfig(text, "sudo_ms") or 8000) // 1000
     except (OSError, ValueError):
         pass
     try:

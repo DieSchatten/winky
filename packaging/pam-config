@@ -3,4 +3,4 @@ Default: no
 Priority: 300
 Auth-Type: Primary
 Auth:
-	[success=end default=ignore]	pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=10000
+	[success=end default=ignore]	pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=35000

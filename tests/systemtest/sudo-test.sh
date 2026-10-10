@@ -124,6 +124,23 @@ rm -f /var/lib/winky/1000/geste-ok; SUDO_UID=1000 $V keepassxc aus </dev/null >/
 pruefe 'SUDO_UID=1000 $V keepassxc an </dev/null | erg | grep -q "face and"' "KeePassXC mit ✌ verlangt bestandenen ✌-Test"
 install -m0640 -g _winky /dev/null /var/lib/winky/1000/geste-ok
 
+P=/usr/libexec/winky/winky-polkit-pruefung
+# 7b. Einstellbare Zeit für das ✌: sudo wartet länger, Polkit-Wege bleiben unter 10 s
+pruefe 'SUDO_UID=1000 $V geste-zeit 40 </dev/null | erg | grep -q "\"ok\": false"' "mehr als 30 Sekunden abgelehnt"
+SUDO_UID=1000 $V geste-zeit 15 </dev/null >/dev/null
+cp /etc/pam.d/sudo-nurgeste /etc/pam.d/sudo
+sed -i "s/geste_timeout_ms=10000/geste_timeout_ms=35000/" /etc/pam.d/sudo
+SUDO_UID=1000 $V keepassxc an </dev/null >/dev/null
+rm -f /run/winky/sperre/sudo-1000   # Begrenzung nach unbestätigten Anfragen nicht auslösen
+t0=$(date +%s%N); sudo_pam sudo ubuntu authenticate >/dev/null; t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe '[ $t -ge 14000 ] && [ $t -lt 16500 ] && grep -q "\"frist\":15000" /run/winky/anfrage/1000.json' "sudo wartet die eingestellten 15 s (${t} ms)"
+t0=$(date +%s%N); $P ubuntu; t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe '[ $t -lt 9900 ] && grep -q "\"frist\":9000" /run/winky/anfrage/1000.json' "KeePassXC bleibt unter dem Polkit-Limit (${t} ms)"
+SUDO_UID=1000 $V geste-zeit 8 </dev/null >/dev/null
+SUDO_UID=1000 $V keepassxc aus </dev/null >/dev/null
+# Die Kamera sieht im Test ein fremdes Gesicht: Fehlversuchs- und sudo-Zähler zurücksetzen
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+
 # 8. Administrator-Dialoge über Polkit: Gruppen einzeln, immer mit ✌, Pause wirkt
 R=/etc/polkit-1/rules.d/zz-winky-freigaben.rules
 P=/usr/libexec/winky/winky-polkit-pruefung
@@ -165,6 +182,9 @@ pamtester gdm-password ubuntu authenticate >/dev/null 2>&1
 pruefe '[ "$(journalctl -t winky -o cat --no-pager | grep -c "zweck=anmeldung")" = "$n" ]' "Erstanmeldung ab Werk: keine Anfrage"
 pruefe 'SUDO_UID=1000 $V anmeldung an </dev/null | erg | grep -q "\"ok\": true" && [ -f /etc/winky/anmeldung-ein ] && grep -q "^anmeldung = ja" /etc/winky/winky.conf' "Erstanmeldung eingeschaltet"
 pamtester gdm-password ubuntu authenticate >/dev/null 2>&1
+for i in $(seq 1 30); do   # der Prüfdienst protokolliert erst am Ende seiner Prüfung
+  [ "$(journalctl -t winky -o cat --no-pager | grep -c "zweck=anmeldung")" -gt "$n" ] && break; sleep 0.2
+done
 pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=anmeldung" | tail -1 | grep -q "Ergebnis uid=1000"' "Erstanmeldung fragt den Prüfdienst (zweck=anmeldung)"
 SUDO_UID=1000 $V anmeldung aus </dev/null >/dev/null
 pruefe '[ ! -e /etc/winky/anmeldung-ein ] && grep -q "^anmeldung = nein" /etc/winky/winky.conf' "Erstanmeldung wieder aus"

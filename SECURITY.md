@@ -18,7 +18,8 @@ camera, with the current recognition model so far only with one person.
 - **sudo in the terminal** can optionally be confirmed with your face **and** the ✌ sign.
   This is off until an administrator turns it on.
 - **The password always works.** If Winky does not recognize you, the usual prompt appears
-  after three seconds at most (lock screen) or after about eight, at most ten seconds (sudo).
+  after three seconds at most (lock screen) or after the time set for the ✌ (8 to 30
+  seconds, sudo).
 - The security level roughly corresponds to **Windows Hello without enhanced
   anti-spoofing**: photos on screens fail. Winky does not reliably stop a deliberately made
   infrared printout or a mask.
@@ -148,7 +149,8 @@ These cannot be avoided by how you use Winky:
 - **Allow list in the PAM module:** only the lock screen (recognized by the GDM marker for
   re-authentication) and, if turned on, sudo. No remote access (`PAM_RHOST`), not for
   root, emergency off switch `/etc/winky/disabled`, lid closed = password right away.
-- **Fixed time limits:** 3 seconds on the lock screen, 10 seconds for sudo. No `fork`, no
+- **Fixed time limits:** 3 seconds on the lock screen, at most 30 seconds for sudo, at most
+  9 seconds over Polkit. No `fork`, no
   dependency on files in the home directory.
 - **Isolated verification service:** starts only when needed, checks the caller via the
   socket and logind (local, active, graphical session on seat0).

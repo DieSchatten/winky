@@ -39,8 +39,9 @@ class FensterAttrappe:
         self.sichtbar = sichtbar
         self.ereignisse = []
 
-    def zeigen(self, zweck, befehl, beginn):
+    def zeigen(self, zweck, befehl, beginn, dauer=8.0):
         self.ereignisse.append(("zeigen", zweck, befehl))
+        self.dauer = dauer
         return self.sichtbar
 
     def bestaetigt(self):
@@ -61,9 +62,11 @@ class Ergebnis:
 h.subprocess.run = lambda args, **kw: (meldungen.append(args), Ergebnis())[1]
 
 
-def anfrage(stand, zweck="sudo", befehl="sudo apt update", alter=0):
+def anfrage(stand, zweck="sudo", befehl="sudo apt update", alter=0, frist=None):
     daten = {"zeit": int(time.time()) - alter, "stand": stand, "befehl": befehl,
              "terminal": "/dev/pts/1" if zweck == "sudo" else "", "zweck": zweck}
+    if frist is not None:
+        daten["frist"] = frist
     Path(ORDNER, f"{os.getuid()}.json").write_text(json.dumps(daten))
 
 
@@ -107,6 +110,11 @@ pruefe(melde and "Nicht per ✌ freigegeben" in melde[0][-2] and "/usr/bin/gpart
 fenster, melde = lauf(hinweis, "wartet", "polkit:../../x", "", alter=8)
 pruefe(fenster and fenster[0][2] == "", "ungültige Aktionskennung wird nicht weitergereicht")
 
+fenster, melde = lauf(hinweis, "wartet", alter=9, frist=20000)
+pruefe(hinweis.fenster.dauer == 20.0, "Fenster zählt die eingestellte Wartezeit herunter (20 s)")
+fenster, melde = lauf(hinweis, "wartet", alter=10, frist=999999)
+pruefe(hinweis.fenster.dauer == 8.0, "unsinnige Wartezeit: Vorgabe 8 s")
+
 hinweis.fenster = FensterAttrappe(sichtbar=False)
 fenster, melde = lauf(hinweis, "wartet", "keepassxc", alter=5)
 pruefe(melde and "KeePassXC wartet auf ✌" in melde[0], "ohne X-Anzeige: Benachrichtigung statt Fenster")
@@ -118,6 +126,9 @@ if os.environ.get("DISPLAY"):
         pruefe(f.zeichen.get_label().startswith("✌") and f.titel.get_label() ==
                "KeePassXC entsperren", "Fensterinhalt: großes ✌ und Titel")
         pruefe(not f.fenster, "nichts wird angezeigt, solange keine Anfrage da ist")
+        karte2 = f.inhalt("sudo", "sudo apt install etwas-sehr-langes " * 4)  # festhalten, sonst weg
+        pruefe(f.freigabe.get_visible() and f.freigabe.get_label() == "Du gibst frei:",
+               "Fenster sagt, was freigegeben wird")
 
 print(f"\n{len(FEHLER)} Fehler")
 sys.exit(1 if FEHLER else 0)

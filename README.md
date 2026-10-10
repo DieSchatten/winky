@@ -158,7 +158,8 @@ Winky: ✓ confirmed
   face.
 - Two requests at the same time are both cancelled. After three unconfirmed requests, only
   the password works for ten minutes.
-- Otherwise, the usual password prompt appears after about eight seconds.
+- Otherwise, the usual password prompt appears after the time for the ✌ (8 seconds by
+  default, adjustable up to 30 under Advanced). The ✌ window shows what you are approving.
 
 Why ✌: Winking, “thumbs up” and “touching your nose” were also measured. Winking depended
 too much on the person; the hand recognition does not reliably find the other two signs in
@@ -204,7 +205,8 @@ and ✌ instead. Each group has its own switch on the home page, all are off by 
 | All other administrator dialogs | users, disks, network, services … | **high:** the ✌ window only names the action |
 
 - Always face **and** ✌, only for administrators (group `sudo`), only in an active local
-  session. Without ✌ the usual password dialog appears after about eight seconds.
+  session. Without ✌ the usual password dialog appears after at most nine seconds (a Polkit
+  limit).
 - What Ubuntu already allows without a password stays that way; Winky is only asked
   afterwards. Winky's own settings always require the password.
 - The rule is `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; Pause turns it off, too.

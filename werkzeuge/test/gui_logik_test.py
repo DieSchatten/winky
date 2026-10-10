@@ -244,6 +244,11 @@ def test(f):
     pruefe(fertig(f) and f.zustand.keepassxc, "KeePassXC eingeschaltet")
     f.r_keepassxc.set_active(False)
     pruefe(fertig(f) and not f.zustand.keepassxc, "KeePassXC ausgeschaltet")
+    pruefe(f.r_geste_zeit.get_value() == 8, "Zeit für das ✌: Vorgabe 8 Sekunden")
+    f.r_geste_zeit.set_value(20)
+    f.k_geste_zeit.emit("clicked")
+    pruefe(fertig(f) and f.zustand.geste_zeit == 20 and f.r_geste_zeit.get_value() == 20,
+           "Zeit für das ✌ auf 20 Sekunden gespeichert")
     f.ueber_zeigen()
     pruefe(f.ueber.get_application_name() == "Winky" and f.ueber.get_version(),
            "„Über Winky“ zeigt Name und Version")

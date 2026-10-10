@@ -157,7 +157,8 @@ Winky: ✓ bestätigt
 - Genau ein Gesicht im Bild, die Hand nah daneben, und es muss das erkannte Gesicht sein.
 - Zwei Anfragen zur selben Zeit werden beide abgebrochen. Nach drei unbestätigten gilt
   zehn Minuten lang nur das Passwort.
-- Sonst kommt nach etwa acht Sekunden die gewohnte Passwortabfrage.
+- Sonst kommt nach der Zeit für das ✌ (Vorgabe 8 Sekunden, unter Erweitert bis 30
+  einstellbar) die gewohnte Passwortabfrage. Das ✌-Fenster zeigt, was du freigibst.
 
 Warum ✌: Gemessen wurden auch Zwinkern, „Daumen hoch“ und „Nase antippen“. Zwinkern war zu
 personenabhängig, die beiden anderen Zeichen findet die Handerkennung im Infrarot-Bild nicht
@@ -203,7 +204,8 @@ aus:
 | Alle anderen Administrator-Dialoge | Benutzer, Datenträger, Netzwerk, Dienste … | **hoch:** das ✌-Fenster nennt nur die Aktion |
 
 - Immer Gesicht **und** ✌, nur für Administratoren (Gruppe `sudo`), nur in einer aktiven,
-  lokalen Sitzung. Ohne ✌ erscheint nach etwa acht Sekunden der gewohnte Passwortdialog.
+  lokalen Sitzung. Ohne ✌ erscheint nach höchstens neun Sekunden der gewohnte
+  Passwortdialog (eine Grenze von Polkit).
 - Was Ubuntu schon ohne Passwort erlaubt, bleibt so; Winky wird erst danach gefragt. Winkys
   eigene Einstellungen verlangen immer das Passwort.
 - Die Regel liegt in `/etc/polkit-1/rules.d/zz-winky-freigaben.rules`; die Pause schaltet

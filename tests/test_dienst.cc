@@ -93,7 +93,7 @@ static void testKonfig() {
   PRUEFE(winky::ladeKonfig(p, k, f) && k.sudo && k.sudo_ms == 7000, "sudo-Schalter und Wartezeit werden gelesen");
   schreibe(p, "schwelle=0.65\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && !k.sudo, "sudo ist ohne Eintrag aus");
-  schreibe(p, "sudo_ms=12000\n");
+  schreibe(p, "sudo_ms=40000\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "sudo-Wartezeit über dem PAM-Zeitlimit wird abgelehnt");
   schreibe(p, "schwelle=0.65\nkeepassxc=ja\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && k.keepassxc && k.keepassxc_geste,
@@ -121,8 +121,9 @@ static void testAnfrage() {
   std::string inhalt;
   std::getline(in, inhalt);
   PRUEFE(inhalt.find("\"zweck\":\"keepassxc\"") != std::string::npos &&
-             inhalt.find("\"stand\":\"wartet\"") != std::string::npos,
-         "Anfragedatei nennt Zweck und Stand");
+             inhalt.find("\"stand\":\"wartet\"") != std::string::npos &&
+             inhalt.find("\"frist\":8000") != std::string::npos,
+         "Anfragedatei nennt Zweck, Stand und Wartezeit");
   winky::schreibeAnfrage(b, 1000, "wartet", "apt \"x\"\n", "/dev/pts/1", 124);
   std::ifstream in2(b + "/1000.json");
   std::getline(in2, inhalt);

@@ -23,7 +23,7 @@ struct Konfig {
   bool keepassxc_geste = true;  // dabei zusätzlich ✌ verlangen
   bool sudo = false;          // sudo per Gesicht und ✌ bestätigen
   bool anmeldung = false;     // auch die erste Anmeldung nach dem Start
-  int sudo_ms = 8000;         // Zeitfenster der Gestenprüfung (sudo, KeePassXC)
+  int sudo_ms = 8000;         // Wartezeit auf das ✌ (sudo; Polkit-Wege höchstens 9 s)
   std::string freigaben;      // Polkit-Gruppen mit ✌, kommagetrennt (leer = keine)
 };
 

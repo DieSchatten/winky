@@ -69,14 +69,15 @@ TEXTE = {
 # Großes ✌ während einer Anfrage, weil GNOME Benachrichtigungen nicht größer darstellt
 FENSTER_TITEL = {"sudo": _("Confirm sudo"), "keepassxc": _("Unlock KeePassXC"),
                  "polkit": _("Administrator approval")}
-FENSTER_DAUER = 8.0   # so lange wartet der Prüfdienst (sudo_ms) auf das Zeichen
+FENSTER_DAUER = 8.0   # Vorgabe, wenn die Anfrage keine Wartezeit (frist) nennt
 FENSTER_CSS = b"""
 window { background-color: transparent; }
 .karte { background-color: rgba(28, 28, 32, 0.92); border-radius: 26px; padding: 14px 34px 22px; }
 .zeichen { font-size: 104px; }
 .zeichen.ok { color: #57e389; }
 .titel { color: #ffffff; font-size: 20px; font-weight: bold; }
-.unter { color: #c0c0c8; font-size: 13px; }
+.unter { color: #c0c0c8; font-size: 13px; margin-top: 4px; }
+.befehl { color: #ffffff; font-size: 16px; font-family: monospace; }
 progressbar trough { min-height: 6px; background-color: rgba(255, 255, 255, 0.18); border-radius: 3px; }
 progressbar progress { min-height: 6px; background-color: #62a0ea; border-radius: 3px; }
 """
@@ -118,16 +119,22 @@ class Fenster:
         self.zeichen.get_style_context().add_class("zeichen")
         self.titel = Gtk.Label(label=FENSTER_TITEL.get(zweck, _("Confirm")))
         self.titel.get_style_context().add_class("titel")
-        unter = Gtk.Label(label=befehl, max_width_chars=44, ellipsize=3)  # Pango.EllipsizeMode.END
-        unter.get_style_context().add_class("unter")
+        freigabe = Gtk.Label(label=_("You are approving:"))
+        freigabe.get_style_context().add_class("unter")
+        # Ganz lesbar: umbrechen, erst nach vier Zeilen kürzen
+        unter = Gtk.Label(label=befehl, max_width_chars=48, wrap=True, lines=4,
+                          ellipsize=3, justify=Gtk.Justification.CENTER)  # 3 = Pango.EllipsizeMode.END
+        unter.get_style_context().add_class("befehl")
+        self.freigabe, self.befehl = freigabe, unter
         self.balken = Gtk.ProgressBar(fraction=1.0)
         self.balken.set_margin_top(8)
-        for w in (self.zeichen, self.titel, unter, self.balken):
+        for w in (self.zeichen, self.titel, freigabe, unter, self.balken):
             karte.pack_start(w, False, False, 0)
+        freigabe.set_visible(bool(befehl))
         unter.set_visible(bool(befehl))
         return karte
 
-    def zeigen(self, zweck, befehl, beginn):
+    def zeigen(self, zweck, befehl, beginn, dauer=FENSTER_DAUER):
         if not self.gtk:
             return False
         self.schliessen()
@@ -143,20 +150,22 @@ class Fenster:
         w.add_events(self.gdk.EventMask.BUTTON_PRESS_MASK)
         w.connect("button-press-event", lambda *_: self.schliessen())
         w.show_all()
+        self.freigabe.set_visible(bool(befehl))   # show_all zeigt sonst auch leere Zeilen
+        self.befehl.set_visible(bool(befehl))
         anzeige = self.gdk.Display.get_default()
         bildschirm = anzeige.get_primary_monitor() or anzeige.get_monitor(0)
         g = bildschirm.get_geometry()
         breite = w.get_size()[0]
         w.move(g.x + (g.width - breite) // 2, g.y + 56)
-        self.fenster, self.beginn = w, beginn
+        self.fenster, self.beginn, self.dauer = w, beginn, dauer
         self.takt = GLib.timeout_add(100, self._ticken)
         return True
 
     def _ticken(self):
         if not self.fenster:
             return False
-        rest = FENSTER_DAUER - (time.time() - self.beginn)
-        self.balken.set_fraction(max(0.0, rest / FENSTER_DAUER))
+        rest = self.dauer - (time.time() - self.beginn)
+        self.balken.set_fraction(max(0.0, rest / self.dauer))
         if rest < -2:
             self.schliessen()
             return False
@@ -246,11 +255,14 @@ class Hinweis:
         self.letzte = (zeit, stand)
         dringlich, titel, text = texte[stand]
         befehl = str(daten.get("befehl", "sudo"))[:240]
+        frist = daten.get("frist")
+        dauer = frist / 1000 if isinstance(frist, int) and 3000 <= frist <= 30000 else FENSTER_DAUER
         if zweck == "polkit":
             befehl = "\n".join(t for t in (aktion_beschreibung(aktion), befehl) if t)
         # Warten: großes Fenster; Fehlschlag, Abbruch, ohne X-Anzeige: Benachrichtigung
         if stand == "wartet":
-            if self.fenster.zeigen(zweck, befehl if zweck in ("sudo", "polkit") else "", zeit):
+            if self.fenster.zeigen(zweck, befehl if zweck in ("sudo", "polkit") else "", zeit,
+                                   dauer):
                 return
         elif stand == "bestaetigt":
             if self.fenster.bestaetigt():

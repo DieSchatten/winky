@@ -715,14 +715,15 @@ int main(int argc, char** argv) {
   }
 
   if ((q.op == WINKY_OP_KEEPASSXC && k.keepassxc && k.keepassxc_geste) || q.op == WINKY_OP_POLKIT) {
-    // Gesicht und ✌ wie bei sudo; sudo_ms (bis 9,5 s) bleibt unter Polkits 10-s-Limit
+    // Gesicht und ✌ wie bei sudo, aber höchstens 9 s: Polkit beendet polkit.spawn nach 10 s
+    const int frist = std::min(k.sudo_ms, 9000);
     const bool pk = q.op == WINKY_OP_POLKIT;
     const std::string befehl = pk ? detail : "KeePassXC";
     const std::string zweck = pk ? "polkit:" + aktion : "keepassxc";
     const long beginn = static_cast<long>(std::time(nullptr));
     auto ende = [&](uint32_t status, float wert, const char* grund, const char* stand) {
       c.antwort(status, wert, msSeit(t0), false);
-      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, "", beginn, zweck);
+      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, "", beginn, zweck, frist);
       log(status == WINKY_TREFFER ? 5 : 6,
           "Ergebnis uid=%u status=%s wert=%s dauer_ms=%.0f zweck=%s geste=1%s%s%s%s", uid,
           statusText(status), zahl(wert).c_str(), msSeit(t0), zweck.c_str(),
@@ -752,15 +753,15 @@ int main(int argc, char** argv) {
       winky::erhoeheSudoOffen(o.sperre, uid, beginn);
       return ende(WINKY_ABGELEHNT, -1, "gleichzeitig", "abgebrochen");
     }
-    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, "", beginn, zweck);
+    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, "", beginn, zweck, frist);
     Laufzeit l;
     if (!starte(o, k, l, true)) {
       log(4, "%s", l.fehler.c_str());
       winky::sudoEntsperren(o.sperre, uid, sperre);
       return ende(WINKY_FEHLER, -1, "start", "nicht_bestaetigt");
     }
-    const winky::Regeln r{k.schwelle, k.mindest_treffer, static_cast<double>(k.sudo_ms),
-                          static_cast<double>(k.sudo_ms), k.blink_abstand, k.blinkpruefung};
+    const winky::Regeln r{k.schwelle, k.mindest_treffer, static_cast<double>(frist),
+                          static_cast<double>(frist), k.blink_abstand, k.blinkpruefung};
     const Pruefergebnis erg = pruefeGeste(l, v, r, t0, nullptr, 0, [&] {
       return winky::sudoAbbruchGesetzt(o.sperre, uid);
     });
@@ -845,7 +846,7 @@ int main(int argc, char** argv) {
     const long beginn = static_cast<long>(std::time(nullptr));
     auto ende = [&](uint32_t status, float wert, const char* grund, const char* stand) {
       c.antwort(status, wert, msSeit(t0), false);
-      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, terminal, beginn);
+      if (stand) winky::schreibeAnfrage(o.anfrage, uid, stand, befehl, terminal, beginn, "sudo", k.sudo_ms);
       log(status == WINKY_TREFFER ? 5 : 6,
           "Ergebnis uid=%u status=%s wert=%s dauer_ms=%.0f zweck=sudo%s%s befehl=%s", uid,
           statusText(status), zahl(wert).c_str(), msSeit(t0), grund ? " grund=" : "",
@@ -877,7 +878,7 @@ int main(int argc, char** argv) {
       winky::erhoeheSudoOffen(o.sperre, uid, beginn);  // zählt mit: ein Warnsignal
       return ende(WINKY_ABGELEHNT, -1, "gleichzeitig", "abgebrochen");
     }
-    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, terminal, beginn);
+    winky::schreibeAnfrage(o.anfrage, uid, "wartet", befehl, terminal, beginn, "sudo", k.sudo_ms);
     Laufzeit l;
     if (!starte(o, k, l, true)) {
       log(4, "%s", l.fehler.c_str());

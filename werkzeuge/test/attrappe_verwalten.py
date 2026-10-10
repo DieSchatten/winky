@@ -178,6 +178,11 @@ def main():
             setze("sudo", "nein")
             p("/etc/winky/sudo-ein").unlink(missing_ok=True)
         fertig(True)
+    if befehl == "geste-zeit":
+        if not 5 <= int(args[1]) <= 30:
+            fertig(False, fehler="Die Zeit muss zwischen 5 und 30 Sekunden liegen")
+        setze("sudo_ms", str(int(args[1]) * 1000))
+        fertig(True)
     if befehl == "anmeldung":
         if args[1] == "an":
             if "pam_winky" not in p("/etc/pam.d/common-auth").read_text():
