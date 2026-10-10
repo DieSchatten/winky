@@ -163,6 +163,7 @@ $P ubuntu org.freedesktop.policykit.exec "/usr/bin/gparted --test"
 pruefe '[ "$(polkit_anfrage)" = "polkit:org.freedesktop.policykit.exec nicht_bestaetigt /usr/bin/gparted --test" ]' "pkexec: Befehl steht im Hinweis"
 SUDO_UID=1000 $V freigabe-an system </dev/null >/dev/null
 pruefe '! grep -q "io.github.dieschatten.winky" $R && ! grep -q "org.keepassxc" $R' "nie für Winkys eigene Einstellungen und KeePassXC"
+pruefe '! grep -q "\"org.freedesktop.NetworkManager\." $R && ! grep -q "\"org.freedesktop.login1\." $R' "nie für Netzwerk und Energie (GNOME fragt im Hintergrund ab)"
 SUDO_UID=1000 $V pausieren </dev/null >/dev/null
 t0=$(date +%s%N); $P ubuntu org.freedesktop.packagekit.system-update ""; rc=$?; t=$(( ($(date +%s%N)-t0)/1000000 ))
 pruefe '[ $rc = 1 ] && [ $t -lt 1500 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "grund=pausiert"' "Pause: keine Kamera, sofort Passwort (${t} ms)"

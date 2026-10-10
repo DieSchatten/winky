@@ -201,7 +201,7 @@ aus:
 | Software | Programme aus den Paketquellen installieren oder entfernen | gering |
 | Heruntergeladene Pakete und neue Quellen | `.deb`-Dateien, neue Paketquellen, Signaturschlüssel | **hoch:** beliebiger Code als Administrator |
 | Programme als Administrator | `pkexec`; das ✌-Fenster zeigt den Befehl | **hoch:** wie sudo |
-| Alle anderen Administrator-Dialoge | Benutzer, Datenträger, Netzwerk, Dienste … | **hoch:** das ✌-Fenster nennt nur die Aktion |
+| Alle anderen Administrator-Dialoge | Benutzer, Datenträger, Dienste … (nicht Netzwerk und Energie: die fragt GNOME ständig im Hintergrund ab) | **hoch:** das ✌-Fenster nennt nur die Aktion |
 
 - Immer Gesicht **und** ✌, nur für Administratoren (Gruppe `sudo`), nur in einer aktiven,
   lokalen Sitzung. Ohne ✌ erscheint nach höchstens neun Sekunden der gewohnte

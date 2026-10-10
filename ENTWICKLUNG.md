@@ -79,7 +79,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Komponenten** (`tests/test_dienst.cc`, 75 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
-- **PAM** (`tests/pam_test.py`, 46 Prüfungen): echtes libpam mit pamtester und
+- **PAM** (`tests/pam_test.py`, 48 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
 - **App** (`werkzeuge/test/gui_logik_test.py`, 77 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
@@ -96,7 +96,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
-- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 66 Prüfungen): echter Prüfdienst, echte
+- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 67 Prüfungen): echter Prüfdienst, echte
   Kamera, echtes libpam im Wegwerf-System. Einschalten nur mit aktiver Gesichtsentsperrung
   und bestandenem ✌-Test, Zeitlimit, Desktop-Hinweis, gleichzeitige Anfragen, Begrenzung,
   Zurücksetzen per Passwort, ohne Terminal, Schalter aus, su/login/polkit unberührt,

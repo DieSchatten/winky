@@ -231,8 +231,8 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"Caution: users, disks, network, services … The ✌ window only names the "
-"action."
+"Caution: users, disks, services … The ✌ window only names the action. "
+"Network and power stay with the password."
 msgstr ""
 
 #: src/app/gesicht_app.py

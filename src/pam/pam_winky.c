@@ -335,13 +335,26 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
   if (deckel_zu()) return PAM_IGNORE;
 
+  /* An der Anmeldemaske sagen, was passiert (am Sperrbildschirm nicht: GNOME verzögert dort
+   * jede Meldung, und das Entsperren soll sofort gehen) */
+  const int maske = op == WINKY_OP_ANMELDUNG;
+  if (maske)
+    pam_info(pamh, deutsch() ? "Winky: Schau in die Kamera \u2026 (sonst gleich Passwort)"
+                             : "Winky: look at the camera \u2026 (or the password in a moment)");
   uint32_t status = WINKY_FEHLER;
   if (frage_dienst(op, uid, timeout_ms, &status) == 0 && status == WINKY_TREFFER) {
-    if (op == WINKY_OP_ANMELDUNG) schluessel_holen(pamh, uid);
+    if (maske) {
+      pam_info(pamh, deutsch() ? "Winky: \u2713 erkannt, Anmeldung l\u00e4uft \u2026"
+                               : "Winky: \u2713 recognized, logging in \u2026");
+      schluessel_holen(pamh, uid);
+    }
     pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
     pam_syslog(pamh, LOG_INFO, "per Gesicht entsperrt");
     return PAM_SUCCESS;
   }
+  if (maske)
+    pam_info(pamh, deutsch() ? "Winky: nicht erkannt, bitte Passwort eingeben"
+                             : "Winky: not recognized, please enter your password");
   return PAM_IGNORE;
 }
 

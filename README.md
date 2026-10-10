@@ -202,7 +202,7 @@ and ✌ instead. Each group has its own switch on the home page, all are off by 
 | Software | installing or removing programs from your package sources | low |
 | Downloaded packages and new sources | `.deb` files, new package sources, signing keys | **high:** any code as administrator |
 | Programs as administrator | `pkexec`; the ✌ window shows the command | **high:** like sudo |
-| All other administrator dialogs | users, disks, network, services … | **high:** the ✌ window only names the action |
+| All other administrator dialogs | users, disks, services … (not network and power: GNOME queries those in the background all the time) | **high:** the ✌ window only names the action |
 
 - Always face **and** ✌, only for administrators (group `sudo`), only in an active local
   session. Without ✌ the usual password dialog appears after at most nine seconds (a Polkit

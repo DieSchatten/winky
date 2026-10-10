@@ -165,6 +165,13 @@ def main():
     pruefe(len(a.anfragen) == vorher, "Schalter gilt nur für gdm-password")
     ok, _ = pam("gdm-password")
     pruefe(ok and a.anfragen[-1] == (10, 1000), "Erstanmeldung mit Schalter: Operation ANMELDUNG")
+    pruefe("look at the camera" in pam.ausgabe and "recognized, logging in" in pam.ausgabe,
+           "Anmeldemaske zeigt, was passiert")
+    a.modus = "kein"
+    pam("gdm-password")
+    pruefe("not recognized, please enter your password" in pam.ausgabe,
+           "nicht erkannt: Hinweis aufs Passwort")
+    a.modus = "treffer"
     # Schlüsselbund: nach erkannter Erstanmeldung Passwort vom Schlüsselbund-Dienst als AUTHTOK
     schluessel = []
 

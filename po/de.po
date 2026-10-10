@@ -241,11 +241,11 @@ msgstr "Alle anderen Administrator-Dialoge"
 
 #: src/app/gesicht_app.py
 msgid ""
-"Caution: users, disks, network, services … The ✌ window only names the "
-"action."
+"Caution: users, disks, services … The ✌ window only names the action. "
+"Network and power stay with the password."
 msgstr ""
-"Vorsicht: Benutzer, Datenträger, Netzwerk, Dienste … Das ✌-Fenster nennt nur "
-"die Aktion."
+"Vorsicht: Benutzer, Datenträger, Dienste … Das ✌-Fenster nennt nur die "
+"Aktion. Netzwerk und Energie bleiben beim Passwort."
 
 #: src/app/gesicht_app.py
 msgid "Cancel"

@@ -78,8 +78,11 @@ FREIGABEN = {
               "org.freedesktop.Flatpak.modify-repo", "org.freedesktop.Flatpak.configure-remote"},
     "programme": {"org.freedesktop.policykit.exec"},
 }
-# Nie über Winky: eigene Einstellungen und KeePassXC (eigener Schalter)
-FREIGABEN_NIE = ("io.github.dieschatten.winky.", "org.keepassxc.")
+# Nie über Winky: eigene Einstellungen und KeePassXC (eigener Schalter) sowie Aktionen, die GNOME
+# ständig im Hintergrund abfragt (Netzwerkmenü, Energiemenü): Polkit verrät der Regel nicht, ob
+# jemand fragt oder nur nachsieht, sonst ginge bei jeder Abfrage die Kamera an
+FREIGABEN_NIE = ("io.github.dieschatten.winky.", "org.keepassxc.", "org.freedesktop.NetworkManager.",
+                 "org.freedesktop.login1.", "org.freedesktop.ModemManager1.")
 GRUPPE = "_winky"
 MODELL_SHA = b"0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79"
 MODELL_DIM = 128

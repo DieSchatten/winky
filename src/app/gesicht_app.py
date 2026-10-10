@@ -186,7 +186,8 @@ FREIGABE_GRUPPEN = (
     ("programme", _("Programs as administrator"),
      _("Caution: like sudo; the ✌ window shows the command."), True),
     ("system", _("All other administrator dialogs"),
-     _("Caution: users, disks, network, services … The ✌ window only names the action."), True),
+     _("Caution: users, disks, services … The ✌ window only names the action. Network and "
+       "power stay with the password."), True),
 )
 
 class KameraAblauf(Gtk.Box):
