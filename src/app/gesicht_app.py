@@ -1125,9 +1125,9 @@ class Fenster(Adw.ApplicationWindow):
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
         self.g_freigaben.set_visible(self.g_schalter.get_visible())
-        grund = ("" if z.aktiv and s["geste"] else " " + (_("Turn on the lock screen first")
+        fehlt = ("" if z.aktiv and s["geste"] else " " + (_("Turn on the lock screen first")
                  if not z.aktiv else _("Test face and ✌ first")) + ".")
-        self.g_freigaben.set_description(FREIGABEN_TEXT + grund)
+        self.g_freigaben.set_description(FREIGABEN_TEXT + fehlt)
         for gruppe, zeile in self.r_freigaben.items():
             an = gruppe in z.freigaben
             zeile.set_active(an)
