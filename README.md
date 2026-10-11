@@ -7,6 +7,10 @@ Windows Hello. If you like, you can also confirm `sudo` in the terminal with you
 the ✌ sign instead of typing your password. An app guides you through the setup step by
 step.
 
+Why “Winky”: The first idea was to confirm with a wink. In tests, winking turned out to depend
+too much on the person, while the ✌ (victory) sign was recognized reliably. The ✌ stayed,
+the name too.
+
 ![Home page](packaging/bildschirmfotos/en/startseite.png)
 
 ## What Winky can do
@@ -23,6 +27,8 @@ step.
   and asks for the password when a program needs it.
 - **Administrator dialogs with face and ✌** (optional): for example
   installing updates, without typing the password.
+- **Add to your face** if Winky sometimes doesn’t recognize you, for example with glasses or
+  in different light, without starting over. Only images that match your face are added.
 - **Several people** on the same computer, each with their own face and password.
 - **Setup without the terminal:** The app finds the camera, records your face, lets you try
   it out and check it with a second person. Winky can be removed again in the software

@@ -46,6 +46,12 @@ mkdir -p /var/lib/winky/status
 echo '{"vorlagen": 10, "eingelernt": 1, "test_ok": 2}' > /var/lib/winky/status/1000.json
 printf "auth [success=done default=ignore] pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=10000\nauth requisite pam_deny.so\n" > /etc/pam.d/sudo-nurgeste
 
+# Ergänzen mit echtem Prüfdienst: die künstlichen Vorlagen passen zu keinem Gesicht, also darf
+# nichts übernommen werden (fremdes Gesicht oder keins im Bild)
+vorher=$(sha256sum /var/lib/winky/1000/vorlagen.bin)
+ERG=$(SUDO_UID=1000 $G ergaenzen </dev/null | erg)
+pruefe 'echo "$ERG" | grep -q "\"ok\": false" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen ohne erkanntes Gesicht ändert nichts"
+pruefe '[ "$(stat -c %U:%G:%a /var/lib/winky/1000/vorlagen.bin)" = "root:_winky:640" ]' "Vorlagen danach weiter root:_winky 0640"
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face unlock"' "sudo an verlangt aktive Gesichtsentsperrung"
 SUDO_UID=1000 $V aktivieren </dev/null >/dev/null
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face and"' "sudo an verlangt bestandenen ✌-Test"

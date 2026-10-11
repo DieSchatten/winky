@@ -84,6 +84,38 @@ msgid "Record again"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Add to your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start the way Winky already recognizes you and look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Start adding” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"After a few seconds, change what gives Winky trouble: put on your glasses, "
+"turn on a different light or sit a little differently. Slowly move your head."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Takes 25 seconds. Your previous recording stays. Winky only adds what "
+"matches your face, so it won’t add anyone else by mistake."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start adding"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Add more"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Try it out"
 msgstr ""
 
@@ -221,6 +253,26 @@ msgid "Start setup"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Pause"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Winky rests, only your password works everywhere"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlocked today"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "On average"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Last time"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "What Winky unlocks for you"
 msgstr ""
 
@@ -233,7 +285,10 @@ msgid "Lock screen"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Unlock with a glance at the camera"
+msgid ""
+"A photo on a screen or phone doesn’t fool Winky, screens look black in the "
+"infrared image. An elaborately made printout or a mask could, just like with "
+"Windows Hello without extra protection."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -241,9 +296,15 @@ msgid "Login after startup"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Caution: also after a restart, see ⓘ"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid ""
-"Caution: your face also logs you in after a restart. The login keyring then "
-"stays locked and asks for the password when a program needs it."
+"Your face also logs you in after a restart. The login keyring then stays "
+"locked and asks for the password when a program needs it. Someone who looks "
+"very much like you, or holds the computer up to your face, gets in without "
+"the password from a switched-off computer too."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -251,7 +312,22 @@ msgid "Also unlock the keyring (experimental)"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid ""
+"Your login password is stored sealed in this computer’s TPM chip and handed "
+"to the keyring only right after your face was recognized at the login "
+"screen. Without Secure Boot, the TPM chip protects it only weakly: someone "
+"who has this computer may be able to read it."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "sudo in the terminal"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"A harmful program running as you can trigger a sudo request. But nothing "
+"happens without your ✌, and every request shows up with the command. After "
+"three unconfirmed requests, only the password works for 10 minutes."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -260,6 +336,20 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Administrator dialogs"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Password dialogs such as updates or installing software. The ✌ window shows "
+"what you are approving. If one appears that you didn’t expect, don’t show "
+"the ✌."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Only KeePassXC 2.8 or later, installed as a normal package. Older versions "
+"don’t have quick unlock on Linux, and the Flatpak version can’t register it "
+"with the system."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -273,27 +363,17 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "<b>Only works with KeePassXC 2.8 or later</b>"
+msgid "Only works with KeePassXC 2.8 or later"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Pause"
+msgid "Maintain face recognition"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Winky is resting, only your password works everywhere"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Try out and maintain"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Try out recognition"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Look at the camera and see whether Winky recognizes you"
+msgid ""
+"Winky sometimes doesn’t recognize you, for example with glasses or in "
+"different light? Add these looks."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -301,8 +381,7 @@ msgid "Record your face again"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid ""
-"Helps if Winky has trouble recognizing you, for example with new glasses"
+msgid "Starts over and replaces everything recorded so far"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -314,23 +393,11 @@ msgid "Security and help"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "What Winky can and can’t do, emergency off switch"
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "Advanced"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Camera, strictness, delete data, uninstall"
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "About Winky"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Version, license and project page"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -724,6 +791,23 @@ msgid "Not saved"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "✓ Added"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "✓ Added {count} images. Try it out the way Winky had trouble before."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face added"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Nothing added"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "✓ Recognized"
 msgstr ""
 
@@ -900,6 +984,13 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid ""
+"Why “Winky”: The first idea was to confirm with a wink. In tests, winking "
+"turned out to depend too much on the person, while the ✌ (victory) sign was "
+"recognized reliably. The ✌ stayed, the name too."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "The keyring password has been removed from the TPM chip"
 msgstr ""
 
@@ -934,6 +1025,10 @@ msgid "After the next restart, your face also opens the keyring"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Also log in with your face after a restart?"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Your face now also logs you in after a restart"
 msgstr ""
 
@@ -961,7 +1056,7 @@ msgstr ""
 msgid "First try it out successfully once."
 msgstr ""
 
-#: src/app/gesicht_app.py
+#: src/app/gesicht_app.py src/verwalten/winky-verwalten
 msgid "No strictness set (Advanced)."
 msgstr ""
 
@@ -1026,6 +1121,14 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Continue setup"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Resume"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlock with a glance at the camera"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1254,6 +1357,15 @@ msgstr ""
 #: src/app/gesicht_app.py
 #, python-brace-format
 msgid "{date}, after {seconds} s"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "{seconds} s"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "%m/%d"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1525,6 +1637,10 @@ msgid "development"
 msgstr ""
 
 #: src/app/vorschau.py
+msgid "Camera off"
+msgstr ""
+
+#: src/app/vorschau.py
 msgid "face recognized well"
 msgstr ""
 
@@ -1558,10 +1674,6 @@ msgstr ""
 
 #: src/app/vorschau.py
 msgid "face incomplete"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "Camera off"
 msgstr ""
 
 #: src/app/vorschau.py
@@ -1759,6 +1871,27 @@ msgid "Recording your face failed. Details: journalctl -t winky"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
+msgid "Record your own face first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Adding to your face"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Winky didn’t recognize you clearly enough in this recording, so nothing was "
+"added. Start the way Winky already recognizes you, for example without "
+"glasses, and only then put them on. If Winky hardly recognizes you at all, "
+"record your face again."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Nothing in this recording was close enough to your face. Nothing was added."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
 msgid "Test"
 msgstr ""
 
@@ -1768,10 +1901,6 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Second-person check"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid "Record your own face first"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

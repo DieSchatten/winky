@@ -1,5 +1,16 @@
 # Changes / Änderungen
 
+## 0.12.0
+
+- Redesigned app: an overview with status, numbers and tiles; round camera view with a
+  progress ring. Neu gestaltete App: Übersicht mit Status, Kennzahlen und Kacheln; rundes
+  Kamerabild mit Fortschrittsring.
+- Add to your face (glasses, different light) without starting over; only images that match
+  your face are added. Gesicht ergänzen (Brille, anderes Licht), ohne neu anzufangen;
+  übernommen wird nur, was zu deinem Gesicht passt.
+- Login after startup shows the risks before it is turned on. Die Anmeldung nach dem Start
+  zeigt vor dem Einschalten die Risiken.
+
 ## 0.11.1 (11.10.2026)
 
 - Switches react only to real changes; the keyring dialog no longer opens twice.

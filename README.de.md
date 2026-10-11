@@ -7,6 +7,10 @@ wie Windows Hello. Wer möchte, bestätigt außerdem `sudo` im Terminal mit Gesi
 Handzeichen ✌, statt das Passwort zu tippen. Eine App führt Schritt für Schritt durch die
 Einrichtung.
 
+Warum „Winky“: Bestätigen sollte man ursprünglich mit einem Zwinkern (englisch *wink*). In
+den Tests war Zwinkern aber zu personenabhängig, das ✌ (Victory-Zeichen) wurde dagegen
+zuverlässig erkannt. Geblieben sind das ✌ und der Name.
+
 ![Startseite](packaging/bildschirmfotos/de/startseite.png)
 
 ## Was Winky kann
@@ -23,6 +27,8 @@ Einrichtung.
   zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
 - **Administrator-Dialoge mit Gesicht und ✌** (freiwillig): etwa
   Updates installieren, ohne das Passwort zu tippen.
+- **Gesicht ergänzen,** wenn Winky dich manchmal nicht erkennt, etwa mit Brille oder bei
+  anderem Licht, ohne neu anzufangen. Übernommen wird nur, was zu deinem Gesicht passt.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
 - **Einrichtung ohne Terminal:** Die App findet die Kamera, nimmt das Gesicht auf, lässt
   es ausprobieren und mit einer zweiten Person gegenprüfen. In der Software-Verwaltung

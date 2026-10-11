@@ -21,6 +21,7 @@ class Zustand:
     eingelernt: bool = False
     vorlagen: int = 0
     eingelernt_am: int = 0
+    ergaenzt_am: int = 0      # zuletzt weitere Aufnahmen angehängt
     schwelle: float = 0.0
     kamera: str = ""
     blinkpruefung: bool = True
@@ -69,6 +70,7 @@ def lese_zustand(uid=None) -> Zustand:
     z.eingelernt = bool(status.get("vorlagen"))
     z.vorlagen = int(status.get("vorlagen") or 0)
     z.eingelernt_am = int(status.get("eingelernt") or 0)
+    z.ergaenzt_am = int(status.get("ergaenzt") or 0)
     if z.eingelernt:
         z.test_ok = int(status.get("test_ok") or 0)
         z.test_wert = float(status.get("test_wert") or 0)
