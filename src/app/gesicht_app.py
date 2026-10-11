@@ -17,15 +17,13 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gio, GLib, GObject, Gtk  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import system  # noqa: E402
 import umgebung  # noqa: E402
 from prozess import Prozess  # noqa: E402
 from sprache import _  # noqa: E402
-from bausteine import (AktionsKachel, Hinweiszeile, Kennzahl, KleinSchalter,  # noqa: E402
-                       SchalterKachel, raster, raster_ordnen)
 from vorschau import RingVorschau, css_laden, komma  # noqa: E402
 
 GEGENPROBE_ABSTAND = 0.10   # so weit muss eine andere Person unter der Schwelle bleiben
@@ -55,17 +53,6 @@ ABLAEUFE = {
         "hinweis": _("Recording takes 25 seconds. Winky doesn’t save any photos, only numbers "
                      "that only the system can read."),
         "knopf": _("Start recording"), "nochmal": _("Record again"),
-    },
-    "ergaenzen": {
-        "titel": _("Add to your face"),
-        "schritte": [_("Start the way Winky already recognizes you and look at the camera."),
-                     _("Click “Start adding” and enter your password."),
-                     _("After a few seconds, change what gives Winky trouble: put on your "
-                       "glasses, turn on a different light or sit a little differently. Slowly "
-                       "move your head.")],
-        "hinweis": _("Takes 25 seconds. Your previous recording stays. Winky only adds what "
-                     "matches your face, so it won’t add anyone else by mistake."),
-        "knopf": _("Start adding"), "nochmal": _("Add more"),
     },
     "testen": {
         "titel": _("Try it out"),
@@ -142,6 +129,55 @@ def weiterzeile(titel, untertitel, aktion, symbol=None):
     r.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
     r.connect("activated", lambda *_: aktion())
     return r
+
+
+class SchalterZeile(Adw.ActionRow):
+    """Zeile mit Schalter wie Adw.SwitchRow, dazu wahlweise ⓘ mit ausführlichem Hinweis und
+    weitere Knöpfe vor dem Schalter. Gesperrt wird nur der Schalter: der Hinweis bleibt lesbar."""
+
+    __gtype_name__ = "WinkySchalterZeile"
+    active = GObject.Property(type=bool, default=False)
+
+    def __init__(self, titel, untertitel="", symbol=None, info=None, warnung=False):
+        super().__init__(title=titel, subtitle=untertitel)
+        if symbol:
+            bild = Gtk.Image(icon_name=symbol)
+            if warnung:
+                bild.add_css_class("warning")
+            self.add_prefix(bild)
+        if info:
+            label = Gtk.Label(label=info, wrap=True, max_width_chars=44, xalign=0,
+                              selectable=True, margin_top=6, margin_bottom=6, margin_start=6,
+                              margin_end=6)
+            ik = Gtk.MenuButton(icon_name="dialog-information-symbolic", valign=Gtk.Align.CENTER,
+                                popover=Gtk.Popover(child=label))
+            ik.add_css_class("flat")
+            ik.add_css_class("circular")
+            ik.set_tooltip_text(_("What this means"))
+            self.add_suffix(ik)
+        self.schalter = Gtk.Switch(valign=Gtk.Align.CENTER)
+        self.bind_property("active", self.schalter, "active",
+                           GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        self._vor_schalter = Gtk.Box(spacing=6, valign=Gtk.Align.CENTER)
+        self.add_suffix(self._vor_schalter)
+        self.add_suffix(self.schalter)
+        self.set_activatable_widget(self.schalter)
+
+    def vor_schalter(self, widget):
+        self._vor_schalter.append(widget)
+
+    def get_active(self):
+        return self.active
+
+    def set_active(self, wert):
+        self.active = bool(wert)
+
+    def set_sensitive(self, wert):
+        self.schalter.set_sensitive(wert)
+        self.set_activatable(wert)
+
+    def get_sensitive(self):
+        return self.schalter.get_sensitive()
 
 
 def knopf(beschriftung, aktion, *klassen):
@@ -282,7 +318,6 @@ class KameraAblauf(Gtk.Box):
         a = ABLAEUFE[self.art]
         meiner = self.fenster.gesicht_lauf is not None and self.fenster.lauf_ansicht is self
         erledigt = {"einlernen": s["einlernen"], "testen": s["testen"],
-                    "ergaenzen": bool(z.ergaenzt_am),
                     "gegenprobe": s["gegenprobe"] is not None, "geste-testen": s["geste"]}
         self.k_start.set_label(a["nochmal"] if erledigt[self.art] else a["knopf"])
         moeglich = bereit and (bool(z.kamera) if self.art == "einlernen" else z.eingelernt)
@@ -304,7 +339,8 @@ class KameraAblauf(Gtk.Box):
 class Fenster(Adw.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app, title="Winky")
-        self.set_default_size(820, 900)
+        self.set_default_size(900, 760)
+        self.set_size_request(360, 420)   # nötig für den Umbruch auf schmale Fenster
         css_laden()
         self.zustand = system.Zustand()
         self.aktion = None        # laufender Verwaltungsaufruf ohne Kamerabild
@@ -318,8 +354,10 @@ class Fenster(Adw.ApplicationWindow):
         self.nav.add(self._baue_start())
         self.nav.add(self._baue_einrichtung())
         self.nav.add(self._baue_kamera())
-        self.nav.add(self._baue_sicherheit())
-        self.nav.add(self._baue_erweitert())
+        # Schmales Fenster: Seitenleiste und Inhalt nacheinander statt nebeneinander
+        schmal = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 600sp"))
+        schmal.add_setter(self.split, "collapsed", True)
+        self.add_breakpoint(schmal)
         self.nav.connect("popped", self._seite_weg)
         self.toasts = Adw.ToastOverlay(child=self.nav)
         self.set_content(self.toasts)
@@ -342,32 +380,107 @@ class Fenster(Adw.ApplicationWindow):
     def beschaeftigt(self):
         return self.aktion is not None or self.gesicht_lauf is not None
 
-    # Startseite
+    # Startseite: Seitenleiste mit Übersicht, Freigaben, Gesicht, Verlauf, Sicherheit, Erweitert
+
+    ABSCHNITTE = (("uebersicht", _("Overview"), "go-home-symbolic"),
+                  ("freigaben", _("Unlocks"), "system-lock-screen-symbolic"),
+                  ("gesicht", _("Face"), "avatar-default-symbolic"),
+                  ("verlauf", _("History"), "document-open-recent-symbolic"),
+                  ("sicherheit", _("Security and help"), "security-high-symbolic"),
+                  ("erweitert", _("Advanced"), "preferences-system-symbolic"))
 
     def _baue_start(self):
-        inhalt = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14, margin_top=18,
-                         margin_bottom=24, margin_start=18, margin_end=18)
+        inhalte = {"uebersicht": self._baue_uebersicht(), "freigaben": self._baue_freigaben(),
+                   "gesicht": self._baue_gesicht(), "verlauf": self._baue_verlauf(),
+                   "sicherheit": self._baue_sicherheit(), "erweitert": self._baue_erweitert()}
+        self.abschnitte = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE,
+                                    vexpand=True)
+        for sid, titel, _symbol in self.ABSCHNITTE:
+            self.abschnitte.add_titled(inhalte[sid], sid, titel)
 
-        # Statuskarte: Zustand auf einen Blick, Ausprobieren und Pause direkt erreichbar
-        self.held = Gtk.Box(spacing=20)
-        self.held.add_css_class("card")
-        self.held.add_css_class("held")
-        self.s_kreis = Gtk.Box(valign=Gtk.Align.CENTER)
-        self.s_kreis.add_css_class("statuskreis")
-        self.s_symbol = Gtk.Image(pixel_size=38, hexpand=True, halign=Gtk.Align.CENTER,
+        # Seitenleiste: Winky-Symbol und Name oben, Abschnitte, „Über Winky“ unten
+        self.leiste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
+        self.leiste.add_css_class("navigation-sidebar")
+        for sid, titel, symbol in self.ABSCHNITTE:
+            zeile = Gtk.ListBoxRow()
+            zeile.sid = sid
+            box = Gtk.Box(spacing=12, margin_top=4, margin_bottom=4, margin_start=4)
+            box.append(Gtk.Image(icon_name=symbol))
+            box.append(Gtk.Label(label=titel, xalign=0))
+            zeile.set_child(box)
+            self.leiste.append(zeile)
+        self.leiste.connect("row-activated", lambda _l, r: self.abschnitt_zeigen(r.sid))
+        kopf = Gtk.Box(spacing=8)
+        kopf.append(Gtk.Image(icon_name=APP_ID, pixel_size=24))
+        kopf.append(text("Winky", "heading"))
+        leiste_kopf = Adw.HeaderBar(title_widget=kopf)
+        ueber = Gtk.Button(child=Adw.ButtonContent(icon_name="help-about-symbolic",
+                                                   label=_("About Winky")),
+                           margin_start=6, margin_end=6, margin_bottom=6)
+        ueber.add_css_class("flat")
+        ueber.connect("clicked", lambda *_: self.ueber_zeigen())
+        leiste_ansicht = Adw.ToolbarView(content=Gtk.ScrolledWindow(
+            child=self.leiste, hscrollbar_policy=Gtk.PolicyType.NEVER))
+        leiste_ansicht.add_top_bar(leiste_kopf)
+        leiste_ansicht.add_bottom_bar(ueber)
+        leiste_ansicht.set_bottom_bar_style(Adw.ToolbarStyle.FLAT)
+
+        self.inhalt_titel = Adw.WindowTitle(title=_("Overview"))
+        self.banner = Adw.Banner(title=_("Part of Winky isn’t running. Reinstall Winky in the "
+                                         "Software app."))
+        inhalt_ansicht = Adw.ToolbarView(content=self.abschnitte)
+        inhalt_ansicht.add_top_bar(Adw.HeaderBar(title_widget=self.inhalt_titel))
+        inhalt_ansicht.add_top_bar(self.banner)
+        self.inhalt_seite = Adw.NavigationPage(title=_("Overview"), child=inhalt_ansicht)
+
+        self.split = Adw.NavigationSplitView(
+            sidebar=Adw.NavigationPage(title="Winky", child=leiste_ansicht),
+            content=self.inhalt_seite, min_sidebar_width=200, max_sidebar_width=240)
+        self.leiste.select_row(self.leiste.get_row_at_index(0))
+        self.split.set_show_content(True)   # schmales Fenster: mit der Übersicht beginnen
+        return Adw.NavigationPage(title="Winky", tag="start", child=self.split)
+
+    def abschnitt_zeigen(self, sid):
+        self.abschnitte.set_visible_child_name(sid)
+        titel = self.abschnitte.get_page(self.abschnitte.get_child_by_name(sid)).get_title()
+        self.inhalt_titel.set_title(titel)
+        self.inhalt_seite.set_title(titel)
+        for i, (eintrag, _t, _s) in enumerate(self.ABSCHNITTE):
+            if eintrag == sid:
+                self.leiste.select_row(self.leiste.get_row_at_index(i))
+        if self.nav.get_visible_page().get_tag() != "start":
+            self.nav.pop_to_tag("start")
+        self.split.set_show_content(True)
+
+    def _platzhalter(self, titel, inhalt):
+        """Abschnitt, solange die Einrichtung fehlt."""
+        seite_ = Adw.StatusPage(icon_name=APP_ID, title=titel, description=inhalt, vexpand=True)
+        k = knopf(_("Start setup"), self.einrichtung_oeffnen, "pill", "suggested-action")
+        k.set_halign(Gtk.Align.CENTER)
+        seite_.set_child(k)
+        return seite_
+
+    def _baue_uebersicht(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, valign=Gtk.Align.CENTER,
+                      vexpand=True, margin_top=24, margin_bottom=24, margin_start=18,
+                      margin_end=18)
+        # Das Winky-Symbol groß, der Zustand als kleines Zeichen daran
+        logo = Gtk.Overlay(halign=Gtk.Align.CENTER, margin_bottom=8)
+        logo.set_child(Gtk.Image(icon_name=APP_ID, pixel_size=128))
+        self.s_kreis = Gtk.Box(halign=Gtk.Align.END, valign=Gtk.Align.END)
+        self.s_kreis.add_css_class("statuszeichen")
+        self.s_symbol = Gtk.Image(pixel_size=18, hexpand=True, halign=Gtk.Align.CENTER,
                                   valign=Gtk.Align.CENTER)
         self.s_kreis.append(self.s_symbol)
-        self.s_kreis.set_hexpand(False)
-        self.held.append(self.s_kreis)
-        mitte = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, hexpand=True,
-                        valign=Gtk.Align.CENTER)
-        self.s_titel = text("", "held-titel")
-        mitte.append(self.s_titel)
-        self.s_text = text("", "kacheltext")
-        mitte.append(self.s_text)
-        self.held.append(mitte)
-        knoepfe = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8,
-                          valign=Gtk.Align.CENTER)
+        logo.add_overlay(self.s_kreis)
+        box.append(logo)
+        self.s_titel = text("", "title-1", mitte=True)
+        box.append(self.s_titel)
+        self.s_text = text("", mitte=True, breite=46)
+        box.append(self.s_text)
+        self.s_zuletzt = text("", "dim-label", mitte=True)
+        box.append(self.s_zuletzt)
+        knoepfe = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER, margin_top=14)
         self.s_einrichten = knopf(_("Start setup"), self.einrichtung_oeffnen, "pill",
                                   "suggested-action")
         knoepfe.append(self.s_einrichten)
@@ -380,135 +493,124 @@ class Fenster(Adw.ApplicationWindow):
                                                 label=_("Pause"))
         self.r_pause = Gtk.ToggleButton(child=self.s_pause_inhalt)
         self.r_pause.add_css_class("pill")
-        self.r_pause.set_tooltip_text(_("Winky rests, only your password works everywhere"))
+        self.r_pause.set_tooltip_text(_("Winky is resting, only your password works "
+                                        "everywhere"))
         self.r_pause.connect("notify::active", self._pause_umgeschaltet)
         knoepfe.append(self.r_pause)
-        self.held.append(knoepfe)
-        inhalt.append(self.held)
+        box.append(knoepfe)
+        return rollbar(box)
 
-        # Kennzahlen aus dem Verlauf
-        self.g_zahlen = Gtk.Box(spacing=12, homogeneous=True)
-        self.z_heute = Kennzahl(_("Unlocked today"))
-        self.z_dauer = Kennzahl(_("On average"))
-        self.z_zuletzt = Kennzahl(_("Last time"))
-        for k in (self.z_heute, self.z_dauer, self.z_zuletzt):
-            self.g_zahlen.append(k)
-        inhalt.append(self.g_zahlen)
-
-        # Was Winky öffnet
-        self.g_schalter = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        self.g_schalter.append(text(_("What Winky unlocks for you"), "abschnitt"))
-        self.g_schalter.append(text(_("To change these, your computer asks for the administrator "
-                                      "password."), "abschnitt-text"))
-        self.r_aktiv = SchalterKachel(
-            _("Lock screen"), "", "system-lock-screen-symbolic", "gruen",
+    def _baue_freigaben(self):
+        s = Adw.PreferencesPage()
+        self.g_schalter = Adw.PreferencesGroup(
+            title=_("What Winky unlocks for you"),
+            description=_("To change these, your computer asks for the administrator password."))
+        self.r_aktiv = SchalterZeile(
+            _("Lock screen"), symbol="system-lock-screen-symbolic",
             info=_("A photo on a screen or phone doesn’t fool Winky, screens look black in the "
                    "infrared image. An elaborately made printout or a mask could, just like "
                    "with Windows Hello without extra protection."))
         self.r_aktiv.connect("notify::active", self._aktiv_umgeschaltet)
-        self.r_anmeldung = SchalterKachel(
-            _("Login after startup"), _("Caution: also after a restart, see ⓘ"),
-            "system-shutdown-symbolic", "orange", warnung=True,
+        self.g_schalter.add(self.r_aktiv)
+        self.r_anmeldung = SchalterZeile(
+            _("Login after startup"), _("Caution: the login keyring then stays locked"),
+            "dialog-warning-symbolic", warnung=True,
             info=_("Your face also logs you in after a restart. The login keyring then stays "
                    "locked and asks for the password when a program needs it. Someone who looks "
                    "very much like you, or holds the computer up to your face, gets in without "
                    "the password from a switched-off computer too."))
         self.r_anmeldung.connect("notify::active", self._anmeldung_umgeschaltet)
-        self.r_schluesselbund = SchalterKachel(
-            _("Also unlock the keyring (experimental)"), "", "channel-secure-symbolic", "gelb",
+        self.g_schalter.add(self.r_anmeldung)
+        self.r_schluesselbund = SchalterZeile(
+            _("Also unlock the keyring (experimental)"), symbol="dialog-warning-symbolic",
             warnung=True,
             info=_("Your login password is stored sealed in this computer’s TPM chip and handed "
                    "to the keyring only right after your face was recognized at the login "
                    "screen. Without Secure Boot, the TPM chip protects it only weakly: someone "
                    "who has this computer may be able to read it."))
         self.r_schluesselbund.connect("notify::active", self._schluesselbund_umgeschaltet)
-        self.r_sudo = SchalterKachel(
-            _("sudo in the terminal"), "", "✌", "indigo",
+        self.g_schalter.add(self.r_schluesselbund)
+        self.r_sudo = SchalterZeile(
+            _("sudo in the terminal"), symbol="utilities-terminal-symbolic",
             info=_("A harmful program running as you can trigger a sudo request. But nothing "
                    "happens without your ✌, and every request shows up with the command. After "
                    "three unconfirmed requests, only the password works for 10 minutes."))
         self.s_sudo = self.r_sudo
+        self.k_sudo_einrichten = knopf(_("Set up"), lambda: self.kamera_oeffnen("geste-testen"))
+        self.r_sudo.vor_schalter(self.k_sudo_einrichten)
         self.r_sudo.connect("notify::active", self._sudo_umgeschaltet)
-        self.k_sudo_einrichten = knopf(_("Set up"), lambda: self.kamera_oeffnen("geste-testen"),
-                                       "pill")
-        self.k_sudo_einrichten.set_halign(Gtk.Align.START)
-        self.r_sudo.zusatz_anhaengen(self.k_sudo_einrichten)
-        self.r_dialoge = SchalterKachel(
-            _("Administrator dialogs"), "", "security-high-symbolic", "blau",
+        self.g_schalter.add(self.r_sudo)
+        self.r_dialoge = SchalterZeile(
+            _("Administrator dialogs"), symbol="dialog-password-symbolic",
             info=_("Password dialogs such as updates or installing software. The ✌ window "
                    "shows what you are approving. If one appears that you didn’t expect, don’t "
                    "show the ✌."))
         self.r_dialoge.connect("notify::active", self._dialoge_umgeschaltet)
-        self.r_keepassxc = SchalterKachel(
-            "KeePassXC", "", "dialog-password-symbolic", "teal",
+        self.g_schalter.add(self.r_dialoge)
+        self.r_keepassxc = SchalterZeile(
+            "KeePassXC", symbol="dialog-password-symbolic",
             info=_("Only KeePassXC 2.8 or later, installed as a normal package. Older versions "
                    "don’t have quick unlock on Linux, and the Flatpak version can’t register "
                    "it with the system."))
         self.r_keepassxc.connect("notify::active", self._keepassxc_umgeschaltet)
-        self.r_keepassxc_geste = KleinSchalter(
+        self.g_schalter.add(self.r_keepassxc)
+        self.r_keepassxc_geste = SchalterZeile(
             _("KeePassXC only with ✌"),
             _("Recommended: without your ✌ sign, nobody can open the database, not even while "
-              "you’re sitting at the computer"))
+              "you’re sitting at the computer"), "security-high-symbolic")
         self.r_keepassxc_geste.connect("notify::active", self._keepassxc_geste_umgeschaltet)
-        self.r_keepassxc.zusatz_anhaengen(self.r_keepassxc_geste)
+        self.g_schalter.add(self.r_keepassxc_geste)
         # Deutlich sichtbar, solange kein passendes KeePassXC da ist
-        self.r_keepassxc_version = Hinweiszeile(_("Only works with KeePassXC 2.8 or later"))
-        self.r_keepassxc.zusatz_anhaengen(self.r_keepassxc_version)
-        self.raster_schalter = raster([self.r_aktiv, self.r_anmeldung, self.r_schluesselbund,
-                                       self.r_sudo, self.r_dialoge, self.r_keepassxc])
-        self._raster_stand = None
-        self.g_schalter.append(self.raster_schalter)
-        inhalt.append(self.g_schalter)
+        self.r_keepassxc_version = Adw.ActionRow(
+            title=_("<b>Only works with KeePassXC 2.8 or later</b>"))
+        self.r_keepassxc_version.set_subtitle_selectable(True)
+        warnung = Gtk.Image(icon_name="dialog-warning-symbolic")
+        warnung.add_css_class("warning")
+        self.r_keepassxc_version.add_prefix(warnung)
+        self.g_schalter.add(self.r_keepassxc_version)
+        s.add(self.g_schalter)
+        box = Gtk.Stack()
+        box.add_named(s, "inhalt")
+        box.add_named(self._platzhalter(_("Not set up yet"),
+                                        _("Record your face and try it out once, then you can "
+                                          "choose here what Winky unlocks.")), "leer")
+        self.freigaben_stapel = box
+        return box
 
-        # Gesichtserkennung pflegen
-        self.g_pflege = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        self.g_pflege.append(text(_("Maintain face recognition"), "abschnitt"))
-        self.r_ergaenzen = AktionsKachel(
-            _("Add to your face"),
-            _("Winky sometimes doesn’t recognize you, for example with glasses or in different "
-              "light? Add these looks."),
-            "list-add-symbolic", "blau", lambda: self.kamera_oeffnen("ergaenzen"))
-        self.r_neu = AktionsKachel(
-            _("Record your face again"), _("Starts over and replaces everything recorded so far"),
-            "view-refresh-symbolic", "grau", lambda: self.kamera_oeffnen("einlernen"))
-        self.r_zweite = AktionsKachel(
-            _("Check with a second person"), "", "system-users-symbolic", "pink",
-            lambda: self.kamera_oeffnen("gegenprobe"))
-        self.r_geste = AktionsKachel(
-            _("Test face and ✌"), "", "✌", "indigo", lambda: self.kamera_oeffnen("geste-testen"))
-        self.g_pflege.append(raster([self.r_ergaenzen, self.r_neu, self.r_zweite, self.r_geste]))
-        inhalt.append(self.g_pflege)
+    def _baue_gesicht(self):
+        s = Adw.PreferencesPage()
+        self.g_pflege = Adw.PreferencesGroup(title=_("Try out and maintain"))
+        self.r_testen = weiterzeile(_("Try out recognition"),
+                                    _("Look at the camera and see whether Winky recognizes you"),
+                                    lambda: self.kamera_oeffnen("testen"), "camera-web-symbolic")
+        self.r_neu = weiterzeile(_("Record your face again"),
+                                 _("Helps if Winky has trouble recognizing you, for example "
+                                   "with new glasses"),
+                                 lambda: self.kamera_oeffnen("einlernen"), "view-refresh-symbolic")
+        self.r_zweite = weiterzeile(_("Check with a second person"), "",
+                                    lambda: self.kamera_oeffnen("gegenprobe"),
+                                    "system-users-symbolic")
+        self.r_geste = weiterzeile(_("Test face and ✌"), "",
+                                   lambda: self.kamera_oeffnen("geste-testen"),
+                                   "utilities-terminal-symbolic")
+        for r in (self.r_testen, self.r_neu, self.r_zweite, self.r_geste):
+            self.g_pflege.add(r)
+        s.add(self.g_pflege)
+        box = Gtk.Stack()
+        box.add_named(s, "inhalt")
+        box.add_named(self._platzhalter(_("No face recorded yet"),
+                                        _("The setup records your face in about two minutes.")),
+                      "leer")
+        self.gesicht_stapel = box
+        return box
 
-        # Verlauf
-        self.g_verlauf = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        self.g_verlauf.append(text(_("Recent activity"), "abschnitt"))
-        self.verlauf_liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
-        self.verlauf_liste.add_css_class("boxed-list")
-        self.g_verlauf.append(self.verlauf_liste)
+    def _baue_verlauf(self):
+        s = Adw.PreferencesPage()
+        self.g_verlauf = Adw.PreferencesGroup(
+            description=_("What Winky checked recently, newest first"))
         self._verlauf_zeilen = []
-        inhalt.append(self.g_verlauf)
-
-        # Weitere Seiten
-        mehr = Gtk.Box(spacing=8, halign=Gtk.Align.CENTER, margin_top=10)
-        for symbolname, beschriftung, aktion in (
-                ("security-high-symbolic", _("Security and help"),
-                 lambda: self.nav.push_by_tag("sicherheit")),
-                ("preferences-system-symbolic", _("Advanced"),
-                 lambda: self.nav.push_by_tag("erweitert")),
-                ("help-about-symbolic", _("About Winky"), self.ueber_zeigen)):
-            k = Gtk.Button(child=Adw.ButtonContent(icon_name=symbolname, label=beschriftung))
-            k.add_css_class("flat")
-            k.add_css_class("pill")
-            k.connect("clicked", lambda *_, a=aktion: a())
-            mehr.append(k)
-        inhalt.append(mehr)
-
-        self.banner = Adw.Banner(title=_("Part of Winky isn’t running. Reinstall Winky in the "
-                                         "Software app."))
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        box.append(self.banner)
-        box.append(rollbar(inhalt, 760))
-        return seite("Winky", "start", box)
+        s.add(self.g_verlauf)
+        return s
 
     # Assistent
 
@@ -701,7 +803,7 @@ class Fenster(Adw.ApplicationWindow):
             for t, u in zeilen:
                 g.add(textzeile(t, u, symbol))
             s.add(g)
-        return seite(_("Security and help"), "sicherheit", s)
+        return s
 
     def _baue_erweitert(self):
         s = Adw.PreferencesPage()
@@ -796,7 +898,7 @@ class Fenster(Adw.ApplicationWindow):
         rueckbau.add(textzeile(_("Without the Software app"),
                                _("In the terminal:\nsudo apt purge winky")))
         s.add(rueckbau)
-        return seite(_("Advanced"), "erweitert", s)
+        return s
 
     # Kameraabläufe
 
@@ -859,7 +961,7 @@ class Fenster(Adw.ApplicationWindow):
                 return _("Caution: to Winky, this person looks a lot like you"), False
             return _("Good: Winky doesn’t recognize this person"), True
         tipp = TIPPS.get(grund, grund or "")
-        if art in ("einlernen", "ergaenzen") and grund == "ok":
+        if art == "einlernen" and grund == "ok":
             tipp = _("Good, keep slowly moving your head")
         return tipp, grund == "ok"
 
@@ -911,17 +1013,6 @@ class Fenster(Adw.ApplicationWindow):
                 self.melde(_("Face recorded"))
             else:
                 a.vorschau.hinweis(_("Not saved"))
-                a.vorschau.fortschritt(1, "warnung")
-                a.ergebnis.set_label(lauf.fehlermeldung(rc))
-        elif lauf.art == "ergaenzen":
-            if erg.get("ok"):
-                a.vorschau.hinweis(_("✓ Added"))
-                a.vorschau.fortschritt(1, "gut")
-                a.ergebnis.set_label(_("✓ Added {count} images. Try it out the way Winky had "
-                                       "trouble before.").format(count=erg.get("uebernommen", 0)))
-                self.melde(_("Face added"))
-            else:
-                a.vorschau.hinweis(_("Nothing added"))
                 a.vorschau.fortschritt(1, "warnung")
                 a.ergebnis.set_label(lauf.fehlermeldung(rc))
         elif lauf.art == "testen":
@@ -1319,10 +1410,10 @@ class Fenster(Adw.ApplicationWindow):
                 "neu", "avatar-default-symbolic", _("Welcome to Winky"),
                 _("Unlock the lock screen with a glance at the camera. Setup takes about two "
                   "minutes."))
-        for w in (self.held, self.s_kreis):
-            for a in ("an", "pause", "neu", "fehlt"):
-                w.remove_css_class(a)
-            w.add_css_class(art)
+        for a in ("an", "pause", "neu", "fehlt"):
+            self.s_kreis.remove_css_class(a)
+        self.s_kreis.add_css_class(art)
+        self.s_kreis.set_visible(art != "neu")
         self.s_symbol.set_from_icon_name(symbol)
         self.s_titel.set_label(titel)
         self.s_text.set_label(inhalt)
@@ -1339,7 +1430,8 @@ class Fenster(Adw.ApplicationWindow):
         # Schalter
         darf, grund = self._darf_aktivieren()
         info = system.keepassxc_info() if bereit else {"polkit_aktion": False, "gefunden": None}
-        self.g_schalter.set_visible(bereit and (z.aktiv or z.pausiert or s["testen"]))
+        self.freigaben_stapel.set_visible_child_name(
+            "inhalt" if bereit and (z.aktiv or z.pausiert or s["testen"]) else "leer")
         self._schalter_sperre = True
         self.r_aktiv.set_active(z.aktiv)
         self.r_aktiv.set_sensitive((darf or z.aktiv) and not laeuft)
@@ -1397,10 +1489,6 @@ class Fenster(Adw.ApplicationWindow):
             _("Found: {found}.").format(found=gefunden) + " " + rest if gefunden else rest)
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
-        stand_raster = tuple(k.get_visible() for k in self.raster_schalter.kacheln)
-        if stand_raster != self._raster_stand:
-            self._raster_stand = stand_raster
-            raster_ordnen(self.raster_schalter)
         self.r_dialoge.set_active(z.dialoge)
         self.r_dialoge.set_sensitive(((z.aktiv and s["geste"]) or z.dialoge) and not laeuft)
         self.r_dialoge.set_subtitle(
@@ -1410,8 +1498,9 @@ class Fenster(Adw.ApplicationWindow):
         self._schalter_sperre = False
 
         # Ausprobieren und pflegen
-        self.g_pflege.set_visible(bereit and z.eingelernt)
-        for r in (self.r_probe, self.r_ergaenzen, self.r_neu, self.r_zweite, self.r_geste):
+        self.gesicht_stapel.set_visible_child_name("inhalt" if bereit and z.eingelernt
+                                                   else "leer")
+        for r in (self.r_probe, self.r_testen, self.r_neu, self.r_zweite, self.r_geste):
             r.set_sensitive(not laeuft)
         self.r_zweite.set_subtitle({None: _("Recommended: checks that Winky only recognizes you"),
                                     True: _("Passed, Winky only recognizes you"),
@@ -1424,7 +1513,6 @@ class Fenster(Adw.ApplicationWindow):
                                   _("Needed if you want to confirm sudo with ✌"))
 
         self._verlauf_zeigen(bereit and z.eingelernt)
-        self.g_zahlen.set_visible(bereit and z.eingelernt)
 
         # Assistent und Kameraabläufe
         if z.kamera:
@@ -1498,15 +1586,15 @@ class Fenster(Adw.ApplicationWindow):
                                    else _("Not active"))
 
     def _verlauf_zeigen(self, sichtbar):
-        self.g_verlauf.set_visible(sichtbar)
         for r in self._verlauf_zeilen:
-            self.verlauf_liste.remove(r)
+            self.g_verlauf.remove(r)
         self._verlauf_zeilen = []
-        if not sichtbar:
-            return
-        alle = system.verlauf(300)
-        self._kennzahlen(alle)
-        eintraege = None if alle is None else alle[:5]
+        eintraege = system.verlauf(20) if sichtbar else []
+        letzte = next((e for e in eintraege or [] if e["status"] == "treffer"
+                       and e.get("zweck") in ("sperrbildschirm", "anmeldung")), None)
+        self.s_zuletzt.set_label(_("Last unlocked {date}").format(date=datum(letzte["zeit"]))
+                                 if letzte else "")
+        self.s_zuletzt.set_visible(letzte is not None)
         if eintraege is None:
             zeilen = [textzeile(_("Can’t read the history"),
                                 _("The system log isn’t accessible for your account."))]
@@ -1528,39 +1616,13 @@ class Fenster(Adw.ApplicationWindow):
                     titel = _("KeePassXC opened") if ok else _("KeePassXC: password needed")
                 else:
                     titel = system.STATUS_TEXTE.get(e["status"], e["status"])
-                zeile = textzeile(titel, _("{date}, after {seconds} s").format(
-                    date=datum(e["zeit"]), seconds=komma(e["dauer_ms"] / 1000, 1)))
-                punkt = Gtk.Box(valign=Gtk.Align.CENTER)
-                punkt.add_css_class("punkt")
-                punkt.add_css_class("nein" if not ok else
-                                    "sudo" if e.get("zweck") in ("sudo", "dialog") else "gut")
-                zeile.add_prefix(punkt)
-                zeilen.append(zeile)
+                zeilen.append(textzeile(
+                    titel, _("{date}, after {seconds} s").format(
+                        date=datum(e["zeit"]), seconds=komma(e["dauer_ms"] / 1000, 1)),
+                    "emblem-ok-symbolic" if ok else "dialog-information-symbolic"))
         for r in zeilen:
-            self.verlauf_liste.append(r)
+            self.g_verlauf.add(r)
             self._verlauf_zeilen.append(r)
-
-    def _kennzahlen(self, alle):
-        """Heute per Gesicht entsperrt, mittlere Dauer und letzter Zeitpunkt."""
-        if not alle:
-            for k in (self.z_heute, self.z_dauer, self.z_zuletzt):
-                k.setze("–")
-            return
-        heute = time.localtime()[:3]
-        entsperrt = [e for e in alle if e["status"] == "treffer"
-                     and e.get("zweck") in ("sperrbildschirm", "anmeldung")]
-        self.z_heute.setze(str(sum(1 for e in entsperrt
-                                   if time.localtime(e["zeit"])[:3] == heute)))
-        letzte = entsperrt[:20]
-        self.z_dauer.setze(_("{seconds} s").format(
-            seconds=komma(sum(e["dauer_ms"] for e in letzte) / len(letzte) / 1000, 1))
-            if letzte else "–")
-        if entsperrt:
-            t = time.localtime(entsperrt[0]["zeit"])
-            self.z_zuletzt.setze(time.strftime("%H:%M", t) if t[:3] == heute
-                                 else time.strftime(_("%m/%d"), t))
-        else:
-            self.z_zuletzt.setze("–")
 
     def _schliessen(self, *_):
         for lauf in (self.gesicht_lauf, self.aktion):

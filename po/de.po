@@ -80,43 +80,6 @@ msgid "Record again"
 msgstr "Neu aufnehmen"
 
 #: src/app/gesicht_app.py
-msgid "Add to your face"
-msgstr "Gesicht ergänzen"
-
-#: src/app/gesicht_app.py
-msgid "Start the way Winky already recognizes you and look at the camera."
-msgstr "Fang so an, wie Winky dich schon erkennt, und schau in die Kamera."
-
-#: src/app/gesicht_app.py
-msgid "Click “Start adding” and enter your password."
-msgstr "Klick auf „Ergänzen starten“ und gib dein Passwort ein."
-
-#: src/app/gesicht_app.py
-msgid ""
-"After a few seconds, change what gives Winky trouble: put on your glasses, "
-"turn on a different light or sit a little differently. Slowly move your head."
-msgstr ""
-"Ändere nach ein paar Sekunden das, womit Winky Mühe hat: Brille aufsetzen, "
-"anderes Licht einschalten oder etwas anders sitzen. Beweg den Kopf dabei "
-"langsam."
-
-#: src/app/gesicht_app.py
-msgid ""
-"Takes 25 seconds. Your previous recording stays. Winky only adds what "
-"matches your face, so it won’t add anyone else by mistake."
-msgstr ""
-"Dauert 25 Sekunden. Die bisherige Aufnahme bleibt. Winky übernimmt nur, was "
-"zu deinem Gesicht passt, also aus Versehen niemand anderen."
-
-#: src/app/gesicht_app.py
-msgid "Start adding"
-msgstr "Ergänzen starten"
-
-#: src/app/gesicht_app.py
-msgid "Add more"
-msgstr "Weiter ergänzen"
-
-#: src/app/gesicht_app.py
 msgid "Try it out"
 msgstr "Ausprobieren"
 
@@ -228,6 +191,10 @@ msgid "%Y-%m-%d %H:%M"
 msgstr "%d.%m.%Y %H:%M"
 
 #: src/app/gesicht_app.py
+msgid "What this means"
+msgstr "Was das bedeutet"
+
+#: src/app/gesicht_app.py
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -260,6 +227,40 @@ msgid "Record your face first."
 msgstr "Zuerst dein Gesicht aufnehmen."
 
 #: src/app/gesicht_app.py
+msgid "Overview"
+msgstr "Übersicht"
+
+#: src/app/gesicht_app.py
+msgid "Unlocks"
+msgstr "Freigaben"
+
+#: src/app/gesicht_app.py
+msgid "Face"
+msgstr "Gesicht"
+
+#: src/app/gesicht_app.py
+msgid "History"
+msgstr "Verlauf"
+
+#: src/app/gesicht_app.py
+msgid "Security and help"
+msgstr "Sicherheit und Hilfe"
+
+#: src/app/gesicht_app.py
+msgid "Advanced"
+msgstr "Erweitert"
+
+#: src/app/gesicht_app.py
+msgid "About Winky"
+msgstr "Über Winky"
+
+#: src/app/gesicht_app.py
+msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
+msgstr ""
+"Ein Teil von Winky läuft nicht. Installier Winky in der Software-Verwaltung "
+"neu."
+
+#: src/app/gesicht_app.py
 msgid "Start setup"
 msgstr "Einrichtung starten"
 
@@ -268,20 +269,8 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/app/gesicht_app.py
-msgid "Winky rests, only your password works everywhere"
+msgid "Winky is resting, only your password works everywhere"
 msgstr "Winky ruht, überall gilt nur dein Passwort"
-
-#: src/app/gesicht_app.py
-msgid "Unlocked today"
-msgstr "Heute entsperrt"
-
-#: src/app/gesicht_app.py
-msgid "On average"
-msgstr "Im Mittel"
-
-#: src/app/gesicht_app.py
-msgid "Last time"
-msgstr "Zuletzt entsperrt"
 
 #: src/app/gesicht_app.py
 msgid "What Winky unlocks for you"
@@ -310,8 +299,8 @@ msgid "Login after startup"
 msgstr "Anmeldung nach dem Start"
 
 #: src/app/gesicht_app.py
-msgid "Caution: also after a restart, see ⓘ"
-msgstr "Achtung: auch nach einem Neustart, siehe ⓘ"
+msgid "Caution: the login keyring then stays locked"
+msgstr "Vorsicht: Der Schlüsselbund bleibt dann zu"
 
 #: src/app/gesicht_app.py
 msgid ""
@@ -397,50 +386,53 @@ msgstr ""
 "während du vor dem Rechner sitzt"
 
 #: src/app/gesicht_app.py
-msgid "Only works with KeePassXC 2.8 or later"
-msgstr "Geht nur mit KeePassXC ab 2.8"
+msgid "<b>Only works with KeePassXC 2.8 or later</b>"
+msgstr "<b>Funktioniert erst ab KeePassXC 2.8</b>"
 
 #: src/app/gesicht_app.py
-msgid "Maintain face recognition"
-msgstr "Gesichtserkennung pflegen"
+msgid "Not set up yet"
+msgstr "Noch nicht eingerichtet"
 
 #: src/app/gesicht_app.py
 msgid ""
-"Winky sometimes doesn’t recognize you, for example with glasses or in "
-"different light? Add these looks."
+"Record your face and try it out once, then you can choose here what Winky "
+"unlocks."
 msgstr ""
-"Erkennt Winky dich manchmal nicht, etwa mit Brille oder bei anderem Licht? "
-"Dann nimm diesen Anblick dazu."
+"Nimm dein Gesicht auf und probier es einmal aus, dann wählst du hier, was "
+"Winky öffnet."
+
+#: src/app/gesicht_app.py
+msgid "Try out and maintain"
+msgstr "Ausprobieren und pflegen"
+
+#: src/app/gesicht_app.py
+msgid "Try out recognition"
+msgstr "Erkennung ausprobieren"
+
+#: src/app/gesicht_app.py
+msgid "Look at the camera and see whether Winky recognizes you"
+msgstr "Schau in die Kamera und sieh, ob Winky dich erkennt"
 
 #: src/app/gesicht_app.py
 msgid "Record your face again"
 msgstr "Gesicht neu aufnehmen"
 
 #: src/app/gesicht_app.py
-msgid "Starts over and replaces everything recorded so far"
-msgstr "Fängt von vorn an und ersetzt alle bisherigen Aufnahmen"
+msgid ""
+"Helps if Winky has trouble recognizing you, for example with new glasses"
+msgstr "Hilft, wenn Winky dich schlecht erkennt, zum Beispiel mit neuer Brille"
 
 #: src/app/gesicht_app.py
-msgid "Recent activity"
-msgstr "Zuletzt"
+msgid "No face recorded yet"
+msgstr "Noch kein Gesicht aufgenommen"
 
 #: src/app/gesicht_app.py
-msgid "Security and help"
-msgstr "Sicherheit und Hilfe"
+msgid "The setup records your face in about two minutes."
+msgstr "Die Einrichtung nimmt dein Gesicht in etwa zwei Minuten auf."
 
 #: src/app/gesicht_app.py
-msgid "Advanced"
-msgstr "Erweitert"
-
-#: src/app/gesicht_app.py
-msgid "About Winky"
-msgstr "Über Winky"
-
-#: src/app/gesicht_app.py
-msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
-msgstr ""
-"Ein Teil von Winky läuft nicht. Installier Winky in der Software-Verwaltung "
-"neu."
+msgid "What Winky checked recently, newest first"
+msgstr "Was Winky zuletzt geprüft hat, das Neueste zuerst"
 
 #: src/app/gesicht_app.py
 msgid "Your password keeps working, always."
@@ -866,24 +858,6 @@ msgid "Not saved"
 msgstr "Nicht gespeichert"
 
 #: src/app/gesicht_app.py
-msgid "✓ Added"
-msgstr "✓ Ergänzt"
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "✓ Added {count} images. Try it out the way Winky had trouble before."
-msgstr ""
-"✓ {count} Bilder ergänzt. Probier es so aus, wie Winky vorher Mühe hatte."
-
-#: src/app/gesicht_app.py
-msgid "Face added"
-msgstr "Gesicht ergänzt"
-
-#: src/app/gesicht_app.py
-msgid "Nothing added"
-msgstr "Nichts ergänzt"
-
-#: src/app/gesicht_app.py
 msgid "✓ Recognized"
 msgstr "✓ Erkannt"
 
@@ -1157,7 +1131,7 @@ msgstr "Winky ist wieder da"
 msgid "First try it out successfully once."
 msgstr "Zuerst einmal erfolgreich ausprobieren."
 
-#: src/app/gesicht_app.py src/verwalten/winky-verwalten
+#: src/app/gesicht_app.py
 msgid "No strictness set (Advanced)."
 msgstr "Keine Strenge festgelegt (Erweitert)."
 
@@ -1443,6 +1417,11 @@ msgid "Not active"
 msgstr "nicht aktiv"
 
 #: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Last unlocked {date}"
+msgstr "Zuletzt entsperrt {date}"
+
+#: src/app/gesicht_app.py
 msgid "Can’t read the history"
 msgstr "Verlauf nicht lesbar"
 
@@ -1488,15 +1467,6 @@ msgstr "KeePassXC: Passwort nötig"
 #, python-brace-format
 msgid "{date}, after {seconds} s"
 msgstr "{date}, nach {seconds} s"
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "{seconds} s"
-msgstr "{seconds} s"
-
-#: src/app/gesicht_app.py
-msgid "%m/%d"
-msgstr "%d.%m."
 
 #: src/app/gesicht_app.py
 msgid "What Winky can do"
@@ -2046,33 +2016,6 @@ msgid "Recording your face failed. Details: journalctl -t winky"
 msgstr "Einlernen fehlgeschlagen. Details: journalctl -t winky"
 
 #: src/verwalten/winky-verwalten
-msgid "Record your own face first"
-msgstr "Zuerst das eigene Gesicht einlernen"
-
-#: src/verwalten/winky-verwalten
-msgid "Adding to your face"
-msgstr "Ergänzen"
-
-#: src/verwalten/winky-verwalten
-msgid ""
-"Winky didn’t recognize you clearly enough in this recording, so nothing was "
-"added. Start the way Winky already recognizes you, for example without "
-"glasses, and only then put them on. If Winky hardly recognizes you at all, "
-"record your face again."
-msgstr ""
-"Winky hat dich in dieser Aufnahme nicht sicher erkannt, deshalb wurde nichts "
-"ergänzt. Fang so an, wie Winky dich schon erkennt, etwa ohne Brille, und "
-"setz sie erst dann auf. Erkennt Winky dich kaum noch, nimm dein Gesicht neu "
-"auf."
-
-#: src/verwalten/winky-verwalten
-msgid ""
-"Nothing in this recording was close enough to your face. Nothing was added."
-msgstr ""
-"Nichts in dieser Aufnahme war deinem Gesicht nah genug. Es wurde nichts "
-"ergänzt."
-
-#: src/verwalten/winky-verwalten
 msgid "Test"
 msgstr "Test"
 
@@ -2083,6 +2026,10 @@ msgstr "Test fehlgeschlagen. Details: journalctl -t winky"
 #: src/verwalten/winky-verwalten
 msgid "Second-person check"
 msgstr "Gegenprobe"
+
+#: src/verwalten/winky-verwalten
+msgid "Record your own face first"
+msgstr "Zuerst das eigene Gesicht einlernen"
 
 #: src/verwalten/winky-verwalten
 msgid "No face seen. The other person should look straight into the camera."
@@ -2260,50 +2207,3 @@ msgstr "Aufruf: winky-verwalten {commands} [WERT]"
 #: src/verwalten/winky-verwalten
 msgid "This needs the administrator password (winky-verwalten)"
 msgstr "Dafür ist das Administratorpasswort nötig (winky-verwalten)"
-
-#~ msgid ""
-#~ "Caution: your face also logs you in after a restart. The login keyring "
-#~ "then stays locked and asks for the password when a program needs it."
-#~ msgstr ""
-#~ "Vorsicht: Dein Gesicht meldet dich auch nach einem Neustart an. Der "
-#~ "Schlüsselbund bleibt dann zu und fragt nach dem Passwort, sobald ein "
-#~ "Programm ihn braucht."
-
-#~ msgid "<b>Only works with KeePassXC 2.8 or later</b>"
-#~ msgstr "<b>Funktioniert erst ab KeePassXC 2.8</b>"
-
-#~ msgid "Winky is resting, only your password works everywhere"
-#~ msgstr "Winky ruht, überall gilt nur dein Passwort"
-
-#~ msgid "Try out and maintain"
-#~ msgstr "Ausprobieren und pflegen"
-
-#~ msgid "Try out recognition"
-#~ msgstr "Erkennung ausprobieren"
-
-#~ msgid "Look at the camera and see whether Winky recognizes you"
-#~ msgstr "Schau in die Kamera und sieh, ob Winky dich erkennt"
-
-#~ msgid ""
-#~ "Helps if Winky sometimes doesn’t recognize you, for example with glasses "
-#~ "or in different light"
-#~ msgstr ""
-#~ "Hilft, wenn Winky dich manchmal nicht erkennt, etwa mit Brille oder bei "
-#~ "anderem Licht"
-
-#~ msgid "Replaces everything recorded so far"
-#~ msgstr "Ersetzt alle bisherigen Aufnahmen"
-
-#~ msgid "What Winky can and can’t do, emergency off switch"
-#~ msgstr "Was Winky kann und was nicht, Notausschalter"
-
-#~ msgid "Camera, strictness, delete data, uninstall"
-#~ msgstr "Kamera, Strenge, Daten löschen, Deinstallieren"
-
-#~ msgid "Version, license and project page"
-#~ msgstr "Version, Lizenz und Projektseite"
-
-#~ msgid ""
-#~ "Helps if Winky has trouble recognizing you, for example with new glasses"
-#~ msgstr ""
-#~ "Hilft, wenn Winky dich schlecht erkennt, zum Beispiel mit neuer Brille"

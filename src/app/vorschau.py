@@ -9,56 +9,16 @@ from sprache import DEUTSCH, _, ngettext
 CSS = b"""
 .hinweis { background-color: alpha(black, 0.6); color: white; padding: 14px 22px;
            border-radius: 14px; font-size: 22pt; font-weight: bold; }
-.gut { color: #1fa855; }
-.warnung { color: #e07800; }
+.gut { color: @success_color; }
+.warnung { color: @warning_color; }
 .bildrahmen { background-color: black; border-radius: 12px; }
-
-/* Startseite: Statuskarte */
-.held { border-radius: 24px; padding: 22px 24px; }
-.held.an { background-image: linear-gradient(135deg, alpha(#30d158, 0.20), alpha(#64d2ff, 0.14)); }
-.held.pause { background-image: linear-gradient(135deg, alpha(#ff9f0a, 0.22), alpha(#ffd60a, 0.12)); }
-.held.neu { background-image: linear-gradient(135deg, alpha(#0a84ff, 0.18), alpha(#bf5af2, 0.14)); }
-.held.fehlt { background-image: linear-gradient(135deg, alpha(#ff453a, 0.20), alpha(#ff9f0a, 0.12)); }
-.statuskreis { border-radius: 999px; min-width: 76px; min-height: 76px; color: white; }
-.statuskreis.an { background-image: linear-gradient(135deg, #30d158, #00b7c3); }
-.statuskreis.pause { background-image: linear-gradient(135deg, #ffb340, #ff7a00); }
-.statuskreis.neu { background-image: linear-gradient(135deg, #0a84ff, #8e5cf7); }
-.statuskreis.fehlt { background-image: linear-gradient(135deg, #ff6a5f, #ff2d55); }
-.held-titel { font-size: 20pt; font-weight: 800; }
-
-/* Kacheln */
-.kachel { border-radius: 18px; padding: 14px 16px; }
-.aktionskachel { border-radius: 18px; padding: 14px 16px; }
-.kennzahl { border-radius: 16px; padding: 10px 16px; }
-.kennzahl-wert { font-size: 19pt; font-weight: 800; font-feature-settings: "tnum"; }
-.kacheltitel { font-weight: 700; }
-.kacheltitel-klein { font-weight: 600; }
-.kacheltext { font-size: 9.5pt; opacity: 0.72; }
-.kacheltext.warnung { opacity: 1; }
-.abschnitt { font-size: 12.5pt; font-weight: 800; margin-top: 10px; }
-.abschnitt-text { font-size: 9.5pt; opacity: 0.72; }
-.unterzeile, .hinweiszeile { border-top: 1px solid alpha(currentColor, 0.10); padding-top: 10px; }
-.symbolkachel { border-radius: 10px; min-width: 34px; min-height: 34px; color: white; }
-.symbolzeichen { font-size: 15pt; color: white; }
-.farbe-gruen { background-image: linear-gradient(180deg, #3ddc6a, #1fb54c); }
-.farbe-blau { background-image: linear-gradient(180deg, #3a9bff, #0a6cff); }
-.farbe-indigo { background-image: linear-gradient(180deg, #7f7cff, #5150e6); }
-.farbe-orange { background-image: linear-gradient(180deg, #ffb340, #ff8400); }
-.farbe-gelb { background-image: linear-gradient(180deg, #ffd23f, #ffad0a); }
-.farbe-rot { background-image: linear-gradient(180deg, #ff6a5f, #ff3b30); }
-.farbe-teal { background-image: linear-gradient(180deg, #4fd8e8, #12acc8); }
-.farbe-pink { background-image: linear-gradient(180deg, #ff6b9a, #ff2d6f); }
-.farbe-lila { background-image: linear-gradient(180deg, #cf7bff, #a64bf0); }
-.farbe-grau { background-image: linear-gradient(180deg, #a8a8b0, #82828c); }
-.punkt { min-width: 9px; min-height: 9px; border-radius: 99px; }
-.punkt.gut { background-color: #30d158; }
-.punkt.sudo { background-color: #7f7cff; }
-.punkt.nein { background-color: #ff9f0a; }
-
-/* Kameraablaeufe */
+.statuszeichen { border-radius: 999px; min-width: 34px; min-height: 34px; color: white;
+                 border: 3px solid @window_bg_color; }
+.statuszeichen.an { background-color: #2ec27e; }
+.statuszeichen.pause { background-color: #ff8c00; }
+.statuszeichen.fehlt { background-color: #e01b24; }
 .schrittnummer { border-radius: 999px; min-width: 24px; min-height: 24px; font-weight: 800;
-                 font-size: 9.5pt; color: white;
-                 background-image: linear-gradient(180deg, #3a9bff, #0a6cff); }
+                 font-size: 9.5pt; color: white; background-color: @accent_bg_color; }
 .ringhinweis { background-color: alpha(black, 0.55); color: white; padding: 10px 18px;
                border-radius: 999px; font-size: 15pt; font-weight: 800; }
 """

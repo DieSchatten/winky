@@ -27,8 +27,6 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
 - **Administrator-Dialoge mit Gesicht und ✌** (freiwillig): etwa
   Updates installieren, ohne das Passwort zu tippen.
-- **Gesicht ergänzen,** wenn Winky dich manchmal nicht erkennt, etwa mit Brille oder bei
-  anderem Licht, ohne neu anzufangen. Übernommen wird nur, was zu deinem Gesicht passt.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
 - **Einrichtung ohne Terminal:** Die App findet die Kamera, nimmt das Gesicht auf, lässt
   es ausprobieren und mit einer zweiten Person gegenprüfen. In der Software-Verwaltung

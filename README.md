@@ -27,8 +27,6 @@ the name too.
   and asks for the password when a program needs it.
 - **Administrator dialogs with face and ✌** (optional): for example
   installing updates, without typing the password.
-- **Add to your face** if Winky sometimes doesn’t recognize you, for example with glasses or
-  in different light, without starting over. Only images that match your face are added.
 - **Several people** on the same computer, each with their own face and password.
 - **Setup without the terminal:** The app finds the camera, records your face, lets you try
   it out and check it with a second person. Winky can be removed again in the software

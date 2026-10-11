@@ -5,9 +5,8 @@ Läuft als root (pkexec oder sudo), wirkt nur für den Aufrufer (PKEXEC_UID bzw.
 liest nichts aus dessen Home. Als winky-gesicht (eigenes Passwort) sind nur die Befehle fürs
 eigene Gesicht erlaubt, als winky-verwalten (Administratorpasswort) auch die systemweiten.
 
-Eigenes Gesicht: status, kameras, einlernen, ergaenzen (weitere Aufnahmen anhängen, nur wenn
-  die Aufnahme das Gesicht erkennt), testen (ohne Sperrzähler), gegenprobe (andere Person darf
-  nicht passen), geste-testen (Gesicht und ✌, Freigabe für sudo), entfernen
+Eigenes Gesicht: status, kameras, einlernen, testen (ohne Sperrzähler), gegenprobe (andere
+  Person darf nicht passen), geste-testen (Gesicht und ✌, Freigabe für sudo), entfernen
 System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.40 bis 0.95),
   aktivieren / deaktivieren (pam-auth-update), pausieren / fortsetzen (Notschalter),
   keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus,
@@ -57,12 +56,8 @@ MAGIC = 0x314B4E57
 OP_EINLERNEN, OP_TESTEN, OP_KAMERAS, OP_GESTE_TESTEN = 3, 4, 5, 8
 GEGENPROBE_ABSTAND = 0.10  # so weit muss eine fremde Person unter der Schwelle bleiben
 GEGENPROBE_COUNTDOWN = 5  # Sekunden, um nach der Passworteingabe aus dem Bild zu gehen
-GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "testen", "gegenprobe",
-                   "geste-testen", "entfernen", "schluesselbund"}
-VORLAGEN_MAX = 64          # wie kVorlagenMax im Prüfdienst
-EINLERNEN_MAX = 30         # Vorlagen aus dem Einlernen; der Rest ist Platz für Ergänzungen
-ERGAENZEN_BELEGE = 3       # so viele Bilder der Ergänzung müssen die Schwelle erreichen
-ERGAENZEN_ABSTAND = 0.20   # weiter unter der Schwelle wird nichts übernommen
+GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "testen", "gegenprobe", "geste-testen",
+                   "entfernen", "schluesselbund"}
 STATUS_TEXT = {0: "treffer", 1: "kein_treffer", 2: "kein_gesicht", 3: "nicht_eingerichtet",
                4: "gesperrt", 5: "fehler", 6: "abgelehnt", 7: "ok"}
 KONFIG_VORGABE = """\
@@ -354,107 +349,8 @@ def befehl_einlernen(uid, _name):
     kopf = b"WNKV" + struct.pack("III", 1, dim, anzahl) + MODELL_SHA + struct.pack("q", int(time.time()))
     schreibe_atomar(vorlagen_pfad(uid), kopf + floats, 0o640, gid)
     loeschen(geste_pfad(uid))  # neue Vorlagen: ✌-Test bitte neu
-    schreibe_status(uid, {"vorlagen": anzahl, "vorlagen_basis": anzahl,
-                          "eingelernt": int(time.time())})
+    schreibe_status(uid, {"vorlagen": anzahl, "eingelernt": int(time.time())})
     fertig(True, vorlagen=anzahl)
-
-
-def lese_vorlagen(uid):
-    """Gespeicherte Vorlagen als Liste von Vektoren; None, wenn fehlend oder ungültig."""
-    try:
-        with open(vorlagen_pfad(uid), "rb") as f:
-            roh = f.read(88 + VORLAGEN_MAX * MODELL_DIM * 4 + 1)
-    except OSError:
-        return None
-    if len(roh) < 88 or roh[:4] != b"WNKV":
-        return None
-    version, dim, anzahl = struct.unpack("III", roh[4:16])
-    if version != 1 or dim != MODELL_DIM or roh[16:80] != MODELL_SHA or \
-            not 1 <= anzahl <= VORLAGEN_MAX or len(roh) != 88 + anzahl * dim * 4:
-        return None
-    werte = struct.unpack(f"{anzahl * dim}f", roh[88:])
-    return [list(werte[i * dim:(i + 1) * dim]) for i in range(anzahl)]
-
-
-def aehnlichkeit(merkmal, vorlagen):
-    """Wie der Prüfdienst (bewerte): Mittel der drei besten Übereinstimmungen."""
-    werte = sorted((sum(a * b for a, b in zip(merkmal, v)) for v in vorlagen), reverse=True)
-    besten = werte[:3]
-    return sum(besten) / len(besten)
-
-
-def gleichmaessig(liste, n):
-    """n Einträge gleichmäßig verteilt (wie die Auswahl beim Einlernen)."""
-    if n >= len(liste):
-        return list(liste)
-    if n <= 0:
-        return []
-    if n == 1:
-        return [liste[0]]
-    return [liste[i * (len(liste) - 1) // (n - 1)] for i in range(n)]
-
-
-def vorlagen_ergaenzen(alt, basis, neu, schwelle):
-    """Hängt neue Aufnahmen an. Gibt (Vorlagen, übernommen, Belege) zurück, Vorlagen None, wenn
-    die Aufnahme das eingelernte Gesicht nicht oft genug erkannt hat. Übernommen wird nur, was
-    höchstens ERGAENZEN_ABSTAND unter der Schwelle liegt, also kein fremdes Gesicht. Die Vorlagen
-    aus dem Einlernen bleiben; frühere Ergänzungen werden ausgedünnt, wenn der Platz nicht
-    reicht, die neue bekommt mindestens die Hälfte davon."""
-    werte = [aehnlichkeit(v, alt) for v in neu]
-    belege = sum(w >= schwelle for w in werte)
-    if belege < ERGAENZEN_BELEGE:
-        return None, 0, belege
-    passend = [v for v, w in zip(neu, werte) if w >= schwelle - ERGAENZEN_ABSTAND]
-    basis = max(1, min(basis or EINLERNEN_MAX, len(alt), EINLERNEN_MAX))
-    frueher = alt[basis:]
-    platz = VORLAGEN_MAX - basis
-    if len(frueher) + len(passend) > platz:
-        n_neu = min(len(passend), max(platz // 2, platz - len(frueher)))
-        frueher = gleichmaessig(frueher, platz - n_neu)
-        passend = gleichmaessig(passend, n_neu)
-    return alt[:basis] + frueher + passend, len(passend), belege
-
-
-def befehl_ergaenzen(uid, _name):
-    alt = lese_vorlagen(uid)
-    if alt is None:
-        fertig(False, fehler=_("Record your own face first"))
-    schwelle = aktuelle_schwelle()
-    if schwelle <= 0:
-        fertig(False, fehler=_("No strictness set (Advanced)."))
-    s = verbinde(OP_EINLERNEN, uid, 25)
-    try:
-        antwort, vektoren = strom(s)
-    except Abbruch as e:
-        fertig(False, fehler=abbruch_text(_("Adding to your face"), e), abgebrochen=True)
-    if antwort["status"] != "ok":
-        hinweis = {"kein_gesicht": _("Too few usable images. Please look straight into the "
-                                     "camera and move your head only slightly.")}
-        fertig(False, fehler=hinweis.get(antwort["status"]) or antwort.get("fehler") or
-               _("Recording your face failed. Details: journalctl -t winky"))
-    anzahl, dim, floats = pruefe_vektoren(vektoren)
-    werte = struct.unpack(f"{anzahl * dim}f", floats)
-    neu = [list(werte[i * dim:(i + 1) * dim]) for i in range(anzahl)]
-    status = lese_status(uid)
-    vorlagen, uebernommen, belege = vorlagen_ergaenzen(alt, status.get("vorlagen_basis"), neu,
-                                                       schwelle)
-    if vorlagen is None:
-        fertig(False, nicht_erkannt=True, fehler=_(
-            "Winky didn’t recognize you clearly enough in this recording, so nothing was added. "
-            "Start the way Winky already recognizes you, for example without glasses, and only "
-            "then put them on. If Winky hardly recognizes you at all, record your face again."))
-    if not uebernommen:
-        fertig(False, fehler=_("Nothing in this recording was close enough to your face. "
-                               "Nothing was added."))
-    gid = grp.getgrnam(GRUPPE).gr_gid
-    daten = b"".join(struct.pack(f"{dim}f", *v) for v in vorlagen)
-    kopf = (b"WNKV" + struct.pack("III", 1, dim, len(vorlagen)) + MODELL_SHA +
-            struct.pack("q", int(time.time())))
-    schreibe_atomar(vorlagen_pfad(uid), kopf + daten, 0o640, gid)
-    basis = max(1, min(status.get("vorlagen_basis") or EINLERNEN_MAX, len(alt), EINLERNEN_MAX))
-    status.update(vorlagen=len(vorlagen), vorlagen_basis=basis, ergaenzt=int(time.time()))
-    schreibe_status(uid, status)
-    fertig(True, vorlagen=len(vorlagen), uebernommen=uebernommen)
 
 
 def befehl_testen(uid, _name):
@@ -927,8 +823,7 @@ def befehl_status(uid, name):
 
 
 BEFEHLE = {
-    "status": befehl_status, "einlernen": befehl_einlernen, "ergaenzen": befehl_ergaenzen,
-    "testen": befehl_testen,
+    "status": befehl_status, "einlernen": befehl_einlernen, "testen": befehl_testen,
     "gegenprobe": befehl_gegenprobe, "kameras": befehl_kameras, "kamera": befehl_kamera,
     "entfernen": befehl_entfernen, "schwelle": befehl_schwelle,
     "aktivieren": befehl_aktivieren, "deaktivieren": befehl_deaktivieren,

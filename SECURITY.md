@@ -157,10 +157,6 @@ These cannot be avoided by how you use Winky:
   socket and logind (local, active, graphical session on seat0).
 - **Root-owned data:** configuration, templates, switches and approvals are opened without
   following links and checked for owner, permissions and size.
-- **Adding to your face only with you in the picture:** Extra images are only added if Winky
-  recognizes you in them at least three times at the set threshold. Images more than 0.20
-  below it are discarded; if someone else sits in front of the camera in between, they don't
-  end up in your data. The original recording is always kept.
 - **Failed attempts:** After five faces that were detected but did not match, face unlock
   stays blocked until the next login with password. sudo: ten minutes after three
   unconfirmed requests.

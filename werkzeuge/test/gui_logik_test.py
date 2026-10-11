@@ -231,9 +231,16 @@ def test(f):
     # --- Startseite
     pruefe("Winky ist an" in f.s_titel.get_label() and not f.s_einrichten.get_visible(),
            "Startseite: „Winky ist an“, kein Einrichtungsknopf mehr")
-    start = texte(f.nav.find_page("start"))
+    start = "".join(texte(f.abschnitte.get_child_by_name(sid))
+                    for sid in ("uebersicht", "freigaben", "gesicht"))
     gefunden = [b for b in FACHBEGRIFFE if b in start]
-    pruefe(not gefunden, f"Startseite ohne Fachbegriffe {gefunden or ''}".strip())
+    pruefe(not gefunden, f"Übersicht, Freigaben, Gesicht ohne Fachbegriffe {gefunden or ''}".strip())
+    pruefe(f.abschnitte.get_visible_child_name() == "uebersicht" and f.s_kreis.get_visible()
+           and f.s_kreis.has_css_class("an"), "Übersicht mit Statuszeichen am Winky-Symbol")
+    f.abschnitt_zeigen("erweitert")
+    pruefe(f.abschnitte.get_visible_child_name() == "erweitert"
+           and f.inhalt_titel.get_title() == "Erweitert", "Seitenleiste wechselt den Abschnitt")
+    f.abschnitt_zeigen("uebersicht")
     pruefe(f.s_sudo.get_active() and not f.k_sudo_einrichten.get_visible(),
            "sudo-Schalter an, „Einrichten“ ausgeblendet")
     pruefe(f.r_keepassxc.get_visible() and "2.8" in f.r_keepassxc.get_subtitle(),
@@ -354,24 +361,6 @@ def test(f):
     warte(lambda: f.aktion is not None, 2)
     pruefe(fertig(f) and f.zustand.kamera, "gewählte Kamera übernommen")
 
-    # Ergänzen: behält Ausprobieren und ✌-Test; ohne Erkennung wird nichts ergänzt
-    vorher = f.zustand.vorlagen
-    os.environ["WINKY_ATTRAPPE_ERGAENZEN"] = "fremd"
-    f.kamera_oeffnen("ergaenzen")
-    pruefe(f.k_seite.get_title() == "Gesicht ergänzen" and f.k_ansicht.k_start.get_sensitive(),
-           "„Gesicht ergänzen“ öffnet die Kameraseite")
-    f.k_ansicht.k_start.emit("clicked")
-    pruefe(fertig(f) and f.zustand.vorlagen == vorher and "nicht sicher erkannt"
-           in f.k_ansicht.ergebnis.get_label(), "ohne sichere Erkennung wird nichts ergänzt")
-    del os.environ["WINKY_ATTRAPPE_ERGAENZEN"]
-    f.k_ansicht.k_start.emit("clicked")
-    pruefe(fertig(f) and f.zustand.vorlagen == vorher + 20 and "20" in
-           f.k_ansicht.ergebnis.get_label(), "ergänzt: 20 Bilder dazu")
-    pruefe(f.k_ansicht.k_start.get_label() == "Weiter ergänzen" and f.r_aktiv.get_sensitive()
-           and "Nötig" not in f.r_geste.get_subtitle(),
-           "nach dem Ergänzen bleiben Ausprobieren und ✌-Test gültig")
-    f.nav.pop()
-
     # Neu aufnehmen verlangt neues Ausprobieren und einen neuen ✌-Test
     f.kamera_oeffnen("einlernen")
     f.k_ansicht.k_start.emit("clicked")
@@ -390,8 +379,9 @@ def test(f):
     f._vorlagen_loeschen_fragen()
     DIALOGE.pop().emit("response", "weg")
     warte(lambda: f.aktion is not None, 2)
-    pruefe(fertig(f) and not f.zustand.eingelernt and not f.g_pflege.get_visible(),
-           "Gesichtsdaten gelöscht, Pflege ausgeblendet")
+    pruefe(fertig(f) and not f.zustand.eingelernt
+           and f.gesicht_stapel.get_visible_child_name() == "leer",
+           "Gesichtsdaten gelöscht, „Gesicht“ zeigt den Weg zur Einrichtung")
 
     pruefe((f.k_store is not None) == bool(Gio.AppInfo.get_default_for_uri_scheme("appstream")),
            "Knopf zur Software-Verwaltung genau dann, wenn eine vorhanden ist")

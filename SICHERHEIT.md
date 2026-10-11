@@ -163,10 +163,6 @@ Das lässt sich durch Bedienung nicht abstellen:
   Socket und logind (lokale, aktive, grafische Sitzung an seat0).
 - **Root-eigene Daten:** Konfiguration, Vorlagen, Schalter und Freigaben werden ohne
   Verknüpfungen geöffnet und auf Besitzer, Rechte und Größe geprüft.
-- **Gesicht ergänzen nur mit dir im Bild:** Weitere Aufnahmen werden nur übernommen, wenn
-  Winky dich darin mindestens dreimal an der eingestellten Schwelle erkennt. Bilder, die mehr
-  als 0,20 darunter liegen, werden verworfen; setzt sich zwischendurch jemand anderes vor die
-  Kamera, landet er nicht in deinen Daten. Die ursprüngliche Aufnahme bleibt immer erhalten.
 - **Fehlversuche:** Nach fünf erkannten, aber fremden Gesichtern bleibt das Gesicht bis zur
   nächsten Passwortanmeldung gesperrt. sudo: nach drei unbestätigten Anfragen zehn Minuten.
 - **Schrittweise Freigabe:** Einschalten erst nach erfolgreichem Test; gesperrt, wenn die

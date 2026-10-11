@@ -84,38 +84,6 @@ msgid "Record again"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Add to your face"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Start the way Winky already recognizes you and look at the camera."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Click “Start adding” and enter your password."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid ""
-"After a few seconds, change what gives Winky trouble: put on your glasses, "
-"turn on a different light or sit a little differently. Slowly move your head."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid ""
-"Takes 25 seconds. Your previous recording stays. Winky only adds what "
-"matches your face, so it won’t add anyone else by mistake."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Start adding"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Add more"
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "Try it out"
 msgstr ""
 
@@ -219,6 +187,10 @@ msgid "%Y-%m-%d %H:%M"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "What this means"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Cancel"
 msgstr ""
 
@@ -249,6 +221,38 @@ msgid "Record your face first."
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Overview"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Unlocks"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "History"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Security and help"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Advanced"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "About Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Start setup"
 msgstr ""
 
@@ -257,19 +261,7 @@ msgid "Pause"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Winky rests, only your password works everywhere"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Unlocked today"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "On average"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Last time"
+msgid "Winky is resting, only your password works everywhere"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -296,7 +288,7 @@ msgid "Login after startup"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Caution: also after a restart, see ⓘ"
+msgid "Caution: the login keyring then stays locked"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -363,17 +355,29 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Only works with KeePassXC 2.8 or later"
+msgid "<b>Only works with KeePassXC 2.8 or later</b>"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Maintain face recognition"
+msgid "Not set up yet"
 msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"Winky sometimes doesn’t recognize you, for example with glasses or in "
-"different light? Add these looks."
+"Record your face and try it out once, then you can choose here what Winky "
+"unlocks."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try out and maintain"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Try out recognition"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Look at the camera and see whether Winky recognizes you"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -381,27 +385,20 @@ msgid "Record your face again"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Starts over and replaces everything recorded so far"
+msgid ""
+"Helps if Winky has trouble recognizing you, for example with new glasses"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Recent activity"
+msgid "No face recorded yet"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Security and help"
+msgid "The setup records your face in about two minutes."
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Advanced"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "About Winky"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Part of Winky isn’t running. Reinstall Winky in the Software app."
+msgid "What Winky checked recently, newest first"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -791,23 +788,6 @@ msgid "Not saved"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "✓ Added"
-msgstr ""
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "✓ Added {count} images. Try it out the way Winky had trouble before."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Face added"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Nothing added"
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "✓ Recognized"
 msgstr ""
 
@@ -1056,7 +1036,7 @@ msgstr ""
 msgid "First try it out successfully once."
 msgstr ""
 
-#: src/app/gesicht_app.py src/verwalten/winky-verwalten
+#: src/app/gesicht_app.py
 msgid "No strictness set (Advanced)."
 msgstr ""
 
@@ -1313,6 +1293,11 @@ msgid "Not active"
 msgstr ""
 
 #: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Last unlocked {date}"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Can’t read the history"
 msgstr ""
 
@@ -1357,15 +1342,6 @@ msgstr ""
 #: src/app/gesicht_app.py
 #, python-brace-format
 msgid "{date}, after {seconds} s"
-msgstr ""
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "{seconds} s"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "%m/%d"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1871,27 +1847,6 @@ msgid "Recording your face failed. Details: journalctl -t winky"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
-msgid "Record your own face first"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid "Adding to your face"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid ""
-"Winky didn’t recognize you clearly enough in this recording, so nothing was "
-"added. Start the way Winky already recognizes you, for example without "
-"glasses, and only then put them on. If Winky hardly recognizes you at all, "
-"record your face again."
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid ""
-"Nothing in this recording was close enough to your face. Nothing was added."
-msgstr ""
-
-#: src/verwalten/winky-verwalten
 msgid "Test"
 msgstr ""
 
@@ -1901,6 +1856,10 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Second-person check"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Record your own face first"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

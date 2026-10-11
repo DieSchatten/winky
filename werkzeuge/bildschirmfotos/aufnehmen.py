@@ -132,8 +132,7 @@ def los(app):
     warte(5, lambda: f.gesicht_lauf is None)
     f._g_bild = alt
 
-    f.nav.pop_to_tag("start")
-    f.nav.push_by_tag("sicherheit")
+    f.abschnitt_zeigen("sicherheit")
     warte(0.6)
     foto(f, "sicherheit")
 
@@ -144,8 +143,11 @@ def los(app):
             f.w_stapel.set_visible_child_name(sid)
             warte(0.6)
             foto(f, f"schritt-{sid}")
-        f.nav.pop_to_tag("start")
-        f.nav.push_by_tag("erweitert")
+        for sid in ("freigaben", "gesicht", "verlauf", "erweitert"):
+            f.abschnitt_zeigen(sid)
+            warte(0.6)
+            foto(f, f"abschnitt-{sid}")
+        f.abschnitt_zeigen("erweitert")
         warte(0.6)
         foto(f, "erweitert")
     f.close()
