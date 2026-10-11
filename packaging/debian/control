@@ -18,5 +18,5 @@ Description: Winky: unlock the screen with your face, like Windows Hello
  own password. Recognition with YuNet and SFace (OpenCV Zoo), hand sign with
  Google MediaPipe. The app speaks English and German.
  .
- So far tested with only one infrared camera; other cameras may behave
- differently. Use at your own risk.
+ So far tested on two laptops, including a Microsoft Surface Laptop 4; other
+ cameras may behave differently. Use at your own risk.

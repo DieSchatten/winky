@@ -138,8 +138,9 @@ Das Werkzeug hat zwei Seiten:
   mit SFace (09.10.2026, eine Person): ohne Brille mindestens 0,69 (fern), sonst ab 0,78,
   Median 0,84 bis 0,96; mit Brille, aber ohne Brille eingelernt, Median 0,70 und Minimum
   0,51; Handyfoto und leeres Bild ergaben kein Gesicht; Entscheidung nach etwa 0,4 s,
-  seitlich 1,2 s. Andere Personen und ein Ausdruck fehlen noch, die Vorgabe 0,65 ist
-  deshalb vorläufig. Neu messen lohnt sich bei einem anderen Modell oder einer anderen
+  seitlich 1,2 s. Prüfung mit einer zweiten Person in der App (10.10.2026): höchstens 0,24.
+  Ein Ausdruck ist ungetestet; ein Microsoft Surface Laptop 4 lief ohne Anpassung. Neu
+  messen lohnt sich bei einem anderen Modell oder einer anderen
   Kameraklasse.
 - **Handzeichen ✌:** Bestätigen wie im echten Einsatz mit Rückmeldung, im Dunkeln, mit
   Abstand, dazu Tippen und Alltag ohne Zeichen. Ergebnis 09.10.2026: 11 von 12 erkannt

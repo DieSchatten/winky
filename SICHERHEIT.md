@@ -8,8 +8,8 @@ wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst ste
 
 Stand: Version 0.11.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
-Windows-Hello-Kamera gemessen, mit dem aktuellen Erkennungsmodell bisher nur mit einer
-Person.
+Windows-Hello-Kamera mit der eigenen und einer weiteren Person gemessen und an einem
+Microsoft Surface Laptop 4 ausprobiert.
 
 ## Kurz gesagt
 
@@ -51,8 +51,8 @@ Das hast du selbst in der Hand:
    strenger ein oder nutz nur das Passwort. Zwillinge sollten Winky nicht nutzen.
 3. **Strenge herabsetzen.** Eine niedrigere Schwelle macht Winky bequemer, aber andere
    Gesichter kommen leichter durch. In der Messung lag die eigene Person ohne Brille über
-   0,69, meist zwischen 0,84 und 0,96. Wie nah fremde Gesichter mit dem aktuellen Modell
-   kommen, ist **noch nicht gemessen**; die Vorgabe 0,65 ist deshalb vorläufig. Umso
+   0,69, meist zwischen 0,84 und 0,96; eine andere Person kam höchstens auf 0,24, weit unter
+   der Vorgabe 0,65. Das ist eine Stichprobe, keine Statistik. Umso
    wichtiger ist die Prüfung mit einer zweiten Person (Punkt 2): Sie zeigt für deinen
    Haushalt, ob der Abstand reicht.
 4. **Reflexhaftes ✌.** Die sudo-Bestätigung schützt nur, wenn du ✌ ausschließlich für

@@ -8,7 +8,7 @@ protect against, and which risks lie in its use and in the technology itself.
 
 As of version 0.11.0. Winky was developed by one person with AI assistance and has **not been
 independently reviewed**. Recognition was measured on one laptop with a Windows Hello
-camera, with the current recognition model so far only with one person.
+camera with the owner and one other person, and tried on a Microsoft Surface Laptop 4.
 
 ## In short
 
@@ -50,9 +50,8 @@ This is in your own hands:
    the password. Twins should not use Winky.
 3. **Lowering the strictness.** A lower threshold makes Winky more convenient, but other
    faces get through more easily. In the measurement, the person themselves without glasses
-   scored above 0.69, mostly between 0.84 and 0.96. How close other faces come with the
-   current model has **not been measured yet**; the default of 0.65 is therefore
-   provisional. This makes the check with a second person (item 2) all the more important:
+   scored above 0.69, mostly between 0.84 and 0.96; another person reached at most 0.24,
+   far below the default of 0.65. That is one sample, not statistics. This makes the check with a second person (item 2) all the more important:
    it shows whether the margin is enough for your household.
 4. **Reflexive ✌.** The sudo confirmation only protects you if you show ✌ exclusively for
    commands you have just typed yourself. If a Winky message appears that you do not

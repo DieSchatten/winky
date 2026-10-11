@@ -39,11 +39,11 @@ Einrichtung.
   bei manchen Laptops [linux-enable-ir-emitter](https://github.com/EmixamPP/linux-enable-ir-emitter).
 - Ein Administratorpasswort für die Einrichtung.
 
-> **Bisher nur mit einer Kamera getestet:** Entwickelt und gemessen wurde Winky an einem
-> Laptop mit einer Infrarot-Kamera (640 × 360, blinkendes Infrarot-Licht). Andere Kameras
-> können sich anders verhalten, etwa bei Helligkeit, Bildgröße oder Infrarot-Licht. Probier
-> die Erkennung in der App aus, bevor du dich darauf verlässt, und mach die Prüfung mit einer
-> zweiten Person.
+> **Bisher an zwei Laptops getestet:** Entwickelt und gemessen wurde Winky an einem Laptop
+> mit Infrarot-Kamera (640 × 360, blinkendes Infrarot-Licht); es läuft außerdem auf einem
+> **Microsoft Surface Laptop 4**. Andere Kameras können sich anders verhalten, etwa bei
+> Helligkeit, Bildgröße oder Infrarot-Licht. Probier die Erkennung in der App aus, bevor du
+> dich darauf verlässt, und mach die Prüfung mit einer zweiten Person.
 - Etwa 2 Minuten für die Einrichtung und rund 75 MB Speicherplatz.
 - Die App spricht Deutsch und Englisch, je nach Systemsprache.
 
@@ -82,8 +82,8 @@ Ausführlich in **[SICHERHEIT.md](SICHERHEIT.md)**.
 
 - Keine Lebenderkennung: Ein im Infrarot sichtbarer Ausdruck oder eine Maske wurden nicht
   getestet und könnten durchkommen.
-- Die Zuverlässigkeit wurde an einem Laptop gemessen, mit dem aktuellen Erkennungsmodell
-  bisher nur mit einer Person, nicht statistisch belegt.
+- Die Zuverlässigkeit wurde an einem Laptop mit der eigenen und einer weiteren Person
+  gemessen (an einem zweiten Laptop ausprobiert), nicht statistisch belegt.
 - Neuer Code läuft in der Anmeldung mit (klein gehalten, mit Freigabeliste und Zeitlimit).
 - Wer den abgeschotteten Prüfdienst übernimmt oder eine Kamera-Attrappe einbaut, kann
   entsperren.

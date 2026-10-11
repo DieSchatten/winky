@@ -64,13 +64,14 @@
     </p>
     <p>
       Requires an infrared camera (Windows Hello camera) and GNOME with GDM, for example
-      Zorin OS 18 or Ubuntu 24.04. So far tested with only one infrared camera; other cameras
-      may behave differently. Use at your own risk.
+      Zorin OS 18 or Ubuntu 24.04. So far tested on two laptops, including a Microsoft Surface
+      Laptop 4; other cameras may behave differently. Use at your own risk.
     </p>
     <p xml:lang="de">
       Braucht eine Infrarot-Kamera (Windows-Hello-Kamera) und GNOME mit GDM, zum Beispiel
-      Zorin OS 18 oder Ubuntu 24.04. Bisher nur mit einer Infrarot-Kamera getestet; andere
-      Kameras können sich anders verhalten. Die Nutzung erfolgt auf eigenes Risiko.
+      Zorin OS 18 oder Ubuntu 24.04. Bisher an zwei Laptops getestet, darunter ein Microsoft
+      Surface Laptop 4; andere Kameras können sich anders verhalten. Die Nutzung erfolgt auf
+      eigenes Risiko.
     </p>
   </description>
   <url type="homepage">https://github.com/DieSchatten/winky</url>

@@ -40,10 +40,11 @@ step.
   some laptops.
 - An administrator password for the setup.
 
-> **Only tested with one infrared camera so far:** Winky was developed and measured on a
-> laptop with one infrared camera (640 × 360, blinking infrared light). Other cameras may
-> behave differently, for example in brightness, image size or infrared light. Try out the
-> recognition in the app before you rely on it, and do the check with a second person.
+> **Tested on two laptops so far:** Winky was developed and measured on a laptop with an
+> infrared camera (640 × 360, blinking infrared light) and also works on a **Microsoft
+> Surface Laptop 4**. Other cameras may behave differently, for example in brightness, image
+> size or infrared light. Try out the recognition in the app before you rely on it, and do
+> the check with a second person.
 - About 2 minutes for the setup and around 75 MB of disk space.
 - The app speaks English and German, depending on the system language.
 
@@ -81,8 +82,8 @@ Details in **[SECURITY.md](SECURITY.md)**.
 
 - No liveness detection: a printout that is visible in infrared, or a mask, has not been
   tested and might get through.
-- Reliability was measured on one laptop, with the current recognition model so far only
-  with one person; it is not statistically proven.
+- Reliability was measured on one laptop with the owner and one other person (tried on a
+  second laptop); it is not statistically proven.
 - New code runs as part of the login (kept small, with an allow list and a time limit).
 - Anyone who takes over the isolated verification service or installs a fake camera can
   unlock.
