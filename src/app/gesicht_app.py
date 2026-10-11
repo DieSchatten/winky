@@ -1015,11 +1015,12 @@ class Fenster(Adw.ApplicationWindow):
                             admin=True)
 
     def _aktiv_umgeschaltet(self, zeile, _pspec):
-        if not self._schalter_sperre:
+        if not self._schalter_sperre and zeile.get_active() != self.zustand.aktiv:
             self._aktiv_setzen(zeile.get_active())
 
     def _keepassxc_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.keepassxc:
             return
         if zeile.get_active():
             self._verwalten(["keepassxc", "an"], _("KeePassXC can now be opened with your face"),
@@ -1029,7 +1030,8 @@ class Fenster(Adw.ApplicationWindow):
                             admin=True)
 
     def _keepassxc_geste_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.keepassxc_geste:
             return
         if zeile.get_active():
             self._verwalten(["keepassxc", "geste-an"], _("KeePassXC now requires face and ✌"),
@@ -1039,7 +1041,8 @@ class Fenster(Adw.ApplicationWindow):
                             _("KeePassXC now opens with your face alone"), admin=True)
 
     def _sudo_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.sudo:
             return
         if zeile.get_active():
             self._verwalten(["sudo", "an"], _("sudo can now be confirmed with face and ✌"),
@@ -1062,11 +1065,14 @@ class Fenster(Adw.ApplicationWindow):
         self.ueber.present(self)
 
     def _schluesselbund_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == bool(self.zustand.schluesselbund):
             return
         if not zeile.get_active():
             self._verwalten(["schluesselbund", "aus"],
                             _("The keyring password has been removed from the TPM chip"))
+            return
+        if getattr(self, "schluessel_dialog", None):   # schon offen: kein zweiter Dialog
             return
         text = _("Winky stores your login password sealed in this computer’s TPM chip and "
                  "hands it to the keyring after you log in with your face. Only on this "
@@ -1087,6 +1093,7 @@ class Fenster(Adw.ApplicationWindow):
         dialog.set_close_response("abbrechen")
 
         def antwort(_d, r):
+            self.schluessel_dialog = None
             passwort = self.e_passwort.get_text()
             self.e_passwort.set_text("")
             if r == "ok" and passwort:
@@ -1096,6 +1103,7 @@ class Fenster(Adw.ApplicationWindow):
 
         dialog.connect("response", antwort)
         dialog.present(self)
+        self.schluessel_dialog = dialog
 
     def schluesselbund_versiegeln(self, passwort):
         self._verwalten(["schluesselbund", "an"],
@@ -1103,7 +1111,8 @@ class Fenster(Adw.ApplicationWindow):
                         eingabe=passwort.encode() + b"\n")
 
     def _anmeldung_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.anmeldung:
             return
         if zeile.get_active():
             self._verwalten(["anmeldung", "an"],
@@ -1113,7 +1122,8 @@ class Fenster(Adw.ApplicationWindow):
                             _("After a restart, the password is required again"), admin=True)
 
     def _dialoge_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.dialoge:
             return
         if zeile.get_active():
             self._verwalten(["dialoge", "an"],
@@ -1134,7 +1144,8 @@ class Fenster(Adw.ApplicationWindow):
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def _pause_umgeschaltet(self, zeile, _pspec):
-        if self._schalter_sperre:
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.pausiert:
             return
         self._verwalten(["pausieren" if zeile.get_active() else "fortsetzen"],
                         _("Paused: only the password works everywhere") if zeile.get_active()

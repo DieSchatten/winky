@@ -1,5 +1,12 @@
 # Changes / Änderungen
 
+## 0.11.1
+
+- Switches react only to real changes; the keyring dialog no longer opens twice.
+  Schalter reagieren nur auf echte Änderungen; der Schlüsselbund-Dialog öffnet nicht mehr doppelt.
+- Tested on two laptops, including a Microsoft Surface Laptop 4.
+  An zwei Laptops getestet, darunter ein Microsoft Surface Laptop 4.
+
 ## 0.11.0 (10.10.2026)
 
 - Optional: login after startup with your face (keyring stays locked).

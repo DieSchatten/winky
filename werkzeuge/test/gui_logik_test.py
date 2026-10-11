@@ -280,6 +280,14 @@ def test(f):
     pruefe(fertig(f) and f.zustand.anmeldung, "Erstanmeldung per Gesicht eingeschaltet")
     pruefe(f.r_schluesselbund.get_visible() and not f.r_schluesselbund.get_active(),
            "Schlüsselbund-Schalter erscheint mit der Erstanmeldung, ab Werk aus")
+    f.r_schluesselbund.set_active(True)
+    f._schluesselbund_umgeschaltet(f.r_schluesselbund, None)   # doppelte Meldung von GTK
+    dialoge = [d for d in [getattr(f, "schluessel_dialog", None)] if d]
+    pruefe(len(dialoge) == 1, "Schlüsselbund: doppeltes Umschalten öffnet nur einen Dialog")
+    f.schluessel_dialog.emit("response", "abbrechen")
+    f.schluessel_dialog = None
+    f.aktualisieren()
+    pruefe(not f.r_schluesselbund.get_active(), "Abbrechen lässt den Schalter aus")
     f.schluesselbund_versiegeln("falsch")
     pruefe(fertig(f) and not f.zustand.schluesselbund, "falsches Passwort: nichts versiegelt")
     f.schluesselbund_versiegeln("richtig")

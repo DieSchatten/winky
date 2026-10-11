@@ -140,6 +140,14 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
+    <release version="0.11.1" date="2026-10-11T19:14:13Z">
+      <description>
+        <ul>
+          <li>The keyring dialog no longer opens twice; tested on two laptops, including a Microsoft Surface Laptop 4.</li>
+          <li xml:lang="de">Der Schlüsselbund-Dialog öffnet nicht mehr doppelt; an zwei Laptops getestet, darunter ein Microsoft Surface Laptop 4.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.11.0" date="2026-10-10T21:38:42Z">
       <description>
         <ul>
