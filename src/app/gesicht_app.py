@@ -1091,6 +1091,9 @@ class Fenster(Adw.ApplicationWindow):
         liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         liste.add_css_class("boxed-list")
         liste.append(self.e_passwort)
+        # Feste Breite: Das Passwortfeld ist mit und ohne Fokus unterschiedlich breit; der Dialog
+        # würde sich beim Klick auf „Versiegeln“ neu ausrichten und der Klick ginge ins Leere
+        liste.set_size_request(400, -1)
         dialog.set_extra_child(liste)
         dialog.add_response("abbrechen", _("Cancel"))
         dialog.add_response("ok", _("Seal"))
