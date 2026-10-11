@@ -140,7 +140,7 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.11.1" date="2026-10-11T19:14:13Z">
+    <release version="0.11.1" date="2026-10-11T19:26:17Z">
       <description>
         <ul>
           <li>The keyring dialog no longer opens twice; tested on two laptops, including a Microsoft Surface Laptop 4.</li>

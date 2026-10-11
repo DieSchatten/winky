@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.11.1
+## 0.11.1 (11.10.2026)
 
 - Switches react only to real changes; the keyring dialog no longer opens twice.
   Schalter reagieren nur auf echte Änderungen; der Schlüsselbund-Dialog öffnet nicht mehr doppelt.
