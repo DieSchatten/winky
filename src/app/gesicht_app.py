@@ -315,7 +315,9 @@ class Fenster(Adw.ApplicationWindow):
         self.toasts.add_toast(Adw.Toast(title=inhalt, timeout=6))
 
     def _regelmaessig(self):
-        if not self.beschaeftigt():
+        # Nicht, solange ein Dialog offen ist: das Auffrischen verschiebt ihn und setzt Schalter
+        # zurück, ein Klick darauf ginge sonst ins Leere
+        if not self.beschaeftigt() and self.get_visible_dialog() is None:
             self.aktualisieren()
         return True
 
@@ -1082,7 +1084,10 @@ class Fenster(Adw.ApplicationWindow):
                                "only weakly: someone who has this computer may be able to "
                                "read it. Do not use this password anywhere else.")
         dialog = Adw.AlertDialog.new(_("Unlock the keyring with your face?"), text)
-        self.e_passwort = Adw.PasswordEntryRow(title=_("Your login password"))
+        # Vor dem Anzeigen merken: GTK kann die zweite Meldung schon während present() schicken
+        self.schluessel_dialog = dialog
+        self.e_passwort = Adw.PasswordEntryRow(title=_("Your login password"),
+                                               activates_default=True)
         liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         liste.add_css_class("boxed-list")
         liste.append(self.e_passwort)
@@ -1090,6 +1095,7 @@ class Fenster(Adw.ApplicationWindow):
         dialog.add_response("abbrechen", _("Cancel"))
         dialog.add_response("ok", _("Seal"))
         dialog.set_response_appearance("ok", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("ok")   # Enter im Passwortfeld versiegelt
         dialog.set_close_response("abbrechen")
 
         def antwort(_d, r):
@@ -1103,7 +1109,6 @@ class Fenster(Adw.ApplicationWindow):
 
         dialog.connect("response", antwort)
         dialog.present(self)
-        self.schluessel_dialog = dialog
 
     def schluesselbund_versiegeln(self, passwort):
         self._verwalten(["schluesselbund", "an"],

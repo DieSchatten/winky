@@ -284,6 +284,12 @@ def test(f):
     f._schluesselbund_umgeschaltet(f.r_schluesselbund, None)   # doppelte Meldung von GTK
     dialoge = [d for d in [getattr(f, "schluessel_dialog", None)] if d]
     pruefe(len(dialoge) == 1, "Schlüsselbund: doppeltes Umschalten öffnet nur einen Dialog")
+    vorher = f.r_schluesselbund.get_active()
+    f._regelmaessig()
+    pruefe(f.r_schluesselbund.get_active() == vorher and f.get_visible_dialog() is not None,
+           "kein Auffrischen, solange der Dialog offen ist")
+    pruefe(f.schluessel_dialog.get_default_response() == "ok" and f.e_passwort.get_activates_default(),
+           "Enter im Passwortfeld versiegelt")
     f.schluessel_dialog.emit("response", "abbrechen")
     f.schluessel_dialog = None
     f.aktualisieren()
