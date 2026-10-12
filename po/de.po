@@ -561,12 +561,12 @@ msgstr "Fertig!"
 #: src/app/gesicht_app.py
 msgid ""
 "Winky is set up. Try it right away: press Super+L, then any key, and look at "
-"the camera. “Security and help” on the start page explains what to watch out "
+"the camera. “Security and help” in the sidebar explains what to watch out "
 "for."
 msgstr ""
-"Winky ist eingerichtet. Probier es gleich aus: Drück Super+L, dann eine "
-"Taste, und schau in die Kamera. Unter „Sicherheit und Hilfe“ auf der "
-"Startseite steht, worauf du achten solltest."
+"Winky ist eingerichtet. Probier es gleich aus: Super+L drücken, dann eine "
+"beliebige Taste, und in die Kamera schauen. Worauf du achten solltest, steht "
+"in der Seitenleiste unter „Sicherheit und Hilfe“."
 
 #: src/app/gesicht_app.py
 msgid "Back"
@@ -594,8 +594,8 @@ msgid "Skip"
 msgstr "Überspringen"
 
 #: src/app/gesicht_app.py
-msgid "Go to start page"
-msgstr "Zur Startseite"
+msgid "Go to overview"
+msgstr "Zur Übersicht"
 
 #: src/app/gesicht_app.py
 msgid "Camera"
@@ -1668,12 +1668,16 @@ msgstr ""
 "Passwortfeld."
 
 #: src/app/gesicht_app.py
-msgid "Pause on the start page"
-msgstr "Pause auf der Startseite"
+msgid "Pause in the overview"
+msgstr "Pause in der Übersicht"
 
 #: src/app/gesicht_app.py
-msgid "Turns everything off right away, without deleting anything."
-msgstr "Schaltet sofort alles ab, ohne etwas zu löschen."
+msgid ""
+"Turns off Winky everywhere right away, then only your password works. "
+"Nothing is deleted; “Resume” turns everything back on."
+msgstr ""
+"Schaltet Winky sofort überall ab, dann gilt nur noch dein Passwort. Gelöscht "
+"wird nichts; „Fortsetzen“ schaltet alles wieder ein."
 
 #: src/app/gesicht_app.py
 msgid "Emergency off switch without this app"

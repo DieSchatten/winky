@@ -224,7 +224,7 @@ def test(f):
     pruefe(fertig(f) and f.zustand.sudo and f.w_weiter.get_label() == "Weiter",
            "sudo mit Gesicht und ✌ eingeschaltet")
     weiter(f)
-    pruefe(schritt(f) == "fertig" and f.w_weiter.get_label() == "Zur Startseite", "Fertig-Seite")
+    pruefe(schritt(f) == "fertig" and f.w_weiter.get_label() == "Zur Übersicht", "Fertig-Seite")
     weiter(f)
     pruefe(warte(lambda: seite(f) == "start", 3), "zurück zur Startseite")
 

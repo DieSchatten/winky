@@ -142,8 +142,8 @@ through the setup:
 6. **For the terminal** (optional): test your face and ✌, then let sudo be confirmed with
    them.
 
-After that, the home page only shows switches: lock screen, sudo in the terminal, KeePassXC
-and Pause. Technical details such as camera, strictness and version are under “Advanced”.
+After that, the overview shows the status with “Try it out” and “Pause”; the switches (lock
+screen, sudo in the terminal, KeePassXC …) are under “Unlocks”. Technical details such as camera, strictness and version are under “Advanced”.
 
 ![Setup](packaging/bildschirmfotos/en/einrichtung.png)
 
@@ -198,7 +198,7 @@ Winky is asked first:
 
 ## Administrator dialogs with ✌
 
-With **Administrator dialogs** on the home page, password dialogs that ask for the
+With **Administrator dialogs** under “Unlocks”, password dialogs that ask for the
 administrator password (for example when installing updates, software or with `pkexec`) can
 be approved with face and ✌ instead. Off by default.
 
@@ -213,7 +213,7 @@ be approved with face and ✌ instead. Off by default.
 
 ## Login after startup and keyring (experimental)
 
-With **Login after startup** on the home page, your face also logs you in after a restart.
+With **Login after startup** under “Unlocks”, your face also logs you in after a restart.
 Normally the login keyring (saved passwords of browsers, Wi-Fi, mail) then stays locked,
 because only your password opens it.
 

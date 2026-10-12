@@ -707,7 +707,7 @@ class Fenster(Adw.ApplicationWindow):
 
         schritt("fertig", _("Done!"),
                 _("Winky is set up. Try it right away: press Super+L, then any key, and look at "
-                  "the camera. “Security and help” on the start page explains what to watch out "
+                  "the camera. “Security and help” in the sidebar explains what to watch out "
                   "for."), symbol="emblem-ok-symbolic")
 
         unten = Gtk.Box(spacing=12, margin_top=10, margin_bottom=10, margin_start=18,
@@ -771,7 +771,7 @@ class Fenster(Adw.ApplicationWindow):
         elif sid == "sudo":
             weiter = _("Next") if z.sudo else _("Skip")
         elif sid == "fertig":
-            weiter = _("Go to start page")
+            weiter = _("Go to overview")
         self.w_weiter.set_label(weiter)
         self.w_weiter.set_sensitive(darf and not laeuft)
         self.w_zurueck.set_sensitive(not laeuft)
@@ -1686,8 +1686,9 @@ SICHERHEIT = [
         (_("The password always works"),
          _("If Winky doesn’t recognize you, the password field appears after three seconds at "
            "most.")),
-        (_("Pause on the start page"),
-         _("Turns everything off right away, without deleting anything.")),
+        (_("Pause in the overview"),
+         _("Turns off Winky everywhere right away, then only your password works. Nothing is "
+           "deleted; “Resume” turns everything back on.")),
         (_("Emergency off switch without this app"),
          _("Ctrl+Alt+F3, sign in with your username and password, then type:\n"
            "sudo touch /etc/winky/disabled")),

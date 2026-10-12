@@ -514,7 +514,7 @@ msgstr ""
 #: src/app/gesicht_app.py
 msgid ""
 "Winky is set up. Try it right away: press Super+L, then any key, and look at "
-"the camera. “Security and help” on the start page explains what to watch out "
+"the camera. “Security and help” in the sidebar explains what to watch out "
 "for."
 msgstr ""
 
@@ -544,7 +544,7 @@ msgid "Skip"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Go to start page"
+msgid "Go to overview"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1519,11 +1519,13 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Pause on the start page"
+msgid "Pause in the overview"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Turns everything off right away, without deleting anything."
+msgid ""
+"Turns off Winky everywhere right away, then only your password works. "
+"Nothing is deleted; “Resume” turns everything back on."
 msgstr ""
 
 #: src/app/gesicht_app.py

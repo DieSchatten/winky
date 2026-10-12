@@ -141,8 +141,8 @@ Einrichtung:
 6. **Für das Terminal** (freiwillig): Gesicht und ✌ testen, dann sudo damit bestätigen
    lassen.
 
-Danach zeigt die Startseite nur noch Schalter: Bildschirmsperre, sudo im Terminal,
-KeePassXC und Pause. Technisches wie Kamera, Strenge und Version steht unter „Erweitert“.
+Danach zeigt die Übersicht den Zustand mit „Ausprobieren“ und „Pause“; die Schalter
+(Bildschirmsperre, sudo im Terminal, KeePassXC …) liegen unter „Freigaben“. Technisches wie Kamera, Strenge und Version steht unter „Erweitert“.
 
 ![Einrichtung](packaging/bildschirmfotos/de/einrichtung.png)
 
@@ -195,7 +195,7 @@ KeePassXC 2.8 bringt unter Linux ein Schnellentsperren über Polkit mit. Mit dem
 
 ## Administrator-Dialoge mit ✌
 
-Mit **Administrator-Dialoge** auf der Startseite lassen sich Passwortdialoge, die nach dem
+Mit **Administrator-Dialoge** unter „Freigaben“ lassen sich Passwortdialoge, die nach dem
 Administratorpasswort fragen (etwa beim Installieren von Updates, Software oder bei
 `pkexec`), stattdessen mit Gesicht und ✌ freigeben. Ab Werk aus.
 
@@ -210,7 +210,7 @@ Administratorpasswort fragen (etwa beim Installieren von Updates, Software oder 
 
 ## Anmeldung nach dem Start und Schlüsselbund (experimentell)
 
-Mit **Anmeldung nach dem Start** auf der Startseite meldet dich dein Gesicht auch nach einem
+Mit **Anmeldung nach dem Start** unter „Freigaben“ meldet dich dein Gesicht auch nach einem
 Neustart an. Der Schlüsselbund (gespeicherte Passwörter von Browser, WLAN, Mail) bleibt dann
 normalerweise zu, weil ihn nur dein Passwort öffnet.
 
