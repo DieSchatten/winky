@@ -81,7 +81,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
   sudo-Begrenzung. Läuft beim Paketbau.
 - **PAM** (`tests/pam_test.py`, 52 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
-- **App** (`werkzeuge/test/gui_logik_test.py`, 88 Prüfungen): spielt den Assistenten von
+- **App** (`werkzeuge/test/gui_logik_test.py`, 89 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 

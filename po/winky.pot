@@ -1340,6 +1340,18 @@ msgid "KeePassXC: password needed"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Administrator dialog approved with ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Administrator dialog not approved"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Logged in with your face after startup"
+msgstr ""
+
+#: src/app/gesicht_app.py
 #, python-brace-format
 msgid "{date}, after {seconds} s"
 msgstr ""

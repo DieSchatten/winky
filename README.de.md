@@ -27,6 +27,9 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
 - **Administrator-Dialoge mit Gesicht und ✌** (freiwillig): etwa
   Updates installieren, ohne das Passwort zu tippen.
+- **Verlauf:** Im Nachhinein sehen, was Winky entsperrt und freigegeben hat, samt jedem
+  sudo-Befehl und ob du ihn bestätigt hast. Praktisch, wenn ein KI-Assistent oder ein Skript
+  für dich Befehle mit sudo ausführt.
 - **Mehrere Personen** am selben Rechner, jede mit ihrem eigenen Gesicht und Passwort.
 - **Einrichtung ohne Terminal:** Die App findet die Kamera, nimmt das Gesicht auf, lässt
   es ausprobieren und mit einer zweiten Person gegenprüfen. In der Software-Verwaltung

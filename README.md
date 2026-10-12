@@ -27,6 +27,9 @@ the name too.
   and asks for the password when a program needs it.
 - **Administrator dialogs with face and ✌** (optional): for example
   installing updates, without typing the password.
+- **History:** see afterwards what Winky unlocked and approved, including every sudo command
+  and whether you confirmed it. Handy when an AI assistant or a script runs commands with sudo
+  for you.
 - **Several people** on the same computer, each with their own face and password.
 - **Setup without the terminal:** The app finds the camera, records your face, lets you try
   it out and check it with a second person. Winky can be removed again in the software

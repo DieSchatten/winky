@@ -42,6 +42,10 @@
         ✌ instead of the password.</li>
       <li xml:lang="de">Wahlweise Administrator-Dialoge wie das Installieren von Updates mit
         Gesicht und ✌ statt Passwort freigeben.</li>
+      <li>A history shows afterwards what was unlocked and approved, including every sudo command,
+        handy when an AI assistant or a script uses sudo for you.</li>
+      <li xml:lang="de">Ein Verlauf zeigt im Nachhinein, was entsperrt und freigegeben wurde, samt jedem
+        sudo-Befehl, praktisch, wenn ein KI-Assistent oder ein Skript für dich sudo nutzt.</li>
       <li>No images are stored, only face features that only the system can read. No network
         access.</li>
       <li xml:lang="de">Gespeichert werden keine Bilder, nur Gesichtsmerkmale, die nur das
@@ -149,6 +153,8 @@
           <li xml:lang="de">Jede riskante Option erklärt ihr Risiko über einen Info-Knopf, die Anmeldung nach dem Start fragt vor dem Einschalten nach.</li>
           <li>Round camera view with a progress ring.</li>
           <li xml:lang="de">Rundes Kamerabild mit Fortschrittsring.</li>
+          <li>The history shows every sudo command and approved administrator dialog afterwards.</li>
+          <li xml:lang="de">Der Verlauf zeigt im Nachhinein jeden sudo-Befehl und jeden freigegebenen Administrator-Dialog.</li>
         </ul>
       </description>
     </release>

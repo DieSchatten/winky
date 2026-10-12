@@ -1614,6 +1614,12 @@ class Fenster(Adw.ApplicationWindow):
                         titel = _("sudo confirmed") if ok else _("sudo not confirmed")
                 elif e.get("zweck") == "keepassxc":
                     titel = _("KeePassXC opened") if ok else _("KeePassXC: password needed")
+                elif e.get("zweck") == "dialog":
+                    # Welche Aktion, zeigt nur der Passwortdialog; Winky erfährt sie nicht
+                    titel = (_("Administrator dialog approved with ✌") if ok
+                             else _("Administrator dialog not approved"))
+                elif e.get("zweck") == "anmeldung" and ok:
+                    titel = _("Logged in with your face after startup")
                 else:
                     titel = system.STATUS_TEXTE.get(e["status"], e["status"])
                 zeilen.append(textzeile(

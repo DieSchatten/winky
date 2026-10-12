@@ -10,6 +10,9 @@
   it is turned on. Riskante Optionen erklären ihr Risiko über einen Info-Knopf; die Anmeldung
   nach dem Start fragt vor dem Einschalten nach.
 - Round camera view with a progress ring. Rundes Kamerabild mit Fortschrittsring.
+- History on its own page with up to 20 entries; it names approved administrator dialogs and
+  logins after startup correctly. Verlauf auf eigener Seite mit bis zu 20 Einträgen; er
+  benennt freigegebene Administrator-Dialoge und Anmeldungen nach dem Start richtig.
 
 ## 0.11.1 (11.10.2026)
 

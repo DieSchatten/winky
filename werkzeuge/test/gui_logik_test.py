@@ -8,6 +8,7 @@ Aufruf (braucht ein GTK-Display, z. B. Broadway):
     python3 werkzeuge/test/gui_logik_test.py
 """
 
+import json
 import os
 import sys
 import time
@@ -326,6 +327,16 @@ def test(f):
     f.r_dialoge.set_active(False)
     pruefe(fertig(f) and not f.zustand.dialoge, "Administrator-Dialoge wieder Passwort")
     pruefe(any("entsperrt" in r.get_title() for r in f._verlauf_zeilen), "Verlauf zeigt den Test")
+    v = json.loads((W / "verlauf.json").read_text())
+    (W / "verlauf.json").write_text(json.dumps([
+        {"zeit": time.time(), "status": "treffer", "wert": 0.9, "dauer_ms": 1500, "grund": "",
+         "zweck": "dialog", "befehl": ""},
+        {"zeit": time.time(), "status": "kein_treffer", "wert": 0.9, "dauer_ms": 8000,
+         "grund": "kein_zeichen", "zweck": "sudo", "befehl": "sudo rm -rf /tmp/x"}] + v))
+    f.aktualisieren()
+    pruefe(f._verlauf_zeilen[0].get_title() == "Administrator-Dialog mit ✌ freigegeben"
+           and f._verlauf_zeilen[1].get_title() == "sudo nicht bestätigt: sudo rm -rf /tmp/x",
+           "Verlauf benennt Dialog-Freigaben und abgelehnte sudo-Befehle")
     f.r_pause.set_active(True)
     pruefe(fertig(f) and f.zustand.pausiert and "Pause" in f.s_titel.get_label(), "pausiert")
     f.r_pause.set_active(False)
