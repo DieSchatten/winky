@@ -144,7 +144,7 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.12.0" date="2026-10-12T12:00:00Z">
+    <release version="0.12.0" date="2026-10-12T22:43:28Z">
       <description>
         <ul>
           <li>Calmer app with a sidebar: overview, unlocks, face, history, security and advanced settings each on their own page.</li>

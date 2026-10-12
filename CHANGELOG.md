@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.12.0
+## 0.12.0 (13.10.2026)
 
 - Calmer app with a sidebar: overview with the Winky icon and status, unlocks, face, history,
   security and advanced settings each on their own page. Ruhigere App mit Seitenleiste:
