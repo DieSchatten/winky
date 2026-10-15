@@ -49,8 +49,10 @@ printf "auth [success=done default=ignore] pam_winky.so services=gdm-password,su
 # Ergänzen mit echtem Prüfdienst: die künstlichen Vorlagen passen zu keinem Gesicht, also darf
 # nichts übernommen werden (fremdes Gesicht oder keins im Bild)
 vorher=$(sha256sum /var/lib/winky/1000/vorlagen.bin)
-ERG=$(SUDO_UID=1000 $G ergaenzen Test </dev/null | erg)
-pruefe 'echo "$ERG" | grep -q "\"ok\": false" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen ohne erkanntes Gesicht ändert nichts"
+# Eingabe offen halten: Schließt sie sich, bricht der Helfer ab (so endet ein Lauf aus der App)
+ERG=$(sleep 40 | SUDO_UID=1000 $G ergaenzen Test | erg)
+sleep 1   # der Prüfdienst gibt die Kamera erst beim Beenden frei
+pruefe 'echo "$ERG" | grep -q "\"nicht_erkannt\": true" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen mit echter Aufnahme: ohne erkanntes Gesicht ändert sich nichts"
 pruefe '[ "$(stat -c %U:%G:%a /var/lib/winky/1000/vorlagen.bin)" = "root:_winky:640" ]' "Vorlagen danach weiter root:_winky 0640"
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face unlock"' "sudo an verlangt aktive Gesichtsentsperrung"
 SUDO_UID=1000 $V aktivieren </dev/null >/dev/null
