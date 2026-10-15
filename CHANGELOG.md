@@ -1,5 +1,13 @@
 # Changes / Änderungen
 
+## 0.13.0 (Prototyp)
+
+- Optional: unlock only with face and ✌ (lock screen and login after startup). Wahlweise nur
+  mit Gesicht und ✌ entsperren (Sperrbildschirm und Anmeldung nach dem Start).
+- Add to your face (glasses, different light) without starting over; only images that match
+  your face are added. Gesicht ergänzen (Brille, anderes Licht), ohne neu anzufangen;
+  übernommen wird nur, was zu deinem Gesicht passt.
+
 ## 0.12.0 (13.10.2026)
 
 - Calmer app with a sidebar: overview with the Winky icon and status, unlocks, face, history,

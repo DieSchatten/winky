@@ -71,6 +71,7 @@ struct Optionen {
   std::string sudo_schalter = "/etc/winky/sudo-ein";
   std::string notschalter = "/etc/winky/disabled";
   std::string dialog_schalter = "/etc/winky/dialoge-ein";
+  std::string entsperren_schalter = "/etc/winky/entsperren-geste";
   bool polkit = false;
 };
 
@@ -608,6 +609,7 @@ int main(int argc, char** argv) {
     else if (a == "--sudo-schalter") o.sudo_schalter = argv[i];
     else if (a == "--notschalter") o.notschalter = argv[i];
     else if (a == "--dialog-schalter") o.dialog_schalter = argv[i];
+    else if (a == "--entsperren-schalter") o.entsperren_schalter = argv[i];
     else {
       log(3, "Unbekannte Option %s", a.c_str());
       return 2;
@@ -765,6 +767,62 @@ int main(int argc, char** argv) {
                 "nicht_bestaetigt");
   }
 
+  if (q.op == WINKY_OP_AUTH_GESTE || q.op == WINKY_OP_ANMELDUNG_GESTE) {
+    // Sperrbildschirm bzw. Erstanmeldung nur mit Gesicht und ✌. Ohne sudo-Zähler und ohne
+    // Hinweisfenster (der Sperrbildschirm deckt es zu); die Aufforderung zeigt GDM selbst.
+    const bool anmeldung = q.op == WINKY_OP_ANMELDUNG_GESTE;
+    const char* zweck = anmeldung ? "anmeldung" : "sperrbildschirm";
+    auto ende = [&](uint32_t status, float wert, const char* grund) {
+      c.antwort(status, wert, msSeit(t0), false);
+      log(status == WINKY_TREFFER ? 5 : 6,
+          "Ergebnis uid=%u status=%s wert=%s dauer_ms=%.0f zweck=%s geste=1%s%s", uid,
+          statusText(status), zahl(wert).c_str(), msSeit(t0), zweck, grund ? " grund=" : "",
+          grund ? grund : "");
+      return status == WINKY_TREFFER ? 0 : 1;
+    };
+    if (!k.entsperren_geste || !rootDatei(o.entsperren_schalter))
+      return ende(WINKY_ABGELEHNT, -1, "entsperren_geste_aus");
+    if (anmeldung && !k.anmeldung) return ende(WINKY_ABGELEHNT, -1, "anmeldung_aus");
+    if (k.schwelle <= 0) return ende(WINKY_NICHT_EINGERICHTET, -1, "schwelle_fehlt");
+    if (k.kamera.empty()) return ende(WINKY_NICHT_EINGERICHTET, -1, "keine_kamera");
+    if (k.sitzungspruefung) {
+      std::string grund;
+      const bool ok = anmeldung ? winky::anmeldemaskeAktiv(grund)
+                                : winky::hatLokaleGrafischeSitzung(uid, grund);
+      if (!ok) return ende(WINKY_ABGELEHNT, -1, "sitzung");
+    }
+    if (winky::leseFehlversuche(o.sperre, uid) >= k.sperre_nach)
+      return ende(WINKY_GESPERRT, -1, "zu_viele_fehlversuche");
+    if (!gesteFreigegeben(o.vorlagen, uid))
+      return ende(WINKY_NICHT_EINGERICHTET, -1, "geste_nicht_getestet");
+    winky::Vorlagen v;
+    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+      log(6, "%s", fehler.c_str());
+      return ende(WINKY_NICHT_EINGERICHTET, -1, "vorlagen");
+    }
+    Laufzeit l;
+    if (!starte(o, k, l, true)) {
+      log(4, "%s", l.fehler.c_str());
+      return ende(WINKY_FEHLER, -1, "start");
+    }
+    // Höchstens 8 s: so lange wartet das Passwortfeld, wenn kein ✌ kommt
+    const int frist = std::min(k.sudo_ms, 8000);
+    const winky::Regeln r{k.schwelle, k.mindest_treffer, static_cast<double>(frist),
+                          static_cast<double>(frist), k.blink_abstand, k.blinkpruefung};
+    c.senden("W", 1);  // Kamera läuft: jetzt fordert die Anmeldemaske zum ✌ auf
+    const Pruefergebnis erg = pruefeGeste(l, v, r, t0, nullptr, 0, [] { return false; });
+    l.kamera->stop();
+    if (erg.status == WINKY_TREFFER) {
+      winky::schreibeFehlversuche(o.sperre, uid, 0);
+      if (anmeldung) winky::markiereAnmeldung(o.sperre, uid);
+      return ende(WINKY_TREFFER, erg.wert, nullptr);
+    }
+    // Fremdes Gesicht zählt als Fehlversuch; das eigene ohne ✌ nicht (dann war es Absicht)
+    if (erg.status == WINKY_KEIN_TREFFER && !erg.gesicht_erkannt)
+      winky::schreibeFehlversuche(o.sperre, uid, winky::leseFehlversuche(o.sperre, uid) + 1);
+    return ende(erg.status, erg.wert, erg.gesicht_erkannt ? "kein_zeichen" : nullptr);
+  }
+
   if (q.op == WINKY_OP_AUTH || q.op == WINKY_OP_KEEPASSXC || q.op == WINKY_OP_ANMELDUNG) {
     const char* zweck = q.op == WINKY_OP_KEEPASSXC ? "keepassxc"
                         : q.op == WINKY_OP_ANMELDUNG ? "anmeldung" : "sperrbildschirm";
@@ -777,6 +835,9 @@ int main(int argc, char** argv) {
     };
     if (q.op == WINKY_OP_KEEPASSXC && !k.keepassxc) return ende(WINKY_ABGELEHNT, -1, "keepassxc_aus");
     if (q.op == WINKY_OP_ANMELDUNG && !k.anmeldung) return ende(WINKY_ABGELEHNT, -1, "anmeldung_aus");
+    // Ist „nur mit ✌“ eingeschaltet, öffnet das Gesicht allein weder Sperre noch Anmeldung
+    if (q.op != WINKY_OP_KEEPASSXC && k.entsperren_geste)
+      return ende(WINKY_ABGELEHNT, -1, "geste_noetig");
     if (k.schwelle <= 0) return ende(WINKY_NICHT_EINGERICHTET, -1, "schwelle_fehlt");
     if (k.kamera.empty()) return ende(WINKY_NICHT_EINGERICHTET, -1, "keine_kamera");
     if (k.sitzungspruefung) {

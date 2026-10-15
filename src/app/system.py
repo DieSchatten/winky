@@ -21,6 +21,7 @@ class Zustand:
     eingelernt: bool = False
     vorlagen: int = 0
     eingelernt_am: int = 0
+    ergaenzt_am: int = 0      # zuletzt weitere Aufnahmen angehängt
     schwelle: float = 0.0
     kamera: str = ""
     blinkpruefung: bool = True
@@ -32,6 +33,7 @@ class Zustand:
     sudo: bool = False        # sudo mit Gesicht und ✌ eingeschaltet (systemweit)
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
     dialoge: bool = False     # Administrator-Dialoge mit Gesicht und ✌
+    entsperren_geste: bool = False  # Sperrbildschirm und Erstanmeldung nur mit ✌
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
     geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
     schluesselbund: int = 0   # Anmeldepasswort im TPM versiegelt (Zeitpunkt)
@@ -69,6 +71,7 @@ def lese_zustand(uid=None) -> Zustand:
     z.eingelernt = bool(status.get("vorlagen"))
     z.vorlagen = int(status.get("vorlagen") or 0)
     z.eingelernt_am = int(status.get("eingelernt") or 0)
+    z.ergaenzt_am = int(status.get("ergaenzt") or 0)
     if z.eingelernt:
         z.test_ok = int(status.get("test_ok") or 0)
         z.test_wert = float(status.get("test_wert") or 0)
@@ -97,6 +100,7 @@ def lese_zustand(uid=None) -> Zustand:
     z.sudo = w("/etc/winky/sudo-ein").exists()
     z.anmeldung = w("/etc/winky/anmeldung-ein").exists()
     z.dialoge = w("/etc/winky/dialoge-ein").exists()
+    z.entsperren_geste = w("/etc/winky/entsperren-geste").exists()
     if umgebung.ATTRAPPE:
         z.dienst = w("/run/winky.sock").exists()
     elif z.installiert:

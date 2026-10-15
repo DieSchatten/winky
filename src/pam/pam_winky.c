@@ -35,6 +35,7 @@
 #define SUDO_SCHALTER "/etc/winky/sudo-ein"
 #define ANMELDUNG_SCHALTER "/etc/winky/anmeldung-ein"
 #define DIALOG_SCHALTER "/etc/winky/dialoge-ein"
+#define ENTSPERREN_SCHALTER "/etc/winky/entsperren-geste"
 #define TESTDIENST_DIALOG "winky-test-dialog"
 
 struct argumente {
@@ -363,9 +364,36 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
   if (deckel_zu()) return PAM_IGNORE;
 
+  const int maske = op == WINKY_OP_ANMELDUNG;
+  /* Wahlweise nur mit ✌: Wer dir den Rechner vors Gesicht hält, kommt so nicht hinein */
+  if (schalter_an(ENTSPERREN_SCHALTER)) {
+    uint32_t status = WINKY_FEHLER;
+    int wartete = 0;
+    const char *aufforderung =
+        maske ? (deutsch() ? "Winky: zum Anmelden \u270c in die Kamera zeigen (sonst Passwort) \u2026"
+                           : "Winky: show \u270c to the camera to log in (or type your password) \u2026")
+              : (deutsch() ? "Winky: zum Entsperren \u270c in die Kamera zeigen (sonst Passwort) \u2026"
+                           : "Winky: show \u270c to the camera to unlock (or type your password) \u2026");
+    if (frage(maske ? WINKY_OP_ANMELDUNG_GESTE : WINKY_OP_AUTH_GESTE, uid, a.geste_timeout_ms,
+              NULL, 0, pamh, aufforderung, &wartete, &status) == 0 &&
+        status == WINKY_TREFFER) {
+      if (maske) {
+        pam_info(pamh, deutsch() ? "Winky: \u2713 bestätigt, Anmeldung l\u00e4uft \u2026"
+                                 : "Winky: \u2713 confirmed, logging in \u2026");
+        schluessel_holen(pamh, uid);
+      }
+      pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
+      pam_syslog(pamh, LOG_INFO, "per Gesicht und Handzeichen entsperrt");
+      return PAM_SUCCESS;
+    }
+    if (wartete)
+      pam_info(pamh, deutsch() ? "Winky: nicht bestätigt, bitte Passwort eingeben"
+                               : "Winky: not confirmed, please enter your password");
+    return PAM_IGNORE;
+  }
+
   /* An der Anmeldemaske sagen, was passiert (am Sperrbildschirm nicht: GNOME verzögert dort
    * jede Meldung, und das Entsperren soll sofort gehen) */
-  const int maske = op == WINKY_OP_ANMELDUNG;
   if (maske)
     pam_info(pamh, deutsch() ? "Winky: Schau in die Kamera \u2026 (sonst gleich Passwort)"
                              : "Winky: look at the camera \u2026 (or the password in a moment)");

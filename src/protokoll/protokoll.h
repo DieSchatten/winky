@@ -6,7 +6,8 @@
  *   'V' + u32 anzahl + u32 dim + char modell[64] + float[anzahl*dim]   Vektoren (nur EINLERNEN)
  *   'E' + winky_antwort                          Ende
  * SUDO: zweite Nachricht 'C' + Terminal + '\0' + Befehlszeile + '\0' (bis WINKY_BEFEHL_MAX Bytes);
- * läuft die Kamera, schickt der Dienst das Einzelbyte 'W', erst dann fordert PAM zum ✌ auf.
+ * läuft die Kamera, schickt der Dienst das Einzelbyte 'W', erst dann fordert PAM zum ✌ auf
+ * (ebenso bei DIALOG, AUTH_GESTE und ANMELDUNG_GESTE).
  * Zahlen in Maschinen-Byteordnung (beide Seiten auf demselben Rechner).
  */
 #ifndef WINKY_PROTOKOLL_H
@@ -32,7 +33,9 @@ enum winky_op {
   WINKY_OP_GESTE_TESTEN = 8, /* Gesicht und ✌ probeweise (Verwaltungshelfer) */
   WINKY_OP_DIALOG = 9,       /* Administrator-Dialog (PAM-Dienst polkit-1): Gesicht und ✌ */
   WINKY_OP_ANMELDUNG = 10,   /* erste Anmeldung nach dem Start (GDM-Anmeldemaske) */
-  WINKY_OP_SCHLUESSEL = 11   /* Schlüsselbund-Passwort holen (WINKY_SCHLUESSEL_SOCKET) */
+  WINKY_OP_SCHLUESSEL = 11,  /* Schlüsselbund-Passwort holen (WINKY_SCHLUESSEL_SOCKET) */
+  WINKY_OP_AUTH_GESTE = 12,  /* Sperrbildschirm nur mit Gesicht und ✌ (Schalter entsperren-geste) */
+  WINKY_OP_ANMELDUNG_GESTE = 13 /* erste Anmeldung nur mit Gesicht und ✌ */
 };
 
 enum winky_status {

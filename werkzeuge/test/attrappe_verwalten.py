@@ -17,8 +17,8 @@ from pathlib import Path
 
 W = Path(os.environ["WINKY_TESTWURZEL"])
 UID = os.getuid()
-GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "testen", "gegenprobe", "geste-testen",
-                   "entfernen", "schluesselbund"}
+GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "testen", "gegenprobe",
+                   "geste-testen", "entfernen", "schluesselbund"}
 KAMERA = {"geraet": "/dev/video2", "pfad": "/dev/v4l/by-path/test-usb-0:1:1.2-video-index0",
           "name": "Test-Kamera: IR Camera", "breite": 640, "hoehe": 360, "blinkt": True,
           "hell": 74.9, "dunkel": 0.0}
@@ -138,6 +138,17 @@ def main():
         strom("einlernen", 1.5)
         schreibe_status({"vorlagen": 30, "eingelernt": int(time.time())})
         fertig(True, vorlagen=30)
+    if befehl == "ergaenzen":
+        st = lese_status()
+        if not st.get("vorlagen"):
+            fertig(False, fehler="Zuerst das eigene Gesicht einlernen")
+        strom("einlernen", 1.5)
+        if os.environ.get("WINKY_ATTRAPPE_ERGAENZEN") == "fremd":
+            fertig(False, nicht_erkannt=True,
+                   fehler="Winky hat dich in dieser Aufnahme nicht sicher erkannt.")
+        st.update(vorlagen=min(64, st["vorlagen"] + 20), ergaenzt=int(time.time()))
+        schreibe_status(st)
+        fertig(True, vorlagen=st["vorlagen"], uebernommen=20)
     if befehl == "testen":
         strom("testen", 1.0)
         st = lese_status()
@@ -217,6 +228,16 @@ def main():
             p("/etc/winky/dialoge-ein").write_text("an\n")
         else:
             p("/etc/winky/dialoge-ein").unlink(missing_ok=True)
+        fertig(True)
+    if befehl == "entsperren-geste":
+        if args[1] == "an":
+            if "pam_winky" not in p("/etc/pam.d/common-auth").read_text():
+                fertig(False, fehler="Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten")
+            if not lese_status().get("geste_ok"):
+                fertig(False, fehler="Zuerst Gesicht und ✌ erfolgreich testen")
+            p("/etc/winky/entsperren-geste").write_text("an\n")
+        else:
+            p("/etc/winky/entsperren-geste").unlink(missing_ok=True)
         fertig(True)
     if befehl == "schwelle":
         w = round(float(args[1]), 2)

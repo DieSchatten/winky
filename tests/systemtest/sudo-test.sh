@@ -46,6 +46,12 @@ mkdir -p /var/lib/winky/status
 echo '{"vorlagen": 10, "eingelernt": 1, "test_ok": 2}' > /var/lib/winky/status/1000.json
 printf "auth [success=done default=ignore] pam_winky.so services=gdm-password,sudo geste=sudo timeout_ms=3000 geste_timeout_ms=10000\nauth requisite pam_deny.so\n" > /etc/pam.d/sudo-nurgeste
 
+# Ergänzen mit echtem Prüfdienst: die künstlichen Vorlagen passen zu keinem Gesicht, also darf
+# nichts übernommen werden (fremdes Gesicht oder keins im Bild)
+vorher=$(sha256sum /var/lib/winky/1000/vorlagen.bin)
+ERG=$(SUDO_UID=1000 $G ergaenzen </dev/null | erg)
+pruefe 'echo "$ERG" | grep -q "\"ok\": false" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen ohne erkanntes Gesicht ändert nichts"
+pruefe '[ "$(stat -c %U:%G:%a /var/lib/winky/1000/vorlagen.bin)" = "root:_winky:640" ]' "Vorlagen danach weiter root:_winky 0640"
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face unlock"' "sudo an verlangt aktive Gesichtsentsperrung"
 SUDO_UID=1000 $V aktivieren </dev/null >/dev/null
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face and"' "sudo an verlangt bestandenen ✌-Test"
@@ -209,6 +215,22 @@ echo "ubuntu:AnderesPasswort2" | chpasswd
 pruefe '[ "$(entsiegeln)" = - ] && [ ! -e /var/lib/winky/1000/schluesselbund.cred ] && grep -q schluesselbund_veraltet /var/lib/winky/status/1000.json' "geändertes Passwort: Versiegelung gelöscht, App erfährt es"
 U=/usr/lib/systemd/system/winky-schluessel@.service
 pruefe 'systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -q "OK"' "Sandbox des Schlüsselbund-Dienstes: $(systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -o "[0-9.]* OK")"
+
+# 9c. Entsperren nur mit ✌: Sperrbildschirm fragt den Gestenweg, das Gesicht allein reicht nicht
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+printf "auth [success=done default=ignore] pam_winky.so services=winky-test timeout_ms=3000 geste_timeout_ms=35000\nauth requisite pam_deny.so\n" > /etc/pam.d/winky-test
+pruefe 'SUDO_UID=1000 $V entsperren-geste an </dev/null | erg | grep -q "\"ok\": true" && [ -f /etc/winky/entsperren-geste ] && grep -q "^entsperren_geste = ja" /etc/winky/winky.conf' "Entsperren nur mit ✌ eingeschaltet"
+t0=$(date +%s%N); AUS=$(pamtester winky-test ubuntu authenticate </dev/null 2>&1); t=$(( ($(date +%s%N)-t0)/1000000 ))
+pruefe 'echo "$AUS" | grep -q "to unlock" && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "zweck=sperrbildschirm geste=1"' "Sperrbildschirm: Aufforderung zum ✌, Gestenweg im Prüfdienst"
+pruefe '[ $t -ge 7500 ] && [ $t -lt 11000 ]' "ohne ✌ kommt das Passwort nach höchstens 8 s (${t} ms)"
+auth_direkt() { python3 -c "
+import socket,struct
+s=socket.socket(socket.AF_UNIX,socket.SOCK_SEQPACKET); s.connect('/run/winky.sock')
+s.send(struct.pack('IIII',0x314B4E57,1,1000,0)); s.settimeout(15); print(struct.unpack('IIfI',s.recv(64))[1])"; }
+pruefe '[ "$(auth_direkt)" = 6 ] && journalctl -t winky -o cat --no-pager | tail -1 | grep -q "grund=geste_noetig"' "Prüfdienst lehnt den reinen Gesichtsweg ab, solange ✌ verlangt ist"
+SUDO_UID=1000 $V entsperren-geste aus </dev/null >/dev/null
+pruefe '[ ! -e /etc/winky/entsperren-geste ] && grep -q "^entsperren_geste = nein" /etc/winky/winky.conf' "Entsperren nur mit ✌ wieder aus"
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 
 # 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null

@@ -54,6 +54,17 @@ ABLAEUFE = {
                      "that only the system can read."),
         "knopf": _("Start recording"), "nochmal": _("Record again"),
     },
+    "ergaenzen": {
+        "titel": _("Add to your face"),
+        "schritte": [_("Start the way Winky already recognizes you and look at the camera."),
+                     _("Click “Start adding” and enter your password."),
+                     _("After a few seconds, change what gives Winky trouble: put on your "
+                       "glasses, turn on a different light or sit a little differently. Slowly "
+                       "move your head.")],
+        "hinweis": _("Takes 25 seconds. Your previous recording stays. Winky only adds what "
+                     "matches your face, so it won’t add anyone else by mistake."),
+        "knopf": _("Start adding"), "nochmal": _("Add more"),
+    },
     "testen": {
         "titel": _("Try it out"),
         "schritte": [_("Click “Try it out” and enter your password."),
@@ -318,6 +329,7 @@ class KameraAblauf(Gtk.Box):
         a = ABLAEUFE[self.art]
         meiner = self.fenster.gesicht_lauf is not None and self.fenster.lauf_ansicht is self
         erledigt = {"einlernen": s["einlernen"], "testen": s["testen"],
+                    "ergaenzen": bool(z.ergaenzt_am),
                     "gegenprobe": s["gegenprobe"] is not None, "geste-testen": s["geste"]}
         self.k_start.set_label(a["nochmal"] if erledigt[self.art] else a["knopf"])
         moeglich = bereit and (bool(z.kamera) if self.art == "einlernen" else z.eingelernt)
@@ -512,6 +524,14 @@ class Fenster(Adw.ApplicationWindow):
                    "with Windows Hello without extra protection."))
         self.r_aktiv.connect("notify::active", self._aktiv_umgeschaltet)
         self.g_schalter.add(self.r_aktiv)
+        self.r_entsperren_geste = SchalterZeile(
+            _("Unlock only with ✌"), symbol="security-high-symbolic",
+            info=_("Your face alone is then not enough: the lock screen and the login after "
+                   "startup also need your ✌. This protects you if someone holds the computer up "
+                   "to your face, for example while you’re asleep or under pressure. Without a ✌, "
+                   "the password field appears after 8 seconds at most."))
+        self.r_entsperren_geste.connect("notify::active", self._entsperren_geste_umgeschaltet)
+        self.g_schalter.add(self.r_entsperren_geste)
         self.r_anmeldung = SchalterZeile(
             _("Login after startup"), _("Caution: the login keyring then stays locked"),
             "dialog-warning-symbolic", warnung=True,
@@ -583,9 +603,13 @@ class Fenster(Adw.ApplicationWindow):
         self.r_testen = weiterzeile(_("Try out recognition"),
                                     _("Look at the camera and see whether Winky recognizes you"),
                                     lambda: self.kamera_oeffnen("testen"), "camera-web-symbolic")
+        self.r_ergaenzen = weiterzeile(_("Add to your face"),
+                                       _("Winky sometimes doesn’t recognize you, for example with "
+                                         "glasses or in different light? Add these looks."),
+                                       lambda: self.kamera_oeffnen("ergaenzen"),
+                                       "list-add-symbolic")
         self.r_neu = weiterzeile(_("Record your face again"),
-                                 _("Helps if Winky has trouble recognizing you, for example "
-                                   "with new glasses"),
+                                 _("Starts over and replaces everything recorded so far"),
                                  lambda: self.kamera_oeffnen("einlernen"), "view-refresh-symbolic")
         self.r_zweite = weiterzeile(_("Check with a second person"), "",
                                     lambda: self.kamera_oeffnen("gegenprobe"),
@@ -593,7 +617,7 @@ class Fenster(Adw.ApplicationWindow):
         self.r_geste = weiterzeile(_("Test face and ✌"), "",
                                    lambda: self.kamera_oeffnen("geste-testen"),
                                    "utilities-terminal-symbolic")
-        for r in (self.r_testen, self.r_neu, self.r_zweite, self.r_geste):
+        for r in (self.r_testen, self.r_ergaenzen, self.r_neu, self.r_zweite, self.r_geste):
             self.g_pflege.add(r)
         s.add(self.g_pflege)
         box = Gtk.Stack()
@@ -961,7 +985,7 @@ class Fenster(Adw.ApplicationWindow):
                 return _("Caution: to Winky, this person looks a lot like you"), False
             return _("Good: Winky doesn’t recognize this person"), True
         tipp = TIPPS.get(grund, grund or "")
-        if art == "einlernen" and grund == "ok":
+        if art in ("einlernen", "ergaenzen") and grund == "ok":
             tipp = _("Good, keep slowly moving your head")
         return tipp, grund == "ok"
 
@@ -1013,6 +1037,17 @@ class Fenster(Adw.ApplicationWindow):
                 self.melde(_("Face recorded"))
             else:
                 a.vorschau.hinweis(_("Not saved"))
+                a.vorschau.fortschritt(1, "warnung")
+                a.ergebnis.set_label(lauf.fehlermeldung(rc))
+        elif lauf.art == "ergaenzen":
+            if erg.get("ok"):
+                a.vorschau.hinweis(_("✓ Added"))
+                a.vorschau.fortschritt(1, "gut")
+                a.ergebnis.set_label(_("✓ Added {count} images. Try it out the way Winky had "
+                                       "trouble before.").format(count=erg.get("uebernommen", 0)))
+                self.melde(_("Face added"))
+            else:
+                a.vorschau.hinweis(_("Nothing added"))
                 a.vorschau.fortschritt(1, "warnung")
                 a.ergebnis.set_label(lauf.fehlermeldung(rc))
         elif lauf.art == "testen":
@@ -1338,6 +1373,17 @@ class Fenster(Adw.ApplicationWindow):
             self._verwalten(["dialoge", "aus"], _("Administrator dialogs are back to password only"),
                             admin=True)
 
+    def _entsperren_geste_umgeschaltet(self, zeile, _pspec):
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.entsperren_geste:
+            return
+        if zeile.get_active():
+            self._verwalten(["entsperren-geste", "an"],
+                            _("From now on, unlocking needs your face and ✌"), admin=True)
+        else:
+            self._verwalten(["entsperren-geste", "aus"],
+                            _("Your face alone unlocks again"), admin=True)
+
     def _hinweis_starten(self):
         """Das Hinweisprogramm startet sonst erst bei der nächsten Anmeldung."""
         if umgebung.ATTRAPPE or not os.path.exists(HINWEIS):
@@ -1395,6 +1441,8 @@ class Fenster(Adw.ApplicationWindow):
         elif fertig_eingerichtet:
             art, symbol, titel, inhalt = (
                 "an", "emblem-ok-symbolic", _("Winky is on"),
+                _("Lock the screen with Super+L. To unlock, press a key, look at the camera and "
+                  "show ✌.") if z.entsperren_geste else
                 _("Lock the screen with Super+L. To unlock, press a key and look at the "
                   "camera."))
         elif z.aktiv and not z.eingelernt:
@@ -1489,6 +1537,14 @@ class Fenster(Adw.ApplicationWindow):
             _("Found: {found}.").format(found=gefunden) + " " + rest if gefunden else rest)
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
+        self.r_entsperren_geste.set_active(z.entsperren_geste)
+        self.r_entsperren_geste.set_sensitive(((z.aktiv and s["geste"]) or z.entsperren_geste)
+                                              and not laeuft)
+        self.r_entsperren_geste.set_subtitle(
+            _("Face and ✌ for the lock screen and login") if z.entsperren_geste else
+            _("Protects against someone holding the computer up to your face")
+            if z.aktiv and s["geste"] else
+            _("Turn on the lock screen first") if not z.aktiv else _("Test face and ✌ first"))
         self.r_dialoge.set_active(z.dialoge)
         self.r_dialoge.set_sensitive(((z.aktiv and s["geste"]) or z.dialoge) and not laeuft)
         self.r_dialoge.set_subtitle(
@@ -1500,7 +1556,8 @@ class Fenster(Adw.ApplicationWindow):
         # Ausprobieren und pflegen
         self.gesicht_stapel.set_visible_child_name("inhalt" if bereit and z.eingelernt
                                                    else "leer")
-        for r in (self.r_probe, self.r_testen, self.r_neu, self.r_zweite, self.r_geste):
+        for r in (self.r_probe, self.r_testen, self.r_ergaenzen, self.r_neu, self.r_zweite,
+                  self.r_geste):
             r.set_sensitive(not laeuft)
         self.r_zweite.set_subtitle({None: _("Recommended: checks that Winky only recognizes you"),
                                     True: _("Passed, Winky only recognizes you"),

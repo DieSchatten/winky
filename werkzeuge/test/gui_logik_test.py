@@ -324,6 +324,13 @@ def test(f):
            "Administrator-Dialoge: ab Werk aus, nach ✌-Test schaltbar")
     f.r_dialoge.set_active(True)
     pruefe(fertig(f) and f.zustand.dialoge, "Administrator-Dialoge mit ✌ eingeschaltet")
+    pruefe(not f.r_entsperren_geste.get_active() and f.r_entsperren_geste.get_sensitive(),
+           "Entsperren nur mit ✌: ab Werk aus, nach ✌-Test schaltbar")
+    f.r_entsperren_geste.set_active(True)
+    pruefe(fertig(f) and f.zustand.entsperren_geste and "✌" in f.s_text.get_label(),
+           "Entsperren nur mit ✌ eingeschaltet, Übersicht sagt es")
+    f.r_entsperren_geste.set_active(False)
+    pruefe(fertig(f) and not f.zustand.entsperren_geste, "Entsperren wieder mit dem Gesicht allein")
     f.r_dialoge.set_active(False)
     pruefe(fertig(f) and not f.zustand.dialoge, "Administrator-Dialoge wieder Passwort")
     pruefe(any("entsperrt" in r.get_title() for r in f._verlauf_zeilen), "Verlauf zeigt den Test")
@@ -371,6 +378,24 @@ def test(f):
     DIALOGE.pop().emit("response", "ok")
     warte(lambda: f.aktion is not None, 2)
     pruefe(fertig(f) and f.zustand.kamera, "gewählte Kamera übernommen")
+
+    # Ergänzen: behält Ausprobieren und ✌-Test; ohne Erkennung wird nichts ergänzt
+    vorher = f.zustand.vorlagen
+    os.environ["WINKY_ATTRAPPE_ERGAENZEN"] = "fremd"
+    f.kamera_oeffnen("ergaenzen")
+    pruefe(f.k_seite.get_title() == "Gesicht ergänzen" and f.k_ansicht.k_start.get_sensitive(),
+           "„Gesicht ergänzen“ öffnet die Kameraseite")
+    f.k_ansicht.k_start.emit("clicked")
+    pruefe(fertig(f) and f.zustand.vorlagen == vorher and "nicht sicher erkannt"
+           in f.k_ansicht.ergebnis.get_label(), "ohne sichere Erkennung wird nichts ergänzt")
+    del os.environ["WINKY_ATTRAPPE_ERGAENZEN"]
+    f.k_ansicht.k_start.emit("clicked")
+    pruefe(fertig(f) and f.zustand.vorlagen == vorher + 20 and "20" in
+           f.k_ansicht.ergebnis.get_label(), "ergänzt: 20 Bilder dazu")
+    pruefe(f.k_ansicht.k_start.get_label() == "Weiter ergänzen" and f.r_aktiv.get_sensitive()
+           and "Nötig" not in f.r_geste.get_subtitle(),
+           "nach dem Ergänzen bleiben Ausprobieren und ✌-Test gültig")
+    f.nav.pop()
 
     # Neu aufnehmen verlangt neues Ausprobieren und einen neuen ✌-Test
     f.kamera_oeffnen("einlernen")

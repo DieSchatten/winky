@@ -53,7 +53,8 @@ class Attrappe:
                 return
             magic, op, uid, _ = struct.unpack("IIII", daten)
             self.anfragen.append((op, uid))
-            if op in (7, 9):   # sudo (mit Terminal und Befehl) bzw. Administrator-Dialog
+            # sudo (mit Terminal und Befehl), Administrator-Dialog, Entsperren/Anmelden mit ✌
+            if op in (7, 9, 12, 13):
                 if op == 7:
                     c.settimeout(1)
                     try:
@@ -354,6 +355,47 @@ def main():
     pruefe(not ok and len(a.anfragen) == vorher, "Pause gilt auch für Dialoge")
     os.unlink("/etc/winky/disabled")
     os.unlink(dialog_schalter)
+
+    # Entsperren nur mit ✌: Sperrbildschirm und Erstanmeldung fragen den Gestenweg
+    entsperren = "/etc/winky/entsperren-geste"
+    dienst("gdm-nurgesicht", [
+        f"auth [success=done default=ignore] {modul} services=gdm-nurgesicht timeout_ms=1500 "
+        f"geste_timeout_ms=3000",
+        "auth requisite pam_deny.so"])
+    with open(entsperren, "w") as f:
+        f.write("an\n")
+    os.chmod(entsperren, 0o644)
+    a.modus = "geste-treffer"
+    ok, _ = pam("gdm-nurgesicht", env=reauth)
+    pruefe(ok and a.anfragen[-1] == (12, 1000) and "to unlock" in pam.ausgabe,
+           "nur mit ✌: Sperrbildschirm fragt Gesicht und ✌, Aufforderung erscheint")
+    a.modus = "geste-kein"
+    ok, _ = pam("gdm-nurgesicht", env=reauth)
+    pruefe(not ok and "not confirmed" in pam.ausgabe, "nur mit ✌: ohne ✌ weiter mit Passwort")
+    a.modus = "treffer"   # der Dienst würde beim reinen Gesichtsweg zusagen
+    ok, _ = pam("gdm-nurgesicht", env=reauth)
+    pruefe(not ok and a.anfragen[-1] == (12, 1000),
+           "nur mit ✌: das Modul fragt nie den reinen Gesichtsweg")
+    with open("/etc/winky/anmeldung-ein", "w") as f:
+        f.write("an\n")
+    os.chmod("/etc/winky/anmeldung-ein", 0o644)
+    dienst("gdm-password", [
+        f"auth [success=done default=ignore] {modul} services=gdm-password timeout_ms=1500 "
+        f"geste_timeout_ms=3000",
+        "auth required pam_deny.so"])
+    a.modus = "geste-treffer"
+    ok, _ = pam("gdm-password")
+    pruefe(ok and a.anfragen[-1] == (13, 1000) and "to log in" in pam.ausgabe,
+           "nur mit ✌: Erstanmeldung fragt Gesicht und ✌")
+    os.unlink("/etc/winky/anmeldung-ein")
+    os.chmod(entsperren, 0o666)
+    a.modus = "treffer"
+    ok, _ = pam("gdm-nurgesicht", env=reauth)
+    pruefe(ok and a.anfragen[-1] == (1, 1000), "für alle beschreibbarer ✌-Schalter wird ignoriert")
+    os.unlink(entsperren)
+    dienst("gdm-password", [
+        f"auth [success=done default=ignore] {modul} services=gdm-password timeout_ms=1500",
+        "auth required pam_permit.so"])
 
     # Fehlendes Modul: Passwort funktioniert weiter
     dienst("gdm-ohne-modul", [

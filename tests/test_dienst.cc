@@ -109,6 +109,10 @@ static void testKonfig() {
   PRUEFE(winky::ladeKonfig(p, k, f) && k.dialoge, "Dialog-Schalter gelesen, alte Freigaben-Zeile stört nicht");
   schreibe(p, "schwelle=0.65\nanmeldung=ja\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && k.anmeldung, "Erstanmeldung per Gesicht nur ausdrücklich");
+  schreibe(p, "entsperren_geste = ja\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.entsperren_geste, "Entsperren nur mit ✌ gelesen");
+  schreibe(p, "schwelle = 0.65\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && !k.entsperren_geste, "Entsperren nur mit ✌ ab Werk aus");
   schreibe(p, "dialoge=vielleicht\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für dialoge wird abgelehnt");
 }

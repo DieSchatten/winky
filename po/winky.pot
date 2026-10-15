@@ -84,6 +84,38 @@ msgid "Record again"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Add to your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start the way Winky already recognizes you and look at the camera."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Click “Start adding” and enter your password."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"After a few seconds, change what gives Winky trouble: put on your glasses, "
+"turn on a different light or sit a little differently. Slowly move your head."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Takes 25 seconds. Your previous recording stays. Winky only adds what "
+"matches your face, so it won’t add anyone else by mistake."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Start adding"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Add more"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Try it out"
 msgstr ""
 
@@ -284,6 +316,18 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Unlock only with ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your face alone is then not enough: the lock screen and the login after "
+"startup also need your ✌. This protects you if someone holds the computer up "
+"to your face, for example while you’re asleep or under pressure. Without a "
+"✌, the password field appears after 8 seconds at most."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Login after startup"
 msgstr ""
 
@@ -381,12 +425,17 @@ msgid "Look at the camera and see whether Winky recognizes you"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid ""
+"Winky sometimes doesn’t recognize you, for example with glasses or in "
+"different light? Add these looks."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Record your face again"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid ""
-"Helps if Winky has trouble recognizing you, for example with new glasses"
+msgid "Starts over and replaces everything recorded so far"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -788,6 +837,23 @@ msgid "Not saved"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "✓ Added"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "✓ Added {count} images. Try it out the way Winky had trouble before."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face added"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Nothing added"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "✓ Recognized"
 msgstr ""
 
@@ -1025,6 +1091,14 @@ msgid "Administrator dialogs are back to password only"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "From now on, unlocking needs your face and ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face alone unlocks again"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
 msgstr ""
 
@@ -1036,7 +1110,7 @@ msgstr ""
 msgid "First try it out successfully once."
 msgstr ""
 
-#: src/app/gesicht_app.py
+#: src/app/gesicht_app.py src/verwalten/winky-verwalten
 msgid "No strictness set (Advanced)."
 msgstr ""
 
@@ -1070,6 +1144,12 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Winky is on"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Lock the screen with Super+L. To unlock, press a key, look at the camera and "
+"show ✌."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1166,6 +1246,14 @@ msgstr ""
 #: src/app/gesicht_app.py
 #, python-brace-format
 msgid "Found: {found}."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face and ✌ for the lock screen and login"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Protects against someone holding the computer up to your face"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1861,6 +1949,27 @@ msgid "Recording your face failed. Details: journalctl -t winky"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
+msgid "Record your own face first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "Adding to your face"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Winky didn’t recognize you clearly enough in this recording, so nothing was "
+"added. Start the way Winky already recognizes you, for example without "
+"glasses, and only then put them on. If Winky hardly recognizes you at all, "
+"record your face again."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"Nothing in this recording was close enough to your face. Nothing was added."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
 msgid "Test"
 msgstr ""
 
@@ -1870,10 +1979,6 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Second-person check"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid "Record your own face first"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
