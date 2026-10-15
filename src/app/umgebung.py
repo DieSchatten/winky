@@ -50,6 +50,6 @@ def verwalten_befehl(args, admin=False):
     """Eigenes Gesicht: winky-gesicht (eigenes Passwort).
     Systemeinstellungen: winky-verwalten (Administratorpasswort)."""
     if ATTRAPPE:
-        return ["python3", str(APP.parent.parent / "werkzeuge" / "test" / "attrappe_verwalten.py"),
+        return ["python3", str(APP.parent.parent / "tests" / "app" / "attrappe_verwalten.py"),
                 "--rolle", "verwalten" if admin else "gesicht", *args]
     return ["pkexec", str(VERWALTEN if admin else GESICHT), *args]

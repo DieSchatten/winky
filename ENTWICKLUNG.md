@@ -30,23 +30,6 @@ cp po/winky.pot po/fr.po   # neue Sprache, dann Kopf und Übersetzungen ausfüll
 Das PAM-Modul (drei Terminalmeldungen), die Polkit-Aktionen, die Desktop-Dateien und die
 Store-Beschreibung tragen Englisch und Deutsch direkt in sich.
 
-## Veröffentlichen
-
-1. Version in `CMakeLists.txt` erhöhen, `CHANGELOG.md` ergänzen, `./scripts/paket-bauen.sh`
-   und die Systemtests.
-2. Release auf GitHub mit der .deb-Datei.
-3. Paketquelle (APT, GitHub Pages, Zweig `gh-pages`) bauen und unterschreiben; gpg fragt nach
-   dem Passwort des Signaturschlüssels:
-
-   ```bash
-   ./scripts/paketquelle.sh
-   ```
-
-   Der Inhalt von `bau/paketquelle` ersetzt den Zweig `gh-pages` (ein Commit, ohne alte
-   Versionen). Die Quelle enthält AppStream-Daten (DEP-11) samt Symbolen; damit findet die
-   Software-Verwaltung Winky mit Beschreibung und Suchbegriffen. Das Paket bringt Quelle und
-   Schlüssel (`packaging/winky.sources`, `packaging/winky-archive-keyring.gpg`) selbst mit.
-
 ## Aufbau
 
 | Teil | Ort | Aufgabe |
@@ -76,23 +59,25 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 
 ## Tests
 
-- **Komponenten** (`tests/test_dienst.cc`, 75 Prüfungen): Konfiguration, Vorlagen samt
+- **Komponenten** (`tests/test_dienst.cc`, 77 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
-- **PAM** (`tests/pam_test.py`, 52 Prüfungen): echtes libpam mit pamtester und
+- **PAM** (`tests/pam_test.py`, 59 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
-- **App** (`werkzeuge/test/gui_logik_test.py`, 104 Prüfungen): spielt den Assistenten von
-  vorn bis hinten durch, dazu Startseite, Erweitert und Fehlerfälle; mit einer Attrappe des
+- **App** (`tests/app/gui_logik_test.py`, 104 Prüfungen): spielt den Assistenten von
+  vorn bis hinten durch, dazu alle Abschnitte der Seitenleiste und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 
   ```bash
   gtk4-broadwayd :9 &
   WINKY_ATTRAPPE=1 WINKY_TESTWURZEL=$(mktemp -d) GDK_BACKEND=broadway BROADWAY_DISPLAY=:9 \
-    python3 werkzeuge/test/gui_logik_test.py
+    python3 tests/app/gui_logik_test.py
   ```
 
-- **Hinweise** (`werkzeuge/test/hinweis_test.py`, 15 Prüfungen): welcher Stand der
+- **Hinweise** (`tests/app/hinweis_test.py`, 15 Prüfungen): welcher Stand der
   Anfragedatei zu welchem Hinweis führt (Fenster, ✓, Benachrichtigung, alte Anfragen).
+- **Gesicht ergänzen** (`tests/app/verwalten_test.py`, 10 Prüfungen): Ergänzungen nur mit
+  erkanntem Gesicht, fremde Bilder verworfen, höchstens drei, gezielt löschbar.
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.

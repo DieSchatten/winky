@@ -5,7 +5,7 @@ dann Startseite, Erweitert und Fehlerfälle.
 Aufruf (braucht ein GTK-Display, z. B. Broadway):
   gtk4-broadwayd :9 &
   WINKY_ATTRAPPE=1 WINKY_TESTWURZEL=/tmp/w GDK_BACKEND=broadway BROADWAY_DISPLAY=:9 \\
-    python3 werkzeuge/test/gui_logik_test.py
+    python3 tests/app/gui_logik_test.py
 """
 
 import json

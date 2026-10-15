@@ -4,7 +4,7 @@
 Prüft, welcher Stand der Anfragedatei zu welchem Hinweis führt; notify-send und das Fenster
 werden nur mitgeschrieben, mit DISPLAY wird das Fenster zusätzlich unsichtbar aufgebaut.
 
-Aufruf: python3 werkzeuge/test/hinweis_test.py
+Aufruf: python3 tests/app/hinweis_test.py
 """
 
 import importlib.machinery

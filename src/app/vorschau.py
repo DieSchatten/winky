@@ -7,11 +7,8 @@ from gi.repository import Gdk, GLib, Graphene, Gsk, Gtk
 from sprache import DEUTSCH, _
 
 CSS = b"""
-.hinweis { background-color: alpha(black, 0.6); color: white; padding: 14px 22px;
-           border-radius: 14px; font-size: 22pt; font-weight: bold; }
 .gut { color: @success_color; }
 .warnung { color: @warning_color; }
-.bildrahmen { background-color: black; border-radius: 12px; }
 .statuszeichen { border-radius: 999px; min-width: 34px; min-height: 34px; color: white;
                  border: 3px solid @window_bg_color; }
 .statuszeichen.an { background-color: #2ec27e; }
