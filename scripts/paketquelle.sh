@@ -22,6 +22,8 @@ cp "$DEB" "$Q/pool/main/w/winky/"
 cp "$RING" "$Q/winky-archive-keyring.gpg"
 cp packaging/winky.sources packaging/paketquelle-index.html "$Q/"
 mv "$Q/paketquelle-index.html" "$Q/index.html"
+# Für Suchmaschinen: Bestätigung der Google Search Console und Sitemap der Projektseite
+cp packaging/google*.html packaging/sitemap.xml "$Q/"
 ( cd "$Q" && apt-ftparchive packages pool ) > "$D/binary-amd64/Packages"
 gzip -9nk "$D/binary-amd64/Packages"; xz -k "$D/binary-amd64/Packages"
 
