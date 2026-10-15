@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
  && apt-get install -y --no-install-recommends systemd systemd-sysv dbus polkitd pkexec \
       libpam-runtime libpam-modules pamtester python3 python3-gi gir1.2-gtk-4.0 gir1.2-gtk-3.0 gir1.2-adw-1 \
-      v4l-utils packagekit packagekit-tools appstream libnotify-bin procps \
+      v4l-utils packagekit packagekit-tools appstream libnotify-bin procps sudo \
  && rm -rf /var/lib/apt/lists/*
 STOPSIGNAL SIGRTMIN+3
 CMD ["/sbin/init"]

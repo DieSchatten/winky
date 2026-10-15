@@ -234,6 +234,39 @@ SUDO_UID=1000 $V entsperren-geste aus </dev/null >/dev/null
 pruefe '[ ! -e /etc/winky/entsperren-geste ] && grep -q "^entsperren_geste = nein" /etc/winky/winky.conf' "Entsperren nur mit ✌ wieder aus"
 rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 
+# 9d. Echtes sudo im Terminal: verpasstes ✌, Enter ohne Passwort, Winky fragt noch einmal
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+SUDO_UID=1000 $V sudo an </dev/null >/dev/null
+echo "ubuntu:Testpasswort1" | chpasswd
+echo "ubuntu ALL=(ALL) ALL" > /etc/sudoers.d/ubuntu; chmod 440 /etc/sudoers.d/ubuntu
+SUDO_AUS=$(python3 - <<'TERMINAL'
+import os, pty, select, time
+pid, fd = pty.fork()
+if pid == 0:
+    os.execvp("setpriv", ["setpriv", "--reuid=ubuntu", "--regid=ubuntu", "--init-groups",
+                          "--reset-env", "bash", "-c", "sudo -k; LANG=C sudo true; echo ENDE=$?"])
+aus, gesendet, ende = b"", 0, time.time() + 40
+while time.time() < ende and b"ENDE=" not in aus:
+    if select.select([fd], [], [], 0.5)[0]:
+        try:
+            d = os.read(fd, 4096)
+        except OSError:
+            break
+        if not d:
+            break
+        aus += d
+        if aus.count(b"password for") > gesendet:
+            time.sleep(0.3)
+            # erst verpasst: Enter ohne Passwort; beim zweiten Mal abbrechen
+            os.write(fd, b"\n" if gesendet == 0 else b"\x03")
+            gesendet += 1
+print(aus.decode(errors="replace"))
+TERMINAL
+)
+pruefe 'echo "$SUDO_AUS" | grep -q "Enter without a password" && echo "$SUDO_AUS" | grep -q "Sorry, try again" && [ "$(echo "$SUDO_AUS" | grep -c "show ✌ to the camera")" -ge 2 ]' "echtes sudo: nach verpasstem ✌ und Enter fragt Winky noch einmal"
+rm -f /etc/sudoers.d/ubuntu /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+SUDO_UID=1000 $V sudo aus </dev/null >/dev/null
+
 # 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1

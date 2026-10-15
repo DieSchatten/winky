@@ -62,8 +62,9 @@ class Attrappe:
                     except OSError:
                         self.zusatz.append(b"")
                 antwort = {"geste-treffer": TREFFER, "geste-kein": KEIN_TREFFER}
-                if self.modus == "geste-ablehnen":
-                    c.send(struct.pack("IIfI", MAGIC, 6, -1.0, 1))
+                if self.modus in ("geste-ablehnen", "geste-gesperrt"):
+                    status = 6 if self.modus == "geste-ablehnen" else 4
+                    c.send(struct.pack("IIfI", MAGIC, status, -1.0, 1))
                     return
                 c.send(b"W")
                 if self.modus == "geste-haengt":
@@ -288,6 +289,12 @@ def main():
     a.modus = "geste-kein"
     ok, _ = pam("winky-test-geste", items=tty)
     pruefe(not ok and "not confirmed" in pam.ausgabe, "ohne ✌: nicht bestätigt, weiter mit Passwort")
+    pruefe("Enter without a password" in pam.ausgabe,
+           "verpasstes ✌: Hinweis, dass Enter ohne Passwort es noch einmal versucht")
+    a.modus = "geste-gesperrt"
+    ok, _ = pam("winky-test-geste", items=tty)
+    pruefe(not ok and "temporarily locked" in pam.ausgabe and "to the camera" not in pam.ausgabe,
+           "gesperrt: klarer Hinweis statt Aufforderung")
     a.modus = "geste-ablehnen"
     ok, dauer = pam("winky-test-geste", items=tty)
     pruefe(not ok and "to the camera" not in pam.ausgabe and dauer < 1,

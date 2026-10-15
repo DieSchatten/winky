@@ -1,8 +1,8 @@
 #!/bin/bash
 # Software-Verwaltungs-Weg im Wegwerf-System: PackageKit installiert, aktualisiert, deinstalliert
 # Aufruf (--privileged nur, damit polkitd im rootless Container seine Sandbox aufbauen kann):
-#   podman build -t localhost/winky-systemtest:4 tests/systemtest
-#   podman run -d --name winky-store --systemd=always --privileged --network=none localhost/winky-systemtest:4
+#   podman build -t localhost/winky-systemtest:5 tests/systemtest
+#   podman run -d --name winky-store --systemd=always --privileged --network=none localhost/winky-systemtest:5
 #   podman cp bau/winky_<version>_amd64.deb winky-store:/root/neu.deb
 #   podman cp tests/systemtest/store-test.sh winky-store:/root/; podman exec winky-store /root/store-test.sh
 # Dateien nach /root, nicht /tmp: systemd legt im Container ein frisches /tmp darüber.

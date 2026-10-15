@@ -413,12 +413,23 @@ def test(f):
     f.k_ansicht.k_start.emit("clicked")
     pruefe(fertig(f) and len(f._ergaenzung_zeilen) == 3 and "drei" in
            f.k_ansicht.ergebnis.get_label(), "höchstens drei Ergänzungen")
+    seite_liste = f.k_ansicht.ergaenzungen
+    pruefe(seite_liste.get_visible() and [r.get_title() for r in seite_liste.zeilen]
+           == ["mit brille", "Licht", "Bart"], "die Ergänzen-Seite zeigt, was schon drin ist")
+    seite_liste.zeilen[2].knopf.emit("clicked")
+    DIALOGE.pop().emit("response", "weg")
+    warte(lambda: f.aktion is not None, 2)
+    pruefe(fertig(f) and [r.get_title() for r in seite_liste.zeilen] == ["mit brille", "Licht"],
+           "„Bart“ direkt auf der Ergänzen-Seite gelöscht")
     f.nav.pop()
     f._ergaenzung_zeilen[1].knopf.emit("clicked")
     DIALOGE.pop().emit("response", "weg")
     warte(lambda: f.aktion is not None, 2)
-    pruefe(fertig(f) and [r.get_title() for r in f._ergaenzung_zeilen] == ["mit brille", "Bart"],
-           "„Licht“ gelöscht, die anderen bleiben")
+    pruefe(fertig(f) and [r.get_title() for r in f._ergaenzung_zeilen] == ["mit brille"],
+           "„Licht“ im Abschnitt Gesicht gelöscht, „mit brille“ bleibt")
+    f.kamera_oeffnen("testen")
+    pruefe(not f.k_ansicht.ergaenzungen.get_visible(), "beim Ausprobieren keine Ergänzungsliste")
+    f.nav.pop()
 
     # Neu aufnehmen verlangt neues Ausprobieren und einen neuen ✌-Test
     f.kamera_oeffnen("einlernen")

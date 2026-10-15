@@ -246,6 +246,44 @@ def strenger_moeglich(z):
 
 
 
+class ErgaenzungsListe(Adw.PreferencesGroup):
+    """Benannte Ergänzungen mit Löschknopf (Abschnitt Gesicht und Seite „Gesicht ergänzen“)."""
+
+    def __init__(self, fenster):
+        super().__init__(title=_("Your additions"),
+                         description=_("Extra recordings, for example with glasses. Delete one if "
+                                       "you no longer need it."))
+        self.fenster = fenster
+        self.zeilen = []
+        self._stand = None
+
+    def zeigen(self, liste, laeuft):
+        stand = tuple((e.get("id"), e.get("name"), e.get("anzahl")) for e in liste)
+        if stand != self._stand:
+            self._stand = stand
+            for r in self.zeilen:
+                self.remove(r)
+            self.zeilen = []
+            for e in liste:
+                name = e.get("name") or _("Addition without a name")
+                anzahl = int(e.get("anzahl", 0))
+                zeile = textzeile(name, ngettext("{n} image, {date}", "{n} images, {date}",
+                                                 anzahl).format(n=anzahl, date=datum(e.get("zeit"))),
+                                  "list-add-symbolic")
+                weg = Gtk.Button(icon_name="user-trash-symbolic", valign=Gtk.Align.CENTER,
+                                 tooltip_text=_("Delete"))
+                weg.add_css_class("flat")
+                weg.connect("clicked", lambda _b, e=e, n=name:
+                            self.fenster.ergaenzung_loeschen_fragen(e, n))
+                zeile.add_suffix(weg)
+                zeile.knopf = weg
+                self.add(zeile)
+                self.zeilen.append(zeile)
+        for r in self.zeilen:
+            r.knopf.set_sensitive(not laeuft)
+        self.set_visible(bool(liste))
+
+
 class KameraAblauf(Gtk.Box):
     """Anleitung, Kamerabild, Fortschritt und Ergebnis für einen Ablauf mit der Kamera
     (einlernen, testen, gegenprobe, geste-testen)."""
@@ -288,6 +326,10 @@ class KameraAblauf(Gtk.Box):
         self.append(self.k_strenger)
         self.zusatz = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         self.append(self.zusatz)
+        # Beim Ergänzen gleich sehen, was schon drin ist, und Überflüssiges löschen
+        self.ergaenzungen = ErgaenzungsListe(fenster)
+        self.ergaenzungen.set_margin_top(12)
+        self.append(self.ergaenzungen)
         self.setze_art(art)
 
     def setze_art(self, art):
@@ -351,6 +393,7 @@ class KameraAblauf(Gtk.Box):
                                     and strenger_moeglich(z))
         self.k_strenger.set_sensitive(not laeuft)
         self.e_name.set_sensitive(not laeuft)
+        self.ergaenzungen.zeigen(z.ergaenzungen or [] if self.art == "ergaenzen" else [], laeuft)
         if not meiner and not self.live.get_label():
             if not bereit:
                 self.live.set_label(_("Winky isn’t fully installed."))
@@ -632,12 +675,7 @@ class Fenster(Adw.ApplicationWindow):
         for r in (self.r_testen, self.r_ergaenzen, self.r_neu, self.r_zweite, self.r_geste):
             self.g_pflege.add(r)
         s.add(self.g_pflege)
-        self.g_ergaenzungen = Adw.PreferencesGroup(
-            title=_("Your additions"),
-            description=_("Extra recordings, for example with glasses. Delete one if you no longer "
-                          "need it."))
-        self._ergaenzung_zeilen = []
-        self._ergaenzung_stand = None
+        self.g_ergaenzungen = ErgaenzungsListe(self)
         s.add(self.g_ergaenzungen)
         box = Gtk.Stack()
         box.add_named(s, "inhalt")
@@ -647,38 +685,20 @@ class Fenster(Adw.ApplicationWindow):
         self.gesicht_stapel = box
         return box
 
+    @property
+    def _ergaenzung_zeilen(self):
+        return self.g_ergaenzungen.zeilen
+
     def _ergaenzungen_zeigen(self):
         liste = self.zustand.ergaenzungen or []
-        stand = tuple((e.get("id"), e.get("name"), e.get("anzahl")) for e in liste)
-        laeuft = self.beschaeftigt()
-        if stand != self._ergaenzung_stand:
-            self._ergaenzung_stand = stand
-            for r in self._ergaenzung_zeilen:
-                self.g_ergaenzungen.remove(r)
-            self._ergaenzung_zeilen = []
-            for e in liste:
-                name = e.get("name") or _("Addition without a name")
-                zeile = textzeile(name, ngettext("{n} image, {date}", "{n} images, {date}",
-                                                 int(e.get("anzahl", 0))).format(
-                    n=int(e.get("anzahl", 0)), date=datum(e.get("zeit"))), "list-add-symbolic")
-                weg = Gtk.Button(icon_name="user-trash-symbolic", valign=Gtk.Align.CENTER,
-                                 tooltip_text=_("Delete"))
-                weg.add_css_class("flat")
-                weg.connect("clicked", lambda _b, e=e, n=name: self._ergaenzung_loeschen_fragen(e, n))
-                zeile.add_suffix(weg)
-                zeile.knopf = weg
-                self.g_ergaenzungen.add(zeile)
-                self._ergaenzung_zeilen.append(zeile)
-        for r in self._ergaenzung_zeilen:
-            r.knopf.set_sensitive(not laeuft)
-        self.g_ergaenzungen.set_visible(bool(liste))
+        self.g_ergaenzungen.zeigen(liste, self.beschaeftigt())
         self.r_ergaenzen.set_subtitle(
             _("Up to three additions. Delete one first, or reuse a name to replace it.")
             if len(liste) >= 3 else
             _("Winky sometimes doesn’t recognize you, for example with glasses or in different "
               "light? Add these looks."))
 
-    def _ergaenzung_loeschen_fragen(self, eintrag, name):
+    def ergaenzung_loeschen_fragen(self, eintrag, name):
         dialog = Adw.AlertDialog.new(
             _("Delete “{name}”?").format(name=name),
             _("Winky forgets these extra images. Your face and the other additions stay."))

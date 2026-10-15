@@ -346,7 +346,14 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
       pam_syslog(pamh, LOG_INFO, "sudo per Gesicht und Handzeichen bestätigt");
       return PAM_SUCCESS;
     }
-    if (wartete) pam_info(pamh, deutsch() ? "Winky: nicht bestätigt" : "Winky: not confirmed");
+    /* Verpasst: Enter ohne Passwort lässt sudo neu prüfen, dann wartet Winky wieder aufs ✌ */
+    if (wartete)
+      pam_info(pamh, deutsch() ? "Winky: nicht bestätigt (Enter ohne Passwort: \u270c noch einmal)"
+                               : "Winky: not confirmed (press Enter without a password to try "
+                                 "\u270c again)");
+    else if (status == WINKY_GESPERRT)
+      pam_info(pamh, deutsch() ? "Winky: vor\u00fcbergehend gesperrt, bitte Passwort eingeben"
+                               : "Winky: temporarily locked, please enter your password");
     return PAM_IGNORE;
   }
   /* Sperrbildschirm (GDM-Wiederanmeldung); die erste Anmeldung nur mit eigenem Schalter */
