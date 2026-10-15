@@ -17,8 +17,8 @@ from pathlib import Path
 
 W = Path(os.environ["WINKY_TESTWURZEL"])
 UID = os.getuid()
-GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "testen", "gegenprobe",
-                   "geste-testen", "entfernen", "schluesselbund"}
+GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "ergaenzung-entfernen",
+                   "testen", "gegenprobe", "geste-testen", "entfernen", "schluesselbund"}
 KAMERA = {"geraet": "/dev/video2", "pfad": "/dev/v4l/by-path/test-usb-0:1:1.2-video-index0",
           "name": "Test-Kamera: IR Camera", "breite": 640, "hoehe": 360, "blinkt": True,
           "hell": 74.9, "dunkel": 0.0}
@@ -142,13 +142,26 @@ def main():
         st = lese_status()
         if not st.get("vorlagen"):
             fertig(False, fehler="Zuerst das eigene Gesicht einlernen")
+        name = " ".join(args[1].split())[:40]
+        liste = st.get("ergaenzungen", [])
+        gleich = [e for e in liste if e["name"].casefold() == name.casefold()]
+        if not gleich and len(liste) >= 3:
+            fertig(False, fehler="Es gibt schon drei Ergänzungen. Lösch zuerst eine.")
         strom("einlernen", 1.5)
         if os.environ.get("WINKY_ATTRAPPE_ERGAENZEN") == "fremd":
             fertig(False, nicht_erkannt=True,
                    fehler="Winky hat dich in dieser Aufnahme nicht sicher erkannt.")
-        st.update(vorlagen=min(64, st["vorlagen"] + 20), ergaenzt=int(time.time()))
+        liste = [e for e in liste if e not in gleich] + [
+            {"id": int(time.time() * 1000), "name": name, "anzahl": 11, "zeit": int(time.time())}]
+        st.update(ergaenzungen=liste, vorlagen=30 + 11 * len(liste), ergaenzt=int(time.time()))
         schreibe_status(st)
-        fertig(True, vorlagen=st["vorlagen"], uebernommen=20)
+        fertig(True, vorlagen=st["vorlagen"], uebernommen=11, ersetzt=bool(gleich))
+    if befehl == "ergaenzung-entfernen":
+        st = lese_status()
+        liste = [e for e in st.get("ergaenzungen", []) if str(e["id"]) != args[1]]
+        st.update(ergaenzungen=liste, vorlagen=30 + 11 * len(liste))
+        schreibe_status(st)
+        fertig(True, vorlagen=st["vorlagen"])
     if befehl == "testen":
         strom("testen", 1.0)
         st = lese_status()

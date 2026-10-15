@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import system  # noqa: E402
 import umgebung  # noqa: E402
 from prozess import Prozess  # noqa: E402
-from sprache import _  # noqa: E402
+from sprache import _, ngettext  # noqa: E402
 from vorschau import RingVorschau, css_laden, komma  # noqa: E402
 
 GEGENPROBE_ABSTAND = 0.10   # so weit muss eine andere Person unter der Schwelle bleiben
@@ -56,13 +56,16 @@ ABLAEUFE = {
     },
     "ergaenzen": {
         "titel": _("Add to your face"),
-        "schritte": [_("Start the way Winky already recognizes you and look at the camera."),
-                     _("Click “Start adding” and enter your password."),
-                     _("After a few seconds, change what gives Winky trouble: put on your "
-                       "glasses, turn on a different light or sit a little differently. Slowly "
-                       "move your head.")],
+        "schritte": [_("Give the addition a name below and click “Start adding”, then enter "
+                       "your password."),
+                     _("First look at the camera as usual for a few seconds, the way Winky "
+                       "already knows you. That’s how Winky knows it’s you."),
+                     _("When “Now change it” appears below the picture: put on your glasses, "
+                       "change the light or sit a little differently, and slowly move your "
+                       "head.")],
         "hinweis": _("Takes 25 seconds. Your previous recording stays. Winky only adds what "
-                     "matches your face, so it won’t add anyone else by mistake."),
+                     "matches your face, so it won’t add anyone else by mistake. Up to three "
+                     "additions, each can be deleted again."),
         "knopf": _("Start adding"), "nochmal": _("Add more"),
     },
     "testen": {
@@ -263,6 +266,12 @@ class KameraAblauf(Gtk.Box):
         self.append(self.vorschau)
         self.live = text("", "title-4", mitte=True)
         self.append(self.live)
+        # Beim Ergänzen: Name, damit sich die Ergänzung später gezielt löschen lässt
+        self.name_liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        self.name_liste.add_css_class("boxed-list")
+        self.e_name = Adw.EntryRow(title=_("Name of the addition, for example “With glasses”"))
+        self.name_liste.append(self.e_name)
+        self.append(self.name_liste)
         knoepfe = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER)
         self.k_start = knopf("", self.starten, "pill", "suggested-action")
         self.k_abbruch = knopf(_("Cancel"), self.abbrechen, "pill")
@@ -297,6 +306,8 @@ class KameraAblauf(Gtk.Box):
             zeile.append(inhalt)
             self.anleitung.append(zeile)
         self.hinweis.set_label(a["hinweis"])
+        self.name_liste.set_visible(art == "ergaenzen")
+        self.e_name.set_text("")
         self.zuruecksetzen()
 
     def zuruecksetzen(self):
@@ -339,6 +350,7 @@ class KameraAblauf(Gtk.Box):
         self.k_strenger.set_visible(self.art == "gegenprobe" and s["gegenprobe"] is False
                                     and strenger_moeglich(z))
         self.k_strenger.set_sensitive(not laeuft)
+        self.e_name.set_sensitive(not laeuft)
         if not meiner and not self.live.get_label():
             if not bereit:
                 self.live.set_label(_("Winky isn’t fully installed."))
@@ -620,6 +632,13 @@ class Fenster(Adw.ApplicationWindow):
         for r in (self.r_testen, self.r_ergaenzen, self.r_neu, self.r_zweite, self.r_geste):
             self.g_pflege.add(r)
         s.add(self.g_pflege)
+        self.g_ergaenzungen = Adw.PreferencesGroup(
+            title=_("Your additions"),
+            description=_("Extra recordings, for example with glasses. Delete one if you no longer "
+                          "need it."))
+        self._ergaenzung_zeilen = []
+        self._ergaenzung_stand = None
+        s.add(self.g_ergaenzungen)
         box = Gtk.Stack()
         box.add_named(s, "inhalt")
         box.add_named(self._platzhalter(_("No face recorded yet"),
@@ -627,6 +646,50 @@ class Fenster(Adw.ApplicationWindow):
                       "leer")
         self.gesicht_stapel = box
         return box
+
+    def _ergaenzungen_zeigen(self):
+        liste = self.zustand.ergaenzungen or []
+        stand = tuple((e.get("id"), e.get("name"), e.get("anzahl")) for e in liste)
+        laeuft = self.beschaeftigt()
+        if stand != self._ergaenzung_stand:
+            self._ergaenzung_stand = stand
+            for r in self._ergaenzung_zeilen:
+                self.g_ergaenzungen.remove(r)
+            self._ergaenzung_zeilen = []
+            for e in liste:
+                name = e.get("name") or _("Addition without a name")
+                zeile = textzeile(name, ngettext("{n} image, {date}", "{n} images, {date}",
+                                                 int(e.get("anzahl", 0))).format(
+                    n=int(e.get("anzahl", 0)), date=datum(e.get("zeit"))), "list-add-symbolic")
+                weg = Gtk.Button(icon_name="user-trash-symbolic", valign=Gtk.Align.CENTER,
+                                 tooltip_text=_("Delete"))
+                weg.add_css_class("flat")
+                weg.connect("clicked", lambda _b, e=e, n=name: self._ergaenzung_loeschen_fragen(e, n))
+                zeile.add_suffix(weg)
+                zeile.knopf = weg
+                self.g_ergaenzungen.add(zeile)
+                self._ergaenzung_zeilen.append(zeile)
+        for r in self._ergaenzung_zeilen:
+            r.knopf.set_sensitive(not laeuft)
+        self.g_ergaenzungen.set_visible(bool(liste))
+        self.r_ergaenzen.set_subtitle(
+            _("Up to three additions. Delete one first, or reuse a name to replace it.")
+            if len(liste) >= 3 else
+            _("Winky sometimes doesn’t recognize you, for example with glasses or in different "
+              "light? Add these looks."))
+
+    def _ergaenzung_loeschen_fragen(self, eintrag, name):
+        dialog = Adw.AlertDialog.new(
+            _("Delete “{name}”?").format(name=name),
+            _("Winky forgets these extra images. Your face and the other additions stay."))
+        dialog.add_response("abbrechen", _("Cancel"))
+        dialog.add_response("weg", _("Delete"))
+        dialog.set_response_appearance("weg", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_close_response("abbrechen")
+        dialog.connect("response", lambda _d, r: r == "weg" and self._verwalten(
+            ["ergaenzung-entfernen", str(eintrag.get("id"))],
+            _("“{name}” deleted").format(name=name)))
+        dialog.present(self)
 
     def _baue_verlauf(self):
         s = Adw.PreferencesPage()
@@ -934,7 +997,11 @@ class Fenster(Adw.ApplicationWindow):
         ansicht.live.set_label(_("Asking for your password and starting the camera …"))
         ansicht.vorschau.hinweis(_("Camera is starting …"), bis_bild=True)
         try:
-            self.gesicht_lauf = Prozess(umgebung.verwalten_befehl([ansicht.art]), self._g_bild,
+            args = [ansicht.art]
+            if ansicht.art == "ergaenzen":
+                args.append(ansicht.e_name.get_text().strip() or _("Addition {number}").format(
+                    number=len(self.zustand.ergaenzungen) + 1))
+            self.gesicht_lauf = Prozess(umgebung.verwalten_befehl(args), self._g_bild,
                                         self._g_status, self._g_ende, abbruch_ueber_eingabe=True)
         except OSError as e:
             self.melde(_("Could not start: {error}").format(error=e))
@@ -985,7 +1052,13 @@ class Fenster(Adw.ApplicationWindow):
                 return _("Caution: to Winky, this person looks a lot like you"), False
             return _("Good: Winky doesn’t recognize this person"), True
         tipp = TIPPS.get(grund, grund or "")
-        if art in ("einlernen", "ergaenzen") and grund == "ok":
+        if art == "ergaenzen" and grund in ("ok", "kein_gesicht", "zu_klein", "gedreht",
+                                            "geneigt", "unsicher"):
+            # Erst wie immer (daran erkennt Winky dich), dann das ändern, womit es Mühe hat
+            if float(st.get("t", 0)) < 7:
+                return _("First as usual: look at the camera"), grund == "ok"
+            return _("Now change it: glasses on, different light … slowly move your head"), True
+        if art == "einlernen" and grund == "ok":
             tipp = _("Good, keep slowly moving your head")
         return tipp, grund == "ok"
 
@@ -1043,7 +1116,9 @@ class Fenster(Adw.ApplicationWindow):
             if erg.get("ok"):
                 a.vorschau.hinweis(_("✓ Added"))
                 a.vorschau.fortschritt(1, "gut")
-                a.ergebnis.set_label(_("✓ Added {count} images. Try it out the way Winky had "
+                a.ergebnis.set_label((_("✓ Replaced the addition with the same name.") + " "
+                                      if erg.get("ersetzt") else "") +
+                                     _("✓ Added {count} images. Try it out the way Winky had "
                                        "trouble before.").format(count=erg.get("uebernommen", 0)))
                 self.melde(_("Face added"))
             else:
@@ -1570,6 +1645,7 @@ class Fenster(Adw.ApplicationWindow):
                                   _("Needed if you want to confirm sudo with ✌"))
 
         self._verlauf_zeigen(bereit and z.eingelernt)
+        self._ergaenzungen_zeigen()
 
         # Assistent und Kameraabläufe
         if z.kamera:

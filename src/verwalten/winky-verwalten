@@ -5,9 +5,10 @@ Läuft als root (pkexec oder sudo), wirkt nur für den Aufrufer (PKEXEC_UID bzw.
 liest nichts aus dessen Home. Als winky-gesicht (eigenes Passwort) sind nur die Befehle fürs
 eigene Gesicht erlaubt, als winky-verwalten (Administratorpasswort) auch die systemweiten.
 
-Eigenes Gesicht: status, kameras, einlernen, ergaenzen (weitere Aufnahmen anhängen, nur wenn
-  die Aufnahme das Gesicht erkennt), testen (ohne Sperrzähler), gegenprobe (andere Person darf
-  nicht passen), geste-testen (Gesicht und ✌, Freigabe für sudo), entfernen
+Eigenes Gesicht: status, kameras, einlernen, ergaenzen NAME (benannte Zusatzaufnahmen, nur wenn
+  die Aufnahme das Gesicht erkennt; höchstens drei, gleicher Name ersetzt), ergaenzung-entfernen ID,
+  testen (ohne Sperrzähler), gegenprobe (andere Person darf nicht passen), geste-testen (Gesicht
+  und ✌, Freigabe für sudo), entfernen
 System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.40 bis 0.95),
   aktivieren / deaktivieren (pam-auth-update), pausieren / fortsetzen (Notschalter),
   keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus,
@@ -59,12 +60,14 @@ MAGIC = 0x314B4E57
 OP_EINLERNEN, OP_TESTEN, OP_KAMERAS, OP_GESTE_TESTEN = 3, 4, 5, 8
 GEGENPROBE_ABSTAND = 0.10  # so weit muss eine fremde Person unter der Schwelle bleiben
 GEGENPROBE_COUNTDOWN = 5  # Sekunden, um nach der Passworteingabe aus dem Bild zu gehen
-GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "testen", "gegenprobe",
-                   "geste-testen", "entfernen", "schluesselbund"}
+GESICHT_BEFEHLE = {"status", "kameras", "einlernen", "ergaenzen", "ergaenzung-entfernen",
+                   "testen", "gegenprobe", "geste-testen", "entfernen", "schluesselbund"}
 VORLAGEN_MAX = 64          # wie kVorlagenMax im Prüfdienst
 EINLERNEN_MAX = 30         # Vorlagen aus dem Einlernen; der Rest ist Platz für Ergänzungen
 ERGAENZEN_BELEGE = 3       # so viele Bilder der Ergänzung müssen die Schwelle erreichen
 ERGAENZEN_ABSTAND = 0.20   # weiter unter der Schwelle wird nichts übernommen
+ERGAENZUNG_MAX = 11        # Vorlagen je Ergänzung
+ERGAENZUNGEN_MAX = 3       # benannte Ergänzungen; 30 + 3 * 11 bleibt unter VORLAGEN_MAX
 STATUS_TEXT = {0: "treffer", 1: "kein_treffer", 2: "kein_gesicht", 3: "nicht_eingerichtet",
                4: "gesperrt", 5: "fehler", 6: "abgelehnt", 7: "ok"}
 KONFIG_VORGABE = """\
@@ -396,34 +399,77 @@ def gleichmaessig(liste, n):
     return [liste[i * (len(liste) - 1) // (n - 1)] for i in range(n)]
 
 
-def vorlagen_ergaenzen(alt, basis, neu, schwelle):
-    """Hängt neue Aufnahmen an. Gibt (Vorlagen, übernommen, Belege) zurück, Vorlagen None, wenn
-    die Aufnahme das eingelernte Gesicht nicht oft genug erkannt hat. Übernommen wird nur, was
-    höchstens ERGAENZEN_ABSTAND unter der Schwelle liegt, also kein fremdes Gesicht. Die Vorlagen
-    aus dem Einlernen bleiben; frühere Ergänzungen werden ausgedünnt, wenn der Platz nicht
-    reicht, die neue bekommt mindestens die Hälfte davon."""
+def ergaenzung_auswaehlen(alt, neu, schwelle):
+    """Was aus einer Aufnahme dazukommt: (Auswahl, Belege). Auswahl None, wenn die Aufnahme das
+    eingelernte Gesicht nicht oft genug erkannt hat; sonst höchstens ERGAENZUNG_MAX Bilder, die
+    höchstens ERGAENZEN_ABSTAND unter der Schwelle liegen, also kein fremdes Gesicht."""
     werte = [aehnlichkeit(v, alt) for v in neu]
     belege = sum(w >= schwelle for w in werte)
     if belege < ERGAENZEN_BELEGE:
-        return None, 0, belege
+        return None, belege
     passend = [v for v, w in zip(neu, werte) if w >= schwelle - ERGAENZEN_ABSTAND]
-    basis = max(1, min(basis or EINLERNEN_MAX, len(alt), EINLERNEN_MAX))
-    frueher = alt[basis:]
-    platz = VORLAGEN_MAX - basis
-    if len(frueher) + len(passend) > platz:
-        n_neu = min(len(passend), max(platz // 2, platz - len(frueher)))
-        frueher = gleichmaessig(frueher, platz - n_neu)
-        passend = gleichmaessig(passend, n_neu)
-    return alt[:basis] + frueher + passend, len(passend), belege
+    return gleichmaessig(passend, ERGAENZUNG_MAX), belege
 
 
-def befehl_ergaenzen(uid, _name):
+def gruppen(status, anzahl):
+    """Einlernen-Basis und benannte Ergänzungen aus dem Status. Passt die Liste nicht zur Datei
+    (ältere Stände), gilt alles nach der Basis als eine Ergänzung ohne Namen."""
+    basis = max(1, min(status.get("vorlagen_basis") or EINLERNEN_MAX, anzahl, EINLERNEN_MAX))
+    liste = [e for e in status.get("ergaenzungen") or [] if isinstance(e, dict)]
+    try:
+        stimmt = sum(int(e.get("anzahl", 0)) for e in liste) == anzahl - basis and \
+            all(int(e.get("anzahl", 0)) > 0 for e in liste)
+    except (TypeError, ValueError):
+        stimmt = False
+    if not stimmt:
+        rest = anzahl - basis
+        liste = [{"id": 1, "name": "", "anzahl": rest, "zeit": int(status.get("ergaenzt") or 0)}] \
+            if rest > 0 else []
+    return basis, [dict(e) for e in liste]
+
+
+def zusammensetzen(alt, basis, liste, ohne_id=None):
+    """Basis und Ergänzungen, ohne die Gruppe ohne_id: (Vorlagen, verbleibende Liste)."""
+    vorlagen, bleibt, pos = list(alt[:basis]), [], basis
+    for e in liste:
+        n = int(e["anzahl"])
+        if e.get("id") != ohne_id:
+            vorlagen += alt[pos:pos + n]
+            bleibt.append(e)
+        pos += n
+    return vorlagen, bleibt
+
+
+def ergaenzung_name(roh):
+    name = " ".join("".join(z for z in roh if z.isprintable()).split())[:40]
+    if not name:
+        fertig(False, fehler=_("Give the addition a name, for example “With glasses”"))
+    return name
+
+
+def schreibe_vorlagen(uid, vorlagen):
+    gid = grp.getgrnam(GRUPPE).gr_gid
+    daten = b"".join(struct.pack(f"{MODELL_DIM}f", *v) for v in vorlagen)
+    kopf = (b"WNKV" + struct.pack("III", 1, MODELL_DIM, len(vorlagen)) + MODELL_SHA +
+            struct.pack("q", int(time.time())))
+    schreibe_atomar(vorlagen_pfad(uid), kopf + daten, 0o640, gid)
+
+
+def befehl_ergaenzen(uid, _name, roh_name=""):
+    """Benannte Ergänzung aufnehmen; eine gleichnamige wird ersetzt, höchstens drei."""
+    name = ergaenzung_name(roh_name)
     alt = lese_vorlagen(uid)
     if alt is None:
         fertig(False, fehler=_("Record your own face first"))
     schwelle = aktuelle_schwelle()
     if schwelle <= 0:
         fertig(False, fehler=_("No strictness set (Advanced)."))
+    status = lese_status(uid)
+    basis, liste = gruppen(status, len(alt))
+    gleich = next((e for e in liste if e.get("name", "").casefold() == name.casefold()), None)
+    if gleich is None and len(liste) >= ERGAENZUNGEN_MAX:
+        fertig(False, fehler=_("There are already three additions. Delete one first, or use the "
+                               "name of one you want to replace."))
     s = verbinde(OP_EINLERNEN, uid, 25)
     try:
         antwort, vektoren = strom(s)
@@ -437,26 +483,44 @@ def befehl_ergaenzen(uid, _name):
     anzahl, dim, floats = pruefe_vektoren(vektoren)
     werte = struct.unpack(f"{anzahl * dim}f", floats)
     neu = [list(werte[i * dim:(i + 1) * dim]) for i in range(anzahl)]
-    status = lese_status(uid)
-    vorlagen, uebernommen, belege = vorlagen_ergaenzen(alt, status.get("vorlagen_basis"), neu,
-                                                       schwelle)
-    if vorlagen is None:
+    auswahl, _belege = ergaenzung_auswaehlen(alt, neu, schwelle)
+    if auswahl is None:
         fertig(False, nicht_erkannt=True, fehler=_(
             "Winky didn’t recognize you clearly enough in this recording, so nothing was added. "
             "Start the way Winky already recognizes you, for example without glasses, and only "
             "then put them on. If Winky hardly recognizes you at all, record your face again."))
-    if not uebernommen:
+    if not auswahl:
         fertig(False, fehler=_("Nothing in this recording was close enough to your face. "
                                "Nothing was added."))
-    gid = grp.getgrnam(GRUPPE).gr_gid
-    daten = b"".join(struct.pack(f"{dim}f", *v) for v in vorlagen)
-    kopf = (b"WNKV" + struct.pack("III", 1, dim, len(vorlagen)) + MODELL_SHA +
-            struct.pack("q", int(time.time())))
-    schreibe_atomar(vorlagen_pfad(uid), kopf + daten, 0o640, gid)
-    basis = max(1, min(status.get("vorlagen_basis") or EINLERNEN_MAX, len(alt), EINLERNEN_MAX))
-    status.update(vorlagen=len(vorlagen), vorlagen_basis=basis, ergaenzt=int(time.time()))
+    vorlagen, bleibt = zusammensetzen(alt, basis, liste, gleich["id"] if gleich else None)
+    jetzt = int(time.time())
+    neue_id = max([int(e.get("id", 0)) for e in liste] + [jetzt - 1]) + 1
+    bleibt.append({"id": neue_id, "name": name, "anzahl": len(auswahl), "zeit": jetzt})
+    schreibe_vorlagen(uid, vorlagen + auswahl)
+    status.update(vorlagen=len(vorlagen) + len(auswahl), vorlagen_basis=basis,
+                  ergaenzungen=bleibt, ergaenzt=jetzt)
     schreibe_status(uid, status)
-    fertig(True, vorlagen=len(vorlagen), uebernommen=uebernommen)
+    fertig(True, vorlagen=len(vorlagen) + len(auswahl), uebernommen=len(auswahl),
+           ersetzt=gleich is not None)
+
+
+def befehl_ergaenzung_entfernen(uid, _name, kennung=""):
+    try:
+        ziel = int(kennung)
+    except ValueError:
+        fertig(False, fehler=_("Usage: {usage}").format(usage="ergaenzung-entfernen ID"))
+    alt = lese_vorlagen(uid)
+    if alt is None:
+        fertig(False, fehler=_("Record your own face first"))
+    status = lese_status(uid)
+    basis, liste = gruppen(status, len(alt))
+    if not any(e.get("id") == ziel for e in liste):
+        fertig(False, fehler=_("This addition no longer exists"))
+    vorlagen, bleibt = zusammensetzen(alt, basis, liste, ziel)
+    schreibe_vorlagen(uid, vorlagen)
+    status.update(vorlagen=len(vorlagen), vorlagen_basis=basis, ergaenzungen=bleibt)
+    schreibe_status(uid, status)
+    fertig(True, vorlagen=len(vorlagen))
 
 
 def befehl_testen(uid, _name):
@@ -949,7 +1013,8 @@ def befehl_status(uid, name):
 
 
 BEFEHLE = {
-    "status": befehl_status, "einlernen": befehl_einlernen, "ergaenzen": befehl_ergaenzen,
+    "status": befehl_status, "einlernen": befehl_einlernen, "ergaenzen": None,
+    "ergaenzung-entfernen": None,
     "testen": befehl_testen,
     "gegenprobe": befehl_gegenprobe, "kameras": befehl_kameras, "kamera": befehl_kamera,
     "entfernen": befehl_entfernen, "schwelle": befehl_schwelle,
@@ -968,7 +1033,8 @@ def main(argv):
         migrieren()
         sys.exit(0)
     mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "dialoge",
-                "anmeldung", "geste-zeit", "schluesselbund", "entsperren-geste"}
+                "anmeldung", "geste-zeit", "schluesselbund", "entsperren-geste", "ergaenzen",
+                "ergaenzung-entfernen"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
         fertig(False, fehler=_("Usage: winky-verwalten {commands} [VALUE]").format(
@@ -994,6 +1060,10 @@ def main(argv):
         befehl_dialoge(uid, name, argv[2])
     if argv[1] == "entsperren-geste":
         befehl_entsperren_geste(uid, name, argv[2])
+    if argv[1] == "ergaenzen":
+        befehl_ergaenzen(uid, name, argv[2])
+    if argv[1] == "ergaenzung-entfernen":
+        befehl_ergaenzung_entfernen(uid, name, argv[2])
     BEFEHLE[argv[1]](uid, name)
 
 

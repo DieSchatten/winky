@@ -379,23 +379,46 @@ def test(f):
     warte(lambda: f.aktion is not None, 2)
     pruefe(fertig(f) and f.zustand.kamera, "gewählte Kamera übernommen")
 
-    # Ergänzen: behält Ausprobieren und ✌-Test; ohne Erkennung wird nichts ergänzt
+    # Ergänzen: benannt, behält Ausprobieren und ✌-Test; ohne Erkennung wird nichts ergänzt
     vorher = f.zustand.vorlagen
     os.environ["WINKY_ATTRAPPE_ERGAENZEN"] = "fremd"
     f.kamera_oeffnen("ergaenzen")
-    pruefe(f.k_seite.get_title() == "Gesicht ergänzen" and f.k_ansicht.k_start.get_sensitive(),
-           "„Gesicht ergänzen“ öffnet die Kameraseite")
+    pruefe(f.k_seite.get_title() == "Gesicht ergänzen" and f.k_ansicht.k_start.get_sensitive()
+           and f.k_ansicht.name_liste.get_visible(), "„Gesicht ergänzen“ mit Namensfeld")
+    f.k_ansicht.e_name.set_text("Mit Brille")
     f.k_ansicht.k_start.emit("clicked")
     pruefe(fertig(f) and f.zustand.vorlagen == vorher and "nicht sicher erkannt"
            in f.k_ansicht.ergebnis.get_label(), "ohne sichere Erkennung wird nichts ergänzt")
     del os.environ["WINKY_ATTRAPPE_ERGAENZEN"]
+    pruefe(f._tipp({"grund": "ok", "t": 2}, "ergaenzen")[0].startswith("Erst wie immer")
+           and f._tipp({"grund": "ok", "t": 12}, "ergaenzen")[0].startswith("Jetzt ändern"),
+           "Live-Hinweis: erst wie immer, dann „Jetzt ändern“")
     f.k_ansicht.k_start.emit("clicked")
-    pruefe(fertig(f) and f.zustand.vorlagen == vorher + 20 and "20" in
-           f.k_ansicht.ergebnis.get_label(), "ergänzt: 20 Bilder dazu")
+    pruefe(fertig(f) and f.zustand.vorlagen == vorher + 11 and "11" in
+           f.k_ansicht.ergebnis.get_label(), "ergänzt: 11 Bilder dazu")
     pruefe(f.k_ansicht.k_start.get_label() == "Weiter ergänzen" and f.r_aktiv.get_sensitive()
            and "Nötig" not in f.r_geste.get_subtitle(),
            "nach dem Ergänzen bleiben Ausprobieren und ✌-Test gültig")
+    pruefe(f.g_ergaenzungen.get_visible() and [r.get_title() for r in f._ergaenzung_zeilen]
+           == ["Mit Brille"], "Abschnitt Gesicht listet „Mit Brille“")
+    f.k_ansicht.e_name.set_text("mit brille")
+    f.k_ansicht.k_start.emit("clicked")
+    pruefe(fertig(f) and len(f._ergaenzung_zeilen) == 1 and "ersetzt"
+           in f.k_ansicht.ergebnis.get_label(), "gleicher Name ersetzt die Ergänzung")
+    for name in ("Licht", "Bart"):
+        f.k_ansicht.e_name.set_text(name)
+        f.k_ansicht.k_start.emit("clicked")
+        fertig(f)
+    f.k_ansicht.e_name.set_text("Hut")
+    f.k_ansicht.k_start.emit("clicked")
+    pruefe(fertig(f) and len(f._ergaenzung_zeilen) == 3 and "drei" in
+           f.k_ansicht.ergebnis.get_label(), "höchstens drei Ergänzungen")
     f.nav.pop()
+    f._ergaenzung_zeilen[1].knopf.emit("clicked")
+    DIALOGE.pop().emit("response", "weg")
+    warte(lambda: f.aktion is not None, 2)
+    pruefe(fertig(f) and [r.get_title() for r in f._ergaenzung_zeilen] == ["mit brille", "Bart"],
+           "„Licht“ gelöscht, die anderen bleiben")
 
     # Neu aufnehmen verlangt neues Ausprobieren und einen neuen ✌-Test
     f.kamera_oeffnen("einlernen")

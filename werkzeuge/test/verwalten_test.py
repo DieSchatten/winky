@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Logik des Verwaltungshelfers ohne root: Gesicht ergänzen (Vorlagen zusammenführen)."""
+"""Logik des Verwaltungshelfers ohne root: Gesicht ergänzen (benannte Gruppen)."""
 
 import importlib.machinery
 import importlib.util
@@ -48,34 +48,39 @@ pruefe(w_ich > S and S - 0.20 <= w_brille < S and w_fremd < 0.3,
 
 # 1. Stark verändert und nie sicher erkannt: nichts wird übernommen (nicht nachweisbar ich)
 stark = norm([a + 0.16 * z.gauss(0, 1) for a in ich])
-neu, n, belege = v.vorlagen_ergaenzen(alt, 30, gesicht(stark, 0.04, 20, z), S)
-pruefe(neu is None and belege < 3, f"ohne erkannte Bilder wird nichts ergänzt ({belege} Belege)")
+auswahl, belege = v.ergaenzung_auswaehlen(alt, gesicht(stark, 0.04, 20, z), S)
+pruefe(auswahl is None and belege < 3, f"ohne erkannte Bilder wird nichts ergänzt ({belege} Belege)")
 
-# 2. Erst ohne, dann mit Brille: beides kommt dazu, die Einlern-Vorlagen bleiben vorn
-aufnahme = gesicht(ich, 0.04, 8, z) + gesicht(brille, 0.04, 20, z)
-neu, n, belege = v.vorlagen_ergaenzen(alt, 30, aufnahme, S)
-pruefe(neu is not None and belege >= 3 and n == 28 and len(neu) == 58 and neu[:30] == alt,
-       f"ohne, dann mit Brille: {n} übernommen, {belege} Belege, Einlernen unverändert")
-pruefe(v.aehnlichkeit(gesicht(brille, 0.04, 1, z)[0], neu) >= S,
+# 2. Erst ohne, dann mit Brille: höchstens 11 Bilder kommen dazu, danach wird die Brille erkannt
+auswahl, belege = v.ergaenzung_auswaehlen(alt, gesicht(ich, 0.04, 8, z) + gesicht(brille, 0.04, 20, z), S)
+pruefe(auswahl is not None and len(auswahl) == 11 and belege >= 3,
+       f"ohne, dann mit Brille: {len(auswahl or [])} Bilder, {belege} Belege")
+pruefe(v.aehnlichkeit(gesicht(brille, 0.04, 1, z)[0], alt + auswahl) >= S,
        "danach wird das Gesicht mit Brille erkannt")
 
 # 3. Erst ich, dann setzt sich eine andere Person davor: sie wird nicht übernommen
-aufnahme = gesicht(ich, 0.04, 6, z) + gesicht(fremd, 0.04, 20, z)
-neu2, n2, _ = v.vorlagen_ergaenzen(alt, 30, aufnahme, S)
-pruefe(neu2 is not None and n2 == 6, f"fremdes Gesicht wird verworfen ({n2} übernommen)")
-pruefe(v.aehnlichkeit(gesicht(fremd, 0.04, 1, z)[0], neu2) < 0.3,
+auswahl2, _ = v.ergaenzung_auswaehlen(alt, gesicht(ich, 0.04, 6, z) + gesicht(fremd, 0.04, 20, z), S)
+pruefe(auswahl2 is not None and len(auswahl2) == 6, f"fremdes Gesicht wird verworfen ({len(auswahl2)} übernommen)")
+pruefe(v.aehnlichkeit(gesicht(fremd, 0.04, 1, z)[0], alt + auswahl2) < 0.3,
        "die andere Person bleibt danach fremd")
 
-# 4. Wiederholt ergänzen: nie mehr als 64, Einlernen bleibt, die neue Ergänzung hat Platz
-neu3, n3, _ = v.vorlagen_ergaenzen(neu, 30, gesicht(ich, 0.04, 8, z) + gesicht(brille, 0.04, 22, z), S)
-pruefe(len(neu3) == 64 and neu3[:30] == alt and n3 >= 17,
-       f"zweite Ergänzung: {len(neu3)} Vorlagen, {n3} neu, Einlernen unverändert")
-neu4, _, _ = v.vorlagen_ergaenzen(neu3, 30, gesicht(ich, 0.04, 30, z), S)
-pruefe(len(neu4) == 64 and neu4[:30] == alt, "dritte Ergänzung: weiterhin höchstens 64")
+# 4. Drei benannte Ergänzungen: höchstens 63 Vorlagen, eine mittlere lässt sich gezielt löschen
+g1, g2, g3 = (gesicht(ich, 0.04, 11, z) for _ in range(3))
+voll = alt + g1 + g2 + g3
+status = {"vorlagen_basis": 30, "ergaenzungen": [
+    {"id": 11, "name": "Mit Brille", "anzahl": 11}, {"id": 12, "name": "Licht", "anzahl": 11},
+    {"id": 13, "name": "Bart", "anzahl": 11}]}
+basis, liste = v.gruppen(status, len(voll))
+rest, bleibt = v.zusammensetzen(voll, basis, liste, 12)
+pruefe(len(voll) <= v.VORLAGEN_MAX and rest == alt + g1 + g3 and [e["id"] for e in bleibt] == [11, 13],
+       f"drei Ergänzungen ({len(voll)} Vorlagen), „Licht“ gelöscht, die anderen unverändert")
 
-# 5. Ältere Installation ohne vorlagen_basis: die ersten 30 gelten als Einlernen
-neu5, _, _ = v.vorlagen_ergaenzen(alt, None, gesicht(ich, 0.04, 10, z), S)
-pruefe(neu5[:30] == alt and len(neu5) == 40, "ohne gespeicherte Basis bleiben die ersten 30")
+# 5. Ältere Stände ohne Namen: alles nach der Basis ist eine Ergänzung, die ersten 30 bleiben
+basis, liste = v.gruppen({}, 40)
+pruefe(basis == 30 and len(liste) == 1 and liste[0]["anzahl"] == 10 and liste[0]["name"] == "",
+       "ohne gespeicherte Gruppen: eine namenlose Ergänzung nach den ersten 30")
+basis, liste = v.gruppen({"vorlagen_basis": 30, "ergaenzungen": [{"id": 1, "anzahl": 5}]}, 40)
+pruefe(len(liste) == 1 and liste[0]["anzahl"] == 10, "unstimmige Gruppenliste wird nicht geglaubt")
 
 # 6. Gleichmäßige Auswahl
 pruefe(v.gleichmaessig(list(range(10)), 4) == [0, 3, 6, 9] and v.gleichmaessig([1, 2], 5) == [1, 2]

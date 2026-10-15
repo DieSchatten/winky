@@ -22,6 +22,7 @@ class Zustand:
     vorlagen: int = 0
     eingelernt_am: int = 0
     ergaenzt_am: int = 0      # zuletzt weitere Aufnahmen angehängt
+    ergaenzungen: list = None  # benannte Ergänzungen: dicts mit id, name, anzahl, zeit
     schwelle: float = 0.0
     kamera: str = ""
     blinkpruefung: bool = True
@@ -72,6 +73,20 @@ def lese_zustand(uid=None) -> Zustand:
     z.vorlagen = int(status.get("vorlagen") or 0)
     z.eingelernt_am = int(status.get("eingelernt") or 0)
     z.ergaenzt_am = int(status.get("ergaenzt") or 0)
+    z.ergaenzungen = []
+    if z.eingelernt:
+        # wie gruppen() im Verwaltungshelfer: passt die Liste nicht, eine Ergänzung ohne Namen
+        basis = max(1, min(int(status.get("vorlagen_basis") or 30), z.vorlagen, 30))
+        liste = [e for e in status.get("ergaenzungen") or [] if isinstance(e, dict)]
+        try:
+            stimmt = sum(int(e.get("anzahl", 0)) for e in liste) == z.vorlagen - basis
+        except (TypeError, ValueError):
+            stimmt = False
+        if stimmt:
+            z.ergaenzungen = liste
+        elif z.vorlagen > basis:
+            z.ergaenzungen = [{"id": 1, "name": "", "anzahl": z.vorlagen - basis,
+                               "zeit": int(status.get("ergaenzt") or 0)}]
     if z.eingelernt:
         z.test_ok = int(status.get("test_ok") or 0)
         z.test_wert = float(status.get("test_wert") or 0)

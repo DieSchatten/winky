@@ -88,23 +88,28 @@ msgid "Add to your face"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Start the way Winky already recognizes you and look at the camera."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Click “Start adding” and enter your password."
+msgid ""
+"Give the addition a name below and click “Start adding”, then enter your "
+"password."
 msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"After a few seconds, change what gives Winky trouble: put on your glasses, "
-"turn on a different light or sit a little differently. Slowly move your head."
+"First look at the camera as usual for a few seconds, the way Winky already "
+"knows you. That’s how Winky knows it’s you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"When “Now change it” appears below the picture: put on your glasses, change "
+"the light or sit a little differently, and slowly move your head."
 msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
 "Takes 25 seconds. Your previous recording stays. Winky only adds what "
-"matches your face, so it won’t add anyone else by mistake."
+"matches your face, so it won’t add anyone else by mistake. Up to three "
+"additions, each can be deleted again."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -220,6 +225,10 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "What this means"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Name of the addition, for example “With glasses”"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -439,11 +448,55 @@ msgid "Starts over and replaces everything recorded so far"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Your additions"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Extra recordings, for example with glasses. Delete one if you no longer need "
+"it."
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "No face recorded yet"
 msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "The setup records your face in about two minutes."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Addition without a name"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "{n} image, {date}"
+msgid_plural "{n} images, {date}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/app/gesicht_app.py
+msgid "Delete"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Up to three additions. Delete one first, or reuse a name to replace it."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Delete “{name}”?"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Winky forgets these extra images. Your face and the other additions stay."
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "“{name}” deleted"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -752,6 +805,11 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 #, python-brace-format
+msgid "Addition {number}"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
 msgid "Could not start: {error}"
 msgstr ""
 
@@ -790,6 +848,14 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Good: Winky doesn’t recognize this person"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "First as usual: look at the camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Now change it: glasses on, different light … slowly move your head"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -838,6 +904,10 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "✓ Added"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "✓ Replaced the addition with the same name."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -981,10 +1051,6 @@ msgstr ""
 msgid ""
 "After that, your face won’t unlock anything until you record it again. Your "
 "password keeps working."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Delete"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1949,7 +2015,17 @@ msgid "Recording your face failed. Details: journalctl -t winky"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
+msgid "Give the addition a name, for example “With glasses”"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
 msgid "Record your own face first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"There are already three additions. Delete one first, or use the name of one "
+"you want to replace."
 msgstr ""
 
 #: src/verwalten/winky-verwalten
@@ -1967,6 +2043,15 @@ msgstr ""
 #: src/verwalten/winky-verwalten
 msgid ""
 "Nothing in this recording was close enough to your face. Nothing was added."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "Usage: {usage}"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "This addition no longer exists"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
@@ -2091,11 +2176,6 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "The polkit rules folder is missing"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-#, python-brace-format
-msgid "Usage: {usage}"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
