@@ -1967,59 +1967,6 @@ msgstr "Entwicklung"
 msgid "Camera off"
 msgstr "Kamera aus"
 
-#: src/app/vorschau.py
-msgid "face recognized well"
-msgstr "Gesicht gut erkannt"
-
-#: src/app/vorschau.py
-msgid "no face in the picture"
-msgstr "kein Gesicht im Bild"
-
-#: src/app/vorschau.py
-msgid "too far away"
-msgstr "zu weit weg"
-
-#: src/app/vorschau.py
-msgid "head turned too far to the side"
-msgstr "Kopf zu stark zur Seite gedreht"
-
-#: src/app/vorschau.py
-msgid "head tilted too much"
-msgstr "Kopf zu schräg"
-
-#: src/app/vorschau.py
-msgid "face not clearly recognized"
-msgstr "Gesicht unsicher erkannt"
-
-#: src/app/vorschau.py
-msgid "face partly covered"
-msgstr "Gesicht teilweise verdeckt"
-
-#: src/app/vorschau.py
-msgid "overexposed, a little too close to the camera"
-msgstr "überbelichtet, etwas zu nah an der Kamera"
-
-#: src/app/vorschau.py
-msgid "face incomplete"
-msgstr "Gesicht unvollständig"
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "similarity {value}"
-msgstr "Ähnlichkeit {value}"
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "{n} image collected"
-msgid_plural "{n} images collected"
-msgstr[0] "{n} Bild gesammelt"
-msgstr[1] "{n} Bilder gesammelt"
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "{usable} usable out of {lit}"
-msgstr "{usable} brauchbar von {lit}"
-
 #: src/hinweis/winky-hinweis
 msgid ""
 "Two requests at the same time, so both were canceled. If you only started "

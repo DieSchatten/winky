@@ -1784,59 +1784,6 @@ msgstr ""
 msgid "Camera off"
 msgstr ""
 
-#: src/app/vorschau.py
-msgid "face recognized well"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "no face in the picture"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "too far away"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "head turned too far to the side"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "head tilted too much"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "face not clearly recognized"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "face partly covered"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "overexposed, a little too close to the camera"
-msgstr ""
-
-#: src/app/vorschau.py
-msgid "face incomplete"
-msgstr ""
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "similarity {value}"
-msgstr ""
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "{n} image collected"
-msgid_plural "{n} images collected"
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/app/vorschau.py
-#, python-brace-format
-msgid "{usable} usable out of {lit}"
-msgstr ""
-
 #: src/hinweis/winky-hinweis
 msgid ""
 "Two requests at the same time, so both were canceled. If you only started "

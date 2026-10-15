@@ -285,6 +285,6 @@ both from the [OpenCV Zoo](https://github.com/opencv/opencv_zoo), and Google's M
 Gesture Recognizer (Apache-2.0) for the ✌. Plus ONNX Runtime (MIT). Details in
 [NOTICE](NOTICE).
 
-Building, architecture, tests and measurement tools:
+Building, architecture, tests and measurement results:
 [developer notes (German)](ENTWICKLUNG.md).
 Changes per version: [CHANGELOG.md](CHANGELOG.md).

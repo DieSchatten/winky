@@ -119,17 +119,12 @@ einem echten Gesicht:
 Mit `WINKY_FOTO_ZIEL=ordner WINKY_FOTO_ALLE=1` nimmt das Skript zusätzlich jeden
 Assistentenschritt und „Erweitert“ auf, zur Durchsicht.
 
-## Messwerkzeuge
+## Messergebnisse
 
-Nicht im Paket. Das Messwerkzeug `winky-messung` (`werkzeuge/messung/`) und die
-Kalibrier-Oberfläche (`werkzeuge/kalibrierung/`) dienen dazu, Entscheidungen mit Messungen zu
-belegen. Regel: Kriterien vor der Messung festlegen, Entwicklungs- und Prüfdaten trennen.
+Die Vorgaben beruhen auf Messungen mit einem eigenen Messwerkzeug (nicht veröffentlicht).
+Regel: Kriterien vor der Messung festlegen, Entwicklungs- und Prüfdaten trennen.
 
-```bash
-./scripts/kalibrierung.sh
-```
-
-Das Werkzeug hat zwei Seiten:
+Gemessen wurden zwei Dinge:
 
 - **Erkennung:** eigene Sitzungen (normal, entsperren, dunkel, nah, fern, seitlich, Brille),
   niemand im Bild, Täuschungsversuche (Handyfoto, Ausdruck) und andere Personen. Die
@@ -144,17 +139,11 @@ Das Werkzeug hat zwei Seiten:
   Kameraklasse.
 - **Handzeichen ✌:** Bestätigen wie im echten Einsatz mit Rückmeldung, im Dunkeln, mit
   Abstand, dazu Tippen und Alltag ohne Zeichen. Ergebnis 09.10.2026: 11 von 12 erkannt
-  (92 %), Median 0,99 s, 0 Fehlalarme, also machbar nach der vorab festgelegten Regel
-  (`werkzeuge/kalibrierung/auswerten_hand.py`).
+  (92 %), Median 0,99 s, 0 Fehlalarme, also machbar nach der vorab festgelegten Regel.
 
 Verworfen wurden vorher Zwinkern (zu personenabhängig, Prüfrunde 72 % erkannt und 5
 Fehlalarme), „Daumen hoch“ und „Nase antippen“ (die Handflächensuche findet Faust und
-Handrücken im Infrarot-Bild nicht). Code und Messdaten dazu sind entfernt bzw. archiviert,
-nachzulesen in der Git-Historie.
-
-Messdaten (Kennzahlen als CSV, keine Bilder) liegen unter `~/.local/share/winky/messungen`
-und gehören nicht ins Repo. Ältere Messreihen lassen sich nach
-`~/.local/share/winky/messungen-archiv/` verschieben, dann zeigt das Werkzeug sie nicht mehr.
+Handrücken im Infrarot-Bild nicht). Messdaten (nur Kennzahlen, keine Bilder) bleiben lokal.
 
 Die MediaPipe-Modelle wurden mit `scripts/mediapipe-umwandeln.sh` von TFLite nach ONNX
 umgewandelt; Herkunft, Prüfsummen und Abgleich stehen in `modelle/HERKUNFT.md`.

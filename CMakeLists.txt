@@ -67,12 +67,6 @@ set_target_properties(pam_winky PROPERTIES PREFIX "" C_VISIBILITY_PRESET hidden)
 add_executable(winky-polkit-pruefung src/polkit/winky_polkit_pruefung.c)
 target_include_directories(winky-polkit-pruefung PRIVATE src/protokoll)
 
-# Messwerkzeug für die Entwicklung (nicht im Paket)
-add_executable(winky-messung werkzeuge/messung/main.cc)
-target_link_libraries(winky-messung PRIVATE winky_core winky_capture pthread)
-set_target_properties(winky-messung PROPERTIES INSTALL_RPATH "/usr/lib/winky"
-                                                 BUILD_RPATH "$ORIGIN;${ORT_ROOT}/lib")
-
 enable_testing()
 add_executable(test_dienst tests/test_dienst.cc)
 target_link_libraries(test_dienst PRIVATE winky_dienst)

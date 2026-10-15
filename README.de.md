@@ -285,5 +285,5 @@ Gesichtsvergleich (Apache-2.0), beide aus dem [OpenCV Zoo](https://github.com/op
 und der MediaPipe Gesture Recognizer von Google (Apache-2.0) für das ✌. Dazu ONNX Runtime
 (MIT). Einzelheiten in [NOTICE](NOTICE).
 
-Bauen, Aufbau, Tests und Messwerkzeuge: [ENTWICKLUNG.md](ENTWICKLUNG.md).
+Bauen, Aufbau, Tests und Messergebnisse: [ENTWICKLUNG.md](ENTWICKLUNG.md).
 Änderungen je Version: [CHANGELOG.md](CHANGELOG.md).
