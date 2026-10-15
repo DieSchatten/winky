@@ -27,6 +27,13 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   zu und fragt nach dem Passwort, sobald ein Programm ihn braucht.
 - **Administrator-Dialoge mit Gesicht und ✌** (freiwillig): etwa
   Updates installieren, ohne das Passwort zu tippen.
+- **Entsperren nur mit ✌** (freiwillig): Dann öffnet dein Gesicht allein weder die
+  Bildschirmsperre noch die Anmeldung nach dem Start, du zeigst zusätzlich ✌. Wer dir den
+  Rechner vors Gesicht hält, kommt so nicht hinein. Ohne ✌ erscheint das Passwortfeld nach
+  höchstens 8 Sekunden.
+- **Gesicht ergänzen** (freiwillig): Erkennt Winky dich manchmal nicht, etwa mit Brille oder
+  bei anderem Licht, nimmst du diesen Anblick als benannte Ergänzung dazu. Höchstens drei,
+  jede lässt sich wieder löschen. Übernommen wird nur, was zu deinem Gesicht passt.
 - **Verlauf:** Im Nachhinein sehen, was Winky entsperrt und freigegeben hat, samt jedem
   sudo-Befehl und ob du ihn bestätigt hast. Praktisch, wenn ein KI-Assistent oder ein Skript
   für dich Befehle mit sudo ausführt.
@@ -66,7 +73,8 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   nicht, weil Bildschirme im Infrarot-Bild schwarz sind.
 - **Gegen Diebstahl schützen.** Dafür braucht es eine verschlüsselte Festplatte.
 - **Erkennen, ob du einverstanden bist.** Wer dir den Rechner vors Gesicht hält, öffnet die
-  Sperre. Für sudo verlangt Winky deshalb zusätzlich das ✌.
+  Sperre. Für sudo verlangt Winky deshalb zusätzlich das ✌; fürs Entsperren lässt sich
+  „Entsperren nur mit ✌“ einschalten.
 - Mit einer normalen Webcam, mit KDE, Xfce oder einem anderen Anmeldebildschirm als GDM
   arbeiten.
 
@@ -162,6 +170,8 @@ Winky: ✓ bestätigt
 - Nur sudo in einem Terminal der laufenden Sitzung am Rechner selbst. Nicht über SSH, nicht
   ohne Terminal, nicht mit `sudo -S`.
 - Genau ein Gesicht im Bild, die Hand nah daneben, und es muss das erkannte Gesicht sein.
+- ✌ verpasst? Enter ohne Passwort drücken: sudo fragt neu, und Winky wartet noch einmal
+  auf das ✌.
 - Zwei Anfragen zur selben Zeit werden beide abgebrochen. Nach drei unbestätigten gilt
   zehn Minuten lang nur das Passwort.
 - Sonst kommt nach der Zeit für das ✌ (Vorgabe 8 Sekunden, unter Erweitert bis 30

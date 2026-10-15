@@ -1816,7 +1816,7 @@ SICHERHEIT = [
          _("Winky needs an infrared camera, like the ones built in for Windows Hello.")),
         (_("Tell whether you agree"),
          _("Someone could hold the computer up to your face. That’s why sudo also needs the "
-           "✌.")),
+           "✌, and under Unlocks you can require it for unlocking too.")),
     ]),
     (_("What to watch out for"), None, "dialog-warning-symbolic", [
         (_("Lock the screen when you walk away"),

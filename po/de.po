@@ -241,6 +241,33 @@ msgid "What this means"
 msgstr "Was das bedeutet"
 
 #: src/app/gesicht_app.py
+msgid "Your additions"
+msgstr "Deine Ergänzungen"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Extra recordings, for example with glasses. Delete one if you no longer need "
+"it."
+msgstr ""
+"Zusätzliche Aufnahmen, etwa mit Brille. Lösch eine, wenn du sie nicht mehr "
+"brauchst."
+
+#: src/app/gesicht_app.py
+msgid "Addition without a name"
+msgstr "Ergänzung ohne Namen"
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "{n} image, {date}"
+msgid_plural "{n} images, {date}"
+msgstr[0] "{n} Bild, {date}"
+msgstr[1] "{n} Bilder, {date}"
+
+#: src/app/gesicht_app.py
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/app/gesicht_app.py
 msgid "Name of the addition, for example “With glasses”"
 msgstr "Name der Ergänzung, zum Beispiel „Mit Brille“"
 
@@ -496,39 +523,12 @@ msgid "Starts over and replaces everything recorded so far"
 msgstr "Fängt von vorn an und ersetzt alle bisherigen Aufnahmen"
 
 #: src/app/gesicht_app.py
-msgid "Your additions"
-msgstr "Deine Ergänzungen"
-
-#: src/app/gesicht_app.py
-msgid ""
-"Extra recordings, for example with glasses. Delete one if you no longer need "
-"it."
-msgstr ""
-"Zusätzliche Aufnahmen, etwa mit Brille. Lösch eine, wenn du sie nicht mehr "
-"brauchst."
-
-#: src/app/gesicht_app.py
 msgid "No face recorded yet"
 msgstr "Noch kein Gesicht aufgenommen"
 
 #: src/app/gesicht_app.py
 msgid "The setup records your face in about two minutes."
 msgstr "Die Einrichtung nimmt dein Gesicht in etwa zwei Minuten auf."
-
-#: src/app/gesicht_app.py
-msgid "Addition without a name"
-msgstr "Ergänzung ohne Namen"
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "{n} image, {date}"
-msgid_plural "{n} images, {date}"
-msgstr[0] "{n} Bild, {date}"
-msgstr[1] "{n} Bilder, {date}"
-
-#: src/app/gesicht_app.py
-msgid "Delete"
-msgstr "Löschen"
 
 #: src/app/gesicht_app.py
 msgid "Up to three additions. Delete one first, or reuse a name to replace it."
@@ -1754,10 +1754,10 @@ msgstr "Erkennen, ob du einverstanden bist"
 #: src/app/gesicht_app.py
 msgid ""
 "Someone could hold the computer up to your face. That’s why sudo also needs "
-"the ✌."
+"the ✌, and under Unlocks you can require it for unlocking too."
 msgstr ""
 "Jemand könnte den Rechner vor dein Gesicht halten. Für sudo gibt es deshalb "
-"das ✌."
+"das ✌, und unter Freigaben kannst du es auch fürs Entsperren verlangen."
 
 #: src/app/gesicht_app.py
 msgid "What to watch out for"

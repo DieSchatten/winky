@@ -6,7 +6,7 @@ Winky is a **convenience** for the lock screen, not a replacement for a good pas
 disk encryption. This page honestly describes what Winky protects against, what it does not
 protect against, and which risks lie in its use and in the technology itself.
 
-As of version 0.11.0. Winky was developed by one person with AI assistance and has **not been
+As of version 0.13.0. Winky was developed by one person with AI assistance and has **not been
 independently reviewed**. Recognition was measured on one laptop with a Windows Hello
 camera with the owner and one other person, and tried on a Microsoft Surface Laptop 4.
 
@@ -32,7 +32,7 @@ camera with the owner and one other person, and tried on a Microsoft Surface Lap
 | Photo or video of you on a phone or screen | Screens are black in the infrared image. In the measurement, a phone photo was not even detected as a face. | protected |
 | A printout of your face that is visible in infrared, or a mask | Not tested. Winky has no real liveness detection. | **not reliably protected** |
 | Twin or very similar sibling | No face recognition system tells them apart reliably. | **not protected** |
-| Someone holds the computer up to your face, or you are asleep | Winky does not check whether you agree or have your eyes open. | **not protected** (for sudo, the ✌ helps) |
+| Someone holds the computer up to your face, or you are asleep | Winky does not check whether you agree or have your eyes open. | **not protected** by default; protected with “Unlock only with ✌” (sudo always needs the ✌) |
 | Computer is stolen while switched off | Winky plays no role. Without an encrypted disk, the data is open. | a matter for disk encryption |
 | Computer is stolen while locked but switched on | The thief needs your face (or see printout/mask). | as above |
 | Remote access (SSH) | Winky is not involved; the password or SSH key applies. | unchanged |
@@ -57,7 +57,9 @@ This is in your own hands:
    commands you have just typed yourself. If a Winky message appears that you do not
    expect: no ✌, just ignore it.
 5. **Forced unlocking.** Anyone who can force you to look into the camera opens the lock
-   screen. Where that is a concern, turn Winky off (Pause or uninstall).
+   screen. Against someone simply holding the computer up to your face, turn on “Unlock
+   only with ✌”. Against real coercion, nothing helps but turning Winky off (Pause or
+   uninstall).
 6. **KeePassXC with your face.** By default, Winky requires your face **and** ✌ for
    KeePassXC, as with sudo. If you turn off the ✌, your face alone opens the password
    database: anyone who clicks “Unlock” on your unlocked computer while you are sitting in
@@ -157,6 +159,11 @@ These cannot be avoided by how you use Winky:
   socket and logind (local, active, graphical session on seat0).
 - **Root-owned data:** configuration, templates, switches and approvals are opened without
   following links and checked for owner, permissions and size.
+- **Adding to your face only with you in the picture:** An addition is only saved if Winky
+  recognizes you in the recording at least three times at the set threshold. Images more
+  than 0.20 below it are discarded; if someone else sits in front of the camera in between,
+  they don't end up in your data. At most three named additions of up to 11 images each; the
+  original recording always stays.
 - **Failed attempts:** After five faces that were detected but did not match, face unlock
   stays blocked until the next login with password. sudo: ten minutes after three
   unconfirmed requests.

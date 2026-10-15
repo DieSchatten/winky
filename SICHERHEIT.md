@@ -6,7 +6,7 @@ Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes 
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.
 
-Stand: Version 0.11.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
+Stand: Version 0.13.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
 Windows-Hello-Kamera mit der eigenen und einer weiteren Person gemessen und an einem
 Microsoft Surface Laptop 4 ausprobiert.
@@ -33,7 +33,7 @@ Microsoft Surface Laptop 4 ausprobiert.
 | Foto oder Video von dir auf Handy oder Bildschirm | Bildschirme sind im Infrarot-Bild schwarz. In der Messung wurde ein Handyfoto gar nicht als Gesicht erkannt. | geschützt |
 | Ausdruck deines Gesichts, der im Infrarot sichtbar ist, oder eine Maske | Nicht getestet. Winky hat keine echte Lebenderkennung. | **nicht sicher geschützt** |
 | Zwilling oder sehr ähnliches Geschwister | Kein Gesichtssystem unterscheidet das zuverlässig. | **nicht geschützt** |
-| Jemand hält dir den Rechner vors Gesicht oder du schläfst | Winky prüft nicht, ob du einverstanden bist oder die Augen offen hast. | **nicht geschützt** (für sudo hilft das ✌) |
+| Jemand hält dir den Rechner vors Gesicht oder du schläfst | Winky prüft nicht, ob du einverstanden bist oder die Augen offen hast. | ab Werk **nicht geschützt**; geschützt mit „Entsperren nur mit ✌“ (sudo braucht das ✌ immer) |
 | Rechner wird ausgeschaltet gestohlen | Winky spielt keine Rolle. Ohne verschlüsselte Festplatte sind die Daten offen. | Sache der Festplattenverschlüsselung |
 | Rechner wird gesperrt, aber eingeschaltet gestohlen | Der Dieb braucht dein Gesicht (oder siehe Ausdruck/Maske). | wie oben |
 | Fernzugriff (SSH) | Winky ist nicht beteiligt, es gilt das Passwort bzw. der SSH-Schlüssel. | unverändert |
@@ -59,8 +59,9 @@ Das hast du selbst in der Hand:
    Befehle zeigst, die du selbst gerade getippt hast. Erscheint eine Winky-Meldung, die du
    nicht erwartest: kein ✌, einfach ignorieren.
 5. **Erzwungenes Entsperren.** Wer dich zwingen kann, in die Kamera zu schauen, öffnet
-   die Bildschirmsperre. Wo das ein Thema ist, schalte Winky aus (Pause oder
-   Deinstallieren).
+   die Bildschirmsperre. Gegen jemanden, der dir einfach den Rechner vors Gesicht hält,
+   schalte „Entsperren nur mit ✌“ ein. Gegen echten Zwang hilft nur, Winky auszuschalten
+   (Pause oder Deinstallieren).
 6. **KeePassXC mit dem Gesicht.** Standardmäßig verlangt Winky für KeePassXC Gesicht
    **und** ✌, wie bei sudo. Schaltest du das ✌ ab, öffnet dein Gesicht allein die
    Passwort-Datenbank: Wer an deinem entsperrten Rechner auf „Entsperren“ klickt, während
@@ -163,6 +164,11 @@ Das lässt sich durch Bedienung nicht abstellen:
   Socket und logind (lokale, aktive, grafische Sitzung an seat0).
 - **Root-eigene Daten:** Konfiguration, Vorlagen, Schalter und Freigaben werden ohne
   Verknüpfungen geöffnet und auf Besitzer, Rechte und Größe geprüft.
+- **Gesicht ergänzen nur mit dir im Bild:** Eine Ergänzung wird nur gespeichert, wenn Winky
+  dich in der Aufnahme mindestens dreimal an der eingestellten Schwelle erkennt. Bilder, die
+  mehr als 0,20 darunter liegen, werden verworfen; setzt sich zwischendurch jemand anderes vor
+  die Kamera, landet er nicht in deinen Daten. Höchstens drei benannte Ergänzungen mit je bis
+  zu 11 Bildern; die ursprüngliche Aufnahme bleibt immer erhalten.
 - **Fehlversuche:** Nach fünf erkannten, aber fremden Gesichtern bleibt das Gesicht bis zur
   nächsten Passwortanmeldung gesperrt. sudo: nach drei unbestätigten Anfragen zehn Minuten.
 - **Schrittweise Freigabe:** Einschalten erst nach erfolgreichem Test; gesperrt, wenn die

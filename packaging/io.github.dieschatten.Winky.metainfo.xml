@@ -42,6 +42,10 @@
         ✌ instead of the password.</li>
       <li xml:lang="de">Wahlweise Administrator-Dialoge wie das Installieren von Updates mit
         Gesicht und ✌ statt Passwort freigeben.</li>
+      <li>Optional: unlock only with face and ✌, so nobody gets in by holding the computer up to
+        your face.</li>
+      <li xml:lang="de">Wahlweise nur mit Gesicht und ✌ entsperren, damit niemand hineinkommt, der
+        dir den Rechner vors Gesicht hält.</li>
       <li>A history shows afterwards what was unlocked and approved, including every sudo command,
         handy when an AI assistant or a script uses sudo for you.</li>
       <li xml:lang="de">Ein Verlauf zeigt im Nachhinein, was entsperrt und freigegeben wurde, samt jedem
@@ -144,13 +148,15 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.13.0" date="2026-10-15T12:00:00Z">
+    <release version="0.13.0" date="2026-10-15T09:43:49Z">
       <description>
         <ul>
           <li>Optional: unlock only with face and ✌, so nobody gets in by holding the computer up to your face.</li>
           <li xml:lang="de">Wahlweise nur mit Gesicht und ✌ entsperren, damit niemand hineinkommt, der dir den Rechner vors Gesicht hält.</li>
-          <li>Add to your face: record extra looks such as glasses or different light without starting over. Only images that match your face are added.</li>
-          <li xml:lang="de">Gesicht ergänzen: zusätzliche Aufnahmen etwa mit Brille oder anderem Licht, ohne neu anzufangen. Übernommen wird nur, was zu deinem Gesicht passt.</li>
+          <li>Add to your face: named additions such as glasses or different light, up to three, each can be deleted. Only images that match your face are added.</li>
+          <li xml:lang="de">Gesicht ergänzen: benannte Ergänzungen etwa mit Brille oder anderem Licht, höchstens drei, einzeln löschbar. Übernommen wird nur, was zu deinem Gesicht passt.</li>
+          <li>sudo: missed the ✌? Press Enter without a password and Winky asks again.</li>
+          <li xml:lang="de">sudo: ✌ verpasst? Enter ohne Passwort drücken, und Winky fragt noch einmal.</li>
         </ul>
       </description>
     </release>

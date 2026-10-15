@@ -27,6 +27,12 @@ the name too.
   and asks for the password when a program needs it.
 - **Administrator dialogs with face and ✌** (optional): for example
   installing updates, without typing the password.
+- **Unlock only with ✌** (optional): then your face alone opens neither the lock screen nor
+  the login after startup; you also show ✌. Nobody gets in by holding the computer up to your
+  face. Without a ✌, the password field appears after 8 seconds at most.
+- **Add to your face** (optional): if Winky sometimes doesn’t recognize you, for example with
+  glasses or in different light, record these looks as a named addition. Up to three, each can
+  be deleted again. Only images that match your face are added.
 - **History:** see afterwards what Winky unlocked and approved, including every sudo command
   and whether you confirmed it. Handy when an AI assistant or a script runs commands with sudo
   for you.
@@ -67,7 +73,8 @@ the name too.
   screens are black in the infrared image.
 - **Protect against theft.** That requires an encrypted disk.
 - **Tell whether you agree.** Anyone who holds the computer up to your face opens the lock
-  screen. That is why Winky additionally requires the ✌ for sudo.
+  screen. That is why Winky additionally requires the ✌ for sudo; for unlocking, you can
+  turn on “Unlock only with ✌”.
 - Work with a normal webcam, with KDE, Xfce or a login screen other than GDM.
 
 ## Security risks at a glance
@@ -164,6 +171,8 @@ Winky: ✓ confirmed
   without a terminal, not with `sudo -S`.
 - Exactly one face in the picture, the hand close beside it, and it must be the recognized
   face.
+- Missed the ✌? Press Enter without a password: sudo asks again, and Winky waits for the ✌
+  once more.
 - Two requests at the same time are both cancelled. After three unconfirmed requests, only
   the password works for ten minutes.
 - Otherwise, the usual password prompt appears after the time for the ✌ (8 seconds by
