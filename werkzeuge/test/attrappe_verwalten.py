@@ -4,8 +4,8 @@ schreibt nach WINKY_TESTWURZEL statt ins System, gleiches Protokoll.
 
 Aufruf: attrappe_verwalten.py --rolle gesicht|verwalten BEFEHL [WERT]
 Umgebung: WINKY_ATTRAPPE_PASSWORT=abbrechen (abgebrochene Passwortabfrage) bzw. kein_dialog,
-WINKY_ATTRAPPE_FREMD=WERT (höchster Wert der Gegenprobe), WINKY_ATTRAPPE_BILD=DATEI (Kamerabild
-aus werkzeuge/bildschirmfotos/illustration.py), WINKY_ATTRAPPE_DAUER=SEKUNDEN (Einlernen, Testen).
+WINKY_ATTRAPPE_FREMD=WERT (höchster Wert der Gegenprobe), WINKY_ATTRAPPE_BILD=DATEI (Kamerabild,
+Rohdaten RGB), WINKY_ATTRAPPE_DAUER=SEKUNDEN (Einlernen, Testen).
 """
 
 import json

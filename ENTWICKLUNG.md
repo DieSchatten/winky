@@ -108,16 +108,9 @@ Die beiden Systemtests laufen in einem Wegwerf-Container mit systemd
 ## Bildschirmfotos und Icon
 
 Das Icon ist `packaging/icons/io.github.dieschatten.Winky.svg`: ein Schloss, dessen Körper ein
-Bildschirm mit zwinkerndem Gesicht ist, daneben eine Hand mit ✌. Die Bildschirmfotos für die
-Software-Verwaltung entstehen mit der Attrappe und einem gezeichneten Kamerabild, nie mit
-einem echten Gesicht:
-
-```bash
-./scripts/bildschirmfotos.sh
-```
-
-Mit `WINKY_FOTO_ZIEL=ordner WINKY_FOTO_ALLE=1` nimmt das Skript zusätzlich jeden
-Assistentenschritt und „Erweitert“ auf, zur Durchsicht.
+Bildschirm mit zwinkerndem Gesicht ist, daneben eine Hand mit ✌. Die Bildschirmfotos in
+`packaging/bildschirmfotos/` entstehen mit der Attrappe und einem gezeichneten Kamerabild, nie
+mit einem echten Gesicht.
 
 ## Messergebnisse
 
@@ -147,8 +140,3 @@ Handrücken im Infrarot-Bild nicht). Messdaten (nur Kennzahlen, keine Bilder) bl
 
 Die MediaPipe-Modelle wurden mit `scripts/mediapipe-umwandeln.sh` von TFLite nach ONNX
 umgewandelt; Herkunft, Prüfsummen und Abgleich stehen in `modelle/HERKUNFT.md`.
-
-## Sonstiges
-
-- `werkzeuge/test/gui-broadway.sh`: startet die App mit Attrappe im Browser
-  (http://localhost:8087), zum Ausprobieren ohne Kamera.
