@@ -113,6 +113,11 @@ static void testKonfig() {
   PRUEFE(winky::ladeKonfig(p, k, f) && k.entsperren_geste, "Entsperren nur mit ✌ gelesen");
   schreibe(p, "schwelle = 0.65\n");
   PRUEFE(winky::ladeKonfig(p, k, f) && !k.entsperren_geste, "Entsperren nur mit ✌ ab Werk aus");
+  PRUEFE(!k.vorlagen_tpm, "TPM-Versiegelung ab Werk aus (Vorlagen von der Festplatte)");
+  schreibe(p, "vorlagen_tpm = ja\n");
+  PRUEFE(winky::ladeKonfig(p, k, f) && k.vorlagen_tpm, "TPM-Versiegelung gelesen");
+  schreibe(p, "vorlagen_tpm = vielleicht\n");
+  PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für vorlagen_tpm wird abgelehnt");
   schreibe(p, "dialoge=vielleicht\n");
   PRUEFE(!winky::ladeKonfig(p, k, f), "ungültiger Wert für dialoge wird abgelehnt");
 }

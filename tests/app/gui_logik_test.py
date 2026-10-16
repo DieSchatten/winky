@@ -16,6 +16,7 @@ import traceback
 from pathlib import Path
 
 assert os.environ.get("WINKY_ATTRAPPE") == "1", "nur mit Attrappe ausführen"
+os.environ["GSETTINGS_BACKEND"] = "memory"   # Sperrzeit nie in den echten Einstellungen
 os.environ["LANGUAGE"] = "de"   # die Prüfungen vergleichen deutsche Texte (bau/locale)
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src" / "app"))
 
@@ -371,6 +372,53 @@ def test(f):
     pruefe("Fast fertig" in f.s_titel.get_label() and f.s_einrichten.get_visible()
            and f.s_einrichten.get_label() == "Einrichtung fortsetzen",
            "danach: „Einrichtung fortsetzen“")
+
+    # Gesichtsdaten im TPM: erst Rückfrage mit Erklärung; ohne TPM klar abgelehnt; Fehler sichtbar
+    pruefe(not f.r_vorlagen_tpm.get_active() and f.r_vorlagen_tpm.get_sensitive(),
+           "TPM-Versiegelung: ab Werk aus, schaltbar")
+    f.r_vorlagen_tpm.set_active(True)
+    pruefe(f.tpm_dialog is not None and f.aktion is None and "Dual Boot" in f.tpm_dialog.get_body()
+           and "BIOS" in f.tpm_dialog.get_body(), "TPM: erst ausführliche Rückfrage, noch kein Passwort")
+    f.tpm_dialog.emit("response", "abbrechen")
+    pruefe(not f.zustand.vorlagen_tpm and not f.r_vorlagen_tpm.get_active(),
+           "TPM: Abbrechen lässt alles, wie es ist")
+    os.environ["WINKY_ATTRAPPE_TPM"] = "fehlt"
+    f.r_vorlagen_tpm.set_active(True)
+    f.tpm_dialog.emit("response", "an")
+    warte(lambda: f.aktion is not None, 2)
+    pruefe(fertig(f) and not f.zustand.vorlagen_tpm, "TPM: ohne TPM-Chip abgelehnt")
+    del os.environ["WINKY_ATTRAPPE_TPM"]
+    f.r_vorlagen_tpm.set_active(True)
+    f.tpm_dialog.emit("response", "an")
+    warte(lambda: f.aktion is not None, 2)
+    pruefe(fertig(f) and f.zustand.vorlagen_tpm and "verschlüsselt" in f.r_vorlagen_tpm.get_subtitle(),
+           "TPM-Versiegelung eingeschaltet")
+    st = json.loads((W / "var/lib/winky/status" / f"{os.getuid()}.json").read_text())
+    (W / "var/lib/winky/status" / f"{os.getuid()}.json").write_text(
+        json.dumps(dict(st, vorlagen_tpm_fehler=1)))
+    f.aktualisieren()
+    pruefe("neu auf" in f.s_titel.get_label() + f.s_text.get_label() + f.r_vorlagen_tpm.get_subtitle()
+           and f.s_kreis.has_css_class("fehlt"), "TPM: nicht mehr entsiegelbar → klarer Hinweis, neu aufnehmen")
+    (W / "var/lib/winky/status" / f"{os.getuid()}.json").write_text(json.dumps(st))
+    f.r_vorlagen_tpm.set_active(False)
+    pruefe(fertig(f) and not f.zustand.vorlagen_tpm, "TPM-Versiegelung wieder aus")
+
+    # Automatisch sperren: setzt die GNOME-Werte (hier nur im Speicher)
+    sitzung, sperre = f._desktop()
+    f.r_sperrzeit.set_selected(1)
+    pruefe(sitzung.get_uint("idle-delay") == 120 and sperre.get_boolean("lock-enabled")
+           and sperre.get_uint("lock-delay") == 0 and "sperrt" in f.r_sperrzeit.get_subtitle(),
+           "Sperrzeit 2 Minuten: Bildschirm aus und sofort gesperrt")
+    sperre.set_boolean("lock-enabled", False)
+    f.aktualisieren()
+    pruefe("Vorsicht" in f.r_sperrzeit.get_subtitle(), "Sperrzeit: warnt, wenn das System nicht sperrt")
+    f.r_sperrzeit.set_selected(5)
+    pruefe(sitzung.get_uint("idle-delay") == 0 and "Super+L" in f.r_sperrzeit.get_subtitle(),
+           "Sperrzeit „Nie“")
+    sitzung.set_uint("idle-delay", 180)
+    sperre.set_boolean("lock-enabled", True)
+    f.aktualisieren()
+    pruefe("3 Minuten" in f.r_sperrzeit.get_subtitle(), "eigener Wert aus den Systemeinstellungen bleibt sichtbar")
 
     # Infrarot-Kamera nur für Winky: ab Werk aus; geteilter Anschluss wird abgelehnt; Wirkung sichtbar
     pruefe(not f.r_ir_schutz.get_active() and f.r_ir_schutz.get_sensitive()

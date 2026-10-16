@@ -24,6 +24,11 @@ if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
         rm -f /etc/udev/rules.d/72-winky-ir-kamera.rules
         udevadm control --reload >/dev/null 2>&1 || true
         udevadm trigger --action=change --subsystem-match=video4linux >/dev/null 2>&1 || true
+        udevadm settle --timeout=10 >/dev/null 2>&1 || true
+        # Bei „change“ setzt udev die Gruppe nicht zurück
+        for d in /dev/video*; do
+            [ "$(stat -c %G "$d" 2>/dev/null)" = _winky ] && chgrp video "$d" || true
+        done
     fi
 fi
 exit 0

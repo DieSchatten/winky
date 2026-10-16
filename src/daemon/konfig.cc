@@ -114,6 +114,9 @@ bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler) {
     } else if (key == "entsperren_geste") {
       ok = val == "ja" || val == "nein";
       neu.entsperren_geste = val == "ja";
+    } else if (key == "vorlagen_tpm") {
+      ok = val == "ja" || val == "nein";
+      neu.vorlagen_tpm = val == "ja";
     } else if (key == "freigaben") {
       // Polkit-Gruppen aus 0.10.0, ersetzt durch „dialoge“; postinst stellt um, bis dahin ignoriert
     } else if (key == "anmeldung") {

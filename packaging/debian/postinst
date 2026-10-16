@@ -28,6 +28,8 @@ if [ "$1" = "configure" ]; then
     done
     systemctl daemon-reload >/dev/null 2>&1 || true
     systemctl enable --now winky.socket winky-schluessel.socket >/dev/null 2>&1 || true
+    # Versiegelte Gesichtsdaten beim Start in den Arbeitsspeicher holen (wirkt nur, wenn eingeschaltet)
+    systemctl enable winky-entsiegeln.service >/dev/null 2>&1 || true
     # "Default: no": Profil bleibt aus, bis die App es einschaltet; ein aktives wird erneuert
     pam-auth-update --package
     # Polkit-Gruppen aus 0.10.0 auf den Dialog-Schalter umstellen, alte Regel löschen

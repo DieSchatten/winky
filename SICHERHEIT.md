@@ -6,7 +6,7 @@ Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes 
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.
 
-Stand: Version 0.14.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
+Stand: Version 0.15.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
 Windows-Hello-Kamera mit der eigenen und einer weiteren Person gemessen und an einem
 Microsoft Surface Laptop 4 ausprobiert.
@@ -45,7 +45,7 @@ Microsoft Surface Laptop 4 ausprobiert.
 Das hast du selbst in der Hand:
 
 1. **Nicht gesperrter Rechner.** Winky schützt nur, was gesperrt ist. Gewöhn dir Super+L
-   an und stell eine automatische Sperre ein.
+   an und stell eine kurze automatische Sperre ein (in Winky unter Freigaben).
 2. **Ähnliche Menschen im Haushalt.** Mach die Prüfung mit einer zweiten Person, am
    besten mit dem ähnlichsten Familienmitglied. Ist das Ergebnis knapp, stell Winky
    strenger ein oder nutz nur das Passwort. Zwillinge sollten Winky nicht nutzen.
@@ -69,7 +69,7 @@ Das hast du selbst in der Hand:
    gilt wieder das Master-Passwort. Funktioniert nur ab KeePassXC 2.8.
 7. **Datensicherungen.** Die Gesichtsdaten liegen unter `/var/lib/winky`. Sichert ein
    Backup-Programm das Systemverzeichnis (z. B. Timeshift), landen sie mit in der
-   Sicherung.
+   Sicherung; im TPM-Chip versiegelt (siehe 12) nur verschlüsselt.
 8. **Veraltete Version.** Winky bringt seine Erkennungslaufzeit (ONNX Runtime) selbst
    mit. Deren Fehlerkorrekturen kommen nur mit einer neuen Winky-Version, nicht über die
    normalen Ubuntu-Updates.
@@ -78,15 +78,27 @@ Das hast du selbst in der Hand:
    Schlüsselbund bleibt zu, weil ihn nur das Passwort öffnet. Ohne verschlüsselte Festplatte
    ist das zusätzliche Risiko klein: Wer den Rechner hat, kann die Festplatte ohnehin lesen.
 10. **Schlüsselbund-Passwort im TPM-Chip** (experimentell, ab Werk aus). Dein
-    Anmeldepasswort liegt versiegelt auf dem Rechner und ist dort wiederherstellbar. Ohne
-    Secure Boot kann es jemand mit dem Gerät in der Hand unter Umständen auslesen, und damit
-    das Passwort selbst, das viele auch anderswo nutzen. Winky gibt es nur direkt nach einer
-    erkannten Gesichtsanmeldung heraus, prüft es vorher gegen `/etc/shadow` und verwirft es
-    nach einer Passwortänderung.
+    Anmeldepasswort liegt versiegelt auf dem Rechner und ist dort wiederherstellbar. Der
+    TPM-Chip prüft nur den Secure-Boot-Zustand (PCR 7), nicht welches System läuft: Wer das
+    Gerät in der Hand hat, kann es von einem USB-Stick mit Ubuntu oder einem verwandten Linux
+    starten und das Passwort dort entsiegeln, ohne Secure Boot noch leichter. Damit hat er das
+    Passwort selbst, das viele auch anderswo nutzen. Ein BIOS-Passwort, das den Start von USB
+    sperrt, hilft. Winky gibt es nur direkt nach einer erkannten Gesichtsanmeldung heraus,
+    prüft es vorher gegen `/etc/shadow` und verwirft es nach einer Passwortänderung.
 11. **Administrator-Dialoge mit ✌.** Wirkt wie sudo mit ✌: Ein Schadprogramm unter deinem
     Konto kann so einen Dialog öffnen, und ein ✌ im falschen Moment gibt ihn frei, mit vollen
     Administratorrechten. Was angefragt wird, zeigt der Dialog selbst; zeig ✌ nur für Dialoge,
     die du selbst ausgelöst hast. Berechtigungsabfragen im Hintergrund erreichen Winky nie.
+12. **Gesichtsdaten im TPM-Chip** (freiwillig, ab Werk aus). Auf der Festplatte liegen die
+    Gesichtsdaten dann nur verschlüsselt (`systemd-creds`, Hostschlüssel und TPM-Chip, PCR 7).
+    Das hilft, wenn die Festplatte in einem anderen Rechner oder von Windows auf demselben
+    Rechner gelesen wird. Gegen einen USB-Stick mit Ubuntu oder einem verwandten Linux, der
+    auf diesem Rechner gestartet wird, hilft es nicht (siehe 10); dagegen helfen nur eine
+    verschlüsselte Festplatte oder ein BIOS-Passwort, das den Start von USB sperrt. Nach einem
+    BIOS- oder Firmware-Update oder einer Änderung an Secure Boot lassen sich die Daten nicht
+    mehr entsiegeln: Die Gesichtsentsperrung pausiert dann, bis du dein Gesicht neu aufnimmst,
+    das Passwort geht weiter. Beim Einschalten wird die bisherige unverschlüsselte Datei
+    gelöscht; auf SSDs lassen sich Reste nicht ausschließen.
 
 ## Risiken in der Technik selbst
 
@@ -142,7 +154,8 @@ Das lässt sich durch Bedienung nicht abstellen:
 9. **Biometrische Daten.** Gespeichert werden keine Bilder, sondern Merkmalsvektoren
    (je Person 30 Zahlenreihen mit je 128 Werten). Sie liegen nur für das System
    lesbar unter `/var/lib/winky/<uid>/` (root:_winky 0640). Auf einer unverschlüsselten
-   Festplatte kann sie jeder mit physischem Zugriff lesen. Aus solchen Vektoren lassen sich nach
+   Festplatte kann sie jeder mit physischem Zugriff lesen; im TPM-Chip versiegelt wird das
+   schwerer, aber nicht unmöglich (Risiken in der Benutzung, 12). Aus solchen Vektoren lassen sich nach
    Forschungsergebnissen grob gesichtsähnliche Bilder zurückrechnen; als Ersatz für dein
    echtes Gesicht vor der Kamera taugen sie nicht direkt.
 10. **Kamera an bei jedem Versuch.** Bei jedem Entsperrversuch und jeder sudo-Anfrage geht
@@ -172,6 +185,11 @@ Das lässt sich durch Bedienung nicht abstellen:
   anderer Knoten am selben Anschluss Farbbilder liefert; bei einem Fehlschlag bleibt der
   vorherige Zustand. Die App prüft, ob der Schutz wirkt. Deinstallieren gibt die Kamera wieder
   frei.
+- **Gesichtsdaten im TPM-Chip (freiwillig):** für alle Benutzer oder für keinen versiegelt;
+  scheitert es bei einem, bleibt der vorherige Zustand. Beim Start entsiegelt ein kleiner
+  abgeschotteter Dienst die Daten in den Arbeitsspeicher (`/run/winky/vorlagen`); der
+  Prüfdienst liest dann nur diese Kopie und greift nie auf die Festplatte zurück. Klappt das
+  Entsiegeln nicht, bittet die App um eine neue Aufnahme.
 - **Gesicht ergänzen nur mit dir im Bild:** Eine Ergänzung wird nur gespeichert, wenn Winky
   dich in der Aufnahme mindestens dreimal an der eingestellten Schwelle erkennt. Bilder, die
   mehr als 0,20 darunter liegen, werden verworfen; setzt sich zwischendurch jemand anderes vor
@@ -193,7 +211,8 @@ Das lässt sich durch Bedienung nicht abstellen:
 2. Prüfung mit einer zweiten Person machen, mit dem ähnlichsten Menschen im Haushalt.
 3. Die Strenge nicht unter die Vorgabe senken.
 4. sudo mit ✌ nur einschalten, wenn du die Meldungen ernst nimmst.
-5. Bildschirm beim Weggehen sperren, automatische Sperre einstellen.
+5. Bildschirm beim Weggehen sperren und eine kurze automatische Sperre einstellen (Winky:
+   Freigaben → Automatisch sperren).
 6. Winky-Updates einspielen.
 
 ## Datenschutz

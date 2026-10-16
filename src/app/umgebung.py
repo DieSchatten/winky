@@ -14,6 +14,9 @@ APP = Path(__file__).resolve().parent
 INSTALLIERT = APP == Path("/usr/share/winky/app")
 PROJEKT = None if INSTALLIERT else APP.parent.parent
 ATTRAPPE = os.environ.get("WINKY_ATTRAPPE") == "1"
+if ATTRAPPE:
+    # Desktop-Einstellungen (Sperrzeit) im Test nur im Speicher, nie die echten
+    os.environ.setdefault("GSETTINGS_BACKEND", "memory")
 
 LIBEXEC = Path("/usr/libexec/winky")
 VERWALTEN = LIBEXEC / "winky-verwalten"   # Systemeinstellungen, Administratorpasswort

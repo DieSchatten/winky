@@ -152,6 +152,16 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
+    <release version="0.15.0" date="2026-10-16T14:00:00Z">
+      <description>
+        <ul>
+          <li>Lock automatically: choose in Winky how long the computer stays unlocked without input. With face unlock, a short time hardly bothers you.</li>
+          <li xml:lang="de">Automatisch sperren: in Winky einstellen, wie lange der Rechner ohne Eingabe entsperrt bleibt. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.</li>
+          <li>Optional: seal your face data in the TPM chip. On the disk it is then stored only encrypted, which helps with dual boot or a removed disk.</li>
+          <li xml:lang="de">Wahlweise Gesichtsdaten im TPM-Chip versiegeln. Auf der Festplatte liegen sie dann nur verschlüsselt, das hilft bei Dual Boot oder ausgebauter Festplatte.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.14.0" date="2026-10-16T10:18:44Z">
       <description>
         <ul>

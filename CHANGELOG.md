@@ -1,5 +1,23 @@
 # Changes / Änderungen
 
+## 0.15.0 (Prototyp)
+
+- Lock automatically: choose in Winky (Unlocks) how long the computer stays unlocked without
+  input. Automatisch sperren: in Winky (Freigaben) einstellen, wie lange der Rechner ohne
+  Eingabe entsperrt bleibt.
+- Optional: seal face data in the TPM chip (Advanced → Your data); on the disk it is then
+  stored only encrypted, unsealed into memory at startup. Wahlweise Gesichtsdaten im TPM-Chip
+  versiegeln (Erweitert → Deine Daten); auf der Festplatte liegen sie dann nur verschlüsselt,
+  beim Start werden sie in den Arbeitsspeicher entsiegelt.
+- Corrected: TPM sealing (keyring, face data) doesn't protect against a USB stick with Ubuntu
+  or a related Linux started on the computer, even with Secure Boot; the app and the docs now
+  say so. Richtiggestellt: Die TPM-Versiegelung (Schlüsselbund, Gesichtsdaten) schützt auch
+  mit Secure Boot nicht gegen einen USB-Stick mit Ubuntu oder einem verwandten Linux; App und
+  Doku sagen das jetzt.
+- Turning off “Infrared camera only for Winky” gives the camera back to the video group right
+  away, not only after a restart. Das Ausschalten von „Infrarot-Kamera nur für Winky“ gibt die
+  Kamera sofort wieder an die Gruppe video, nicht erst nach einem Neustart.
+
 ## 0.14.0 (16.10.2026)
 
 - Optional: infrared camera only for Winky (Advanced → Camera); other programs can no longer

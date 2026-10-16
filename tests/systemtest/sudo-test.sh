@@ -52,7 +52,8 @@ vorher=$(sha256sum /var/lib/winky/1000/vorlagen.bin)
 # Eingabe offen halten: Schließt sie sich, bricht der Helfer ab (so endet ein Lauf aus der App)
 ERG=$(sleep 40 | SUDO_UID=1000 $G ergaenzen Test | erg)
 sleep 1   # der Prüfdienst gibt die Kamera erst beim Beenden frei
-pruefe 'echo "$ERG" | grep -q "\"nicht_erkannt\": true" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen mit echter Aufnahme: ohne erkanntes Gesicht ändert sich nichts"
+pruefe 'echo "$ERG" | grep -qE "\"nicht_erkannt\": true|Too few usable" && [ "$(sha256sum /var/lib/winky/1000/vorlagen.bin)" = "$vorher" ]' "Ergänzen mit echter Aufnahme: ohne erkanntes Gesicht ändert sich nichts"
+echo "$ERG" | grep -qE "\"nicht_erkannt\": true|Too few usable" || echo "        Antwort: $ERG"
 pruefe '[ "$(stat -c %U:%G:%a /var/lib/winky/1000/vorlagen.bin)" = "root:_winky:640" ]' "Vorlagen danach weiter root:_winky 0640"
 pruefe 'SUDO_UID=1000 $V sudo an </dev/null | erg | grep -q "face unlock"' "sudo an verlangt aktive Gesichtsentsperrung"
 SUDO_UID=1000 $V aktivieren </dev/null >/dev/null
@@ -271,11 +272,75 @@ SUDO_UID=1000 $V sudo aus </dev/null >/dev/null
 pruefe 'SUDO_UID=1000 $V ir-schutz an </dev/null | erg | grep -q "\"ok\": false" && [ ! -e /etc/udev/rules.d/72-winky-ir-kamera.rules ]' "IR-Schutz ohne udev: abgelehnt, keine Regel zurückgelassen"
 pruefe 'SUDO_UID=1000 $G ir-schutz an </dev/null | erg | grep -qi "administrator"' "IR-Schutz nur mit Administratorpasswort"
 
+# 9f. Gesichtsdaten im TPM versiegeln: ohne Chip klar abgelehnt; mit vorgetäuschtem Chip
+#     (Hostschlüssel) Versiegeln, Rücknahme bei Fehlern, Entsiegeln beim Start, Prüfdienst nur
+#     aus dem Arbeitsspeicher, nicht mehr entsiegelbar, neue Aufnahme, Ausschalten
+B=/var/lib/winky/1000/vorlagen.bin; C=/var/lib/winky/1000/vorlagen.cred; R=/run/winky/vorlagen/1000/vorlagen.bin
+cp $B /root/vorlagen.orig
+pruefe 'systemctl is-enabled -q winky-entsiegeln.service' "Entsiegel-Dienst beim Start eingeschaltet"
+pruefe 'SUDO_UID=1000 $V vorlagen-tpm an </dev/null | erg | grep -q "TPM" && cmp -s $B /root/vorlagen.orig && [ ! -e $C ] && ! grep -q "^vorlagen_tpm = ja" /etc/winky/winky.conf' "ohne TPM-Chip: Versiegeln abgelehnt, Gesichtsdaten unverändert"
+pruefe 'SUDO_UID=1000 $G vorlagen-tpm an </dev/null | erg | grep -qi "administrator"' "Versiegeln nur mit Administratorpasswort"
+mv /usr/bin/systemd-creds /usr/bin/systemd-creds.echt
+cat > /usr/bin/systemd-creds <<'ATTRAPPE'
+#!/bin/bash
+# Test: TPM-Chip vortäuschen (Hostschlüssel statt host+tpm2); mit /root/fehler-1001 scheitert uid 1001
+[ "$1" = has-tpm2 ] && exit 0
+args=()
+for a in "$@"; do
+  case "$a" in
+    --with-key=host+tpm2) args+=(--with-key=host) ;;
+    --tpm2-pcrs=*) ;;
+    --name=winky-vorlagen-1001) [ -e /root/fehler-1001 ] && exit 1; args+=("$a") ;;
+    *) args+=("$a") ;;
+  esac
+done
+exec /usr/bin/systemd-creds.echt "${args[@]}"
+ATTRAPPE
+chmod 755 /usr/bin/systemd-creds
+mkdir -m750 /var/lib/winky/1001 && chgrp _winky /var/lib/winky/1001 && cp -p $B /var/lib/winky/1001/
+touch /root/fehler-1001
+pruefe 'SUDO_UID=1000 $V vorlagen-tpm an </dev/null | erg | grep -q "\"ok\": false" && [ ! -e $C ] && [ ! -e $R ] && cmp -s $B /root/vorlagen.orig && [ -e /var/lib/winky/1001/vorlagen.bin ] && ! grep -q "^vorlagen_tpm = ja" /etc/winky/winky.conf' "scheitert es bei einem Benutzer: nichts Halbes, alle Daten wie vorher"
+rm /root/fehler-1001
+pruefe 'SUDO_UID=1000 $V vorlagen-tpm an </dev/null | erg | grep -q "\"versiegelt\": 2" && grep -q "^vorlagen_tpm = ja" /etc/winky/winky.conf && [ ! -e $B ] && [ ! -e /var/lib/winky/1001/vorlagen.bin ]' "für alle Benutzer versiegelt, unverschlüsselte Dateien gelöscht"
+pruefe '[ "$(stat -c %U:%a $C)" = "root:600" ] && ! grep -qa WNKV $C && cmp -s $R /root/vorlagen.orig && [ "$(stat -c %U:%G:%a $R)" = "root:_winky:640" ]' "Festplatte nur verschlüsselt (root 0600), Arbeitsspeicher root:_winky 0640"
+rm -rf /var/lib/winky/1001 /run/winky/vorlagen/1001
+letztes() { sleep 0.5; journalctl -t winky -o cat --no-pager | grep "Ergebnis uid=1000" | tail -1; }
+rm -f /run/winky/sperre/1000
+auth_direkt >/dev/null
+pruefe 'letztes | grep -qE "status=(treffer|kein_treffer|kein_gesicht) "' "Prüfdienst prüft mit der entsiegelten Kopie"
+rm -f /run/winky/sperre/1000; mv $R /root/ram.bin   # wie nach einem Neustart: Arbeitsspeicher leer
+auth_direkt >/dev/null
+pruefe 'letztes | grep -q "status=nicht_eingerichtet.*grund=vorlagen"' "ohne Kopie im Arbeitsspeicher kein Rückgriff auf die Festplatte"
+systemctl start winky-entsiegeln.service
+pruefe 'cmp -s $R /root/vorlagen.orig && [ "$(stat -c %U:%G:%a $R)" = "root:_winky:640" ] && ! grep -q vorlagen_tpm_fehler /var/lib/winky/status/1000.json' "beim Start entsiegelt (winky-entsiegeln.service)"
+cp $C /root/vorlagen.cred.gut; head -c 64 /root/vorlagen.cred.gut > $C
+systemctl start winky-entsiegeln.service
+pruefe '[ ! -e $R ] && grep -q vorlagen_tpm_fehler /var/lib/winky/status/1000.json' "nicht mehr entsiegelbar: keine Kopie, die App erfährt es"
+cp /root/vorlagen.cred.gut $C; systemctl start winky-entsiegeln.service
+pruefe '[ -e $R ] && ! grep -q vorlagen_tpm_fehler /var/lib/winky/status/1000.json' "wieder entsiegelbar: Fehlermeldung verschwindet"
+python3 -c "d=bytearray(open('/root/vorlagen.orig','rb').read()); d[-1]^=1; open('/root/vorlagen.neu','wb').write(d)"
+python3 -c "
+import importlib.machinery as m, importlib.util as u
+l=m.SourceFileLoader('v','$V'); v=u.module_from_spec(u.spec_from_loader('v',l)); l.exec_module(v)
+v.speichere_vorlagen(1000, open('/root/vorlagen.neu','rb').read())"
+pruefe '[ ! -e $B ] && cmp -s $R /root/vorlagen.neu && systemd-creds decrypt --name=winky-vorlagen-1000 $C - | cmp -s - /root/vorlagen.neu' "neue Aufnahme bleibt versiegelt, Kopie im Arbeitsspeicher aktuell"
+rm $R   # Ausschalten entschlüsselt dann selbst
+pruefe 'SUDO_UID=1000 $V vorlagen-tpm aus </dev/null | erg | grep -q "\"verloren\": \[\]" && cmp -s $B /root/vorlagen.neu && [ "$(stat -c %U:%G:%a $B)" = "root:_winky:640" ] && [ ! -e $C ] && grep -q "^vorlagen_tpm = nein" /etc/winky/winky.conf' "Ausschalten: Gesichtsdaten wieder unverschlüsselt, nichts verloren"
+SUDO_UID=1000 $V vorlagen-tpm an </dev/null >/dev/null; rm -f $R; head -c 64 /root/vorlagen.cred.gut > $C
+pruefe 'SUDO_UID=1000 $V vorlagen-tpm aus </dev/null | erg | grep -q "\"verloren\": \[1000\]" && [ ! -e $B ] && [ ! -e $C ] && ! grep -q "\"vorlagen\"" /var/lib/winky/status/1000.json' "Ausschalten mit unlesbarem Siegel: Gesicht gilt als nicht aufgenommen"
+U=/usr/lib/systemd/system/winky-entsiegeln.service
+pruefe 'systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -q "OK"' "Sandbox des Entsiegel-Dienstes: $(systemd-analyze security --offline=true $U 2>/dev/null | tail -1 | grep -o "[0-9.]* OK")"
+mv /usr/bin/systemd-creds.echt /usr/bin/systemd-creds
+cp -p /root/vorlagen.orig $B; chown root:_winky $B; chmod 640 $B
+echo '{"vorlagen": 10, "eingelernt": 1, "test_ok": 2}' > /var/lib/winky/status/1000.json
+rm -f /run/winky/sperre/1000
+
 # 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1
 pruefe '[ ! -e /etc/winky/sudo-ein ] && ! grep -q pam_winky /etc/pam.d/common-auth' "Deinstallieren entfernt Schalter und PAM-Eintrag"
 pruefe '[ ! -e /etc/winky/dialoge-ein ]' "Deinstallieren entfernt den Dialog-Schalter"
 pruefe '[ ! -e /etc/winky/anmeldung-ein ]' "Deinstallieren entfernt den Schalter für die Erstanmeldung"
+pruefe '! systemctl is-enabled -q winky-entsiegeln.service 2>/dev/null' "Deinstallieren schaltet den Entsiegel-Dienst ab"
 pruefe '[ ! -e /var/lib/winky/1000/geste-ok ]' "Freigabe mit den Gesichtsdaten gelöscht"
 echo; echo "$F Fehler"

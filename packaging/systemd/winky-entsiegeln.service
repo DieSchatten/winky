@@ -1,0 +1,48 @@
+[Unit]
+Description=Winky: versiegelte Gesichtsdaten in den Arbeitsspeicher entsiegeln
+Documentation=file:/usr/share/doc/winky/README.md
+After=systemd-tmpfiles-setup.service tpm2.target
+Wants=tpm2.target
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/winky/winky-verwalten entsiegeln
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=winky
+User=root
+UMask=0077
+TimeoutStartSec=60
+
+# Sandbox: root nur für TPM und die Ordner von Winky
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_CHOWN CAP_FOWNER
+AmbientCapabilities=
+PrivateNetwork=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+DevicePolicy=closed
+DeviceAllow=/dev/tpmrm0 rw
+ReadWritePaths=/var/lib/winky /run/winky/vorlagen
+MemoryMax=256M
+TasksMax=16
+
+[Install]
+WantedBy=multi-user.target

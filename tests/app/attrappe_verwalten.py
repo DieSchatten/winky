@@ -242,6 +242,14 @@ def main():
         else:
             p("/etc/winky/dialoge-ein").unlink(missing_ok=True)
         fertig(True)
+    if befehl == "vorlagen-tpm":
+        if args[1] == "an":
+            if os.environ.get("WINKY_ATTRAPPE_TPM") == "fehlt":
+                fertig(False, fehler="Auf diesem Rechner wurde kein nutzbarer TPM-Chip gefunden")
+            setze("vorlagen_tpm", "ja")
+        else:
+            setze("vorlagen_tpm", "nein")
+        fertig(True)
     if befehl == "ir-schutz":
         regel = p("/etc/udev/rules.d/72-winky-ir-kamera.rules")
         if args[1] == "an":

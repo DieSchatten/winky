@@ -15,6 +15,7 @@ System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.4
   dialoge an|aus (Administrator-Dialoge mit Gesicht und ✌),
   entsperren-geste an|aus (Sperrbildschirm und Erstanmeldung nur mit Gesicht und ✌),
   ir-schutz an|aus (Infrarot-Kamera nur für den Prüfdienst, per udev-Regel),
+  vorlagen-tpm an|aus (Gesichtsdaten im TPM versiegeln; entsiegelt nur im Arbeitsspeicher),
   anmeldung an|aus (auch die erste Anmeldung nach dem Start per Gesicht),
   geste-zeit SEKUNDEN (Wartezeit auf das ✌, 5 bis 30; Polkit-Wege höchstens 9)
 Eigenes Gesicht, zusätzlich: schluesselbund an|aus (Anmeldepasswort im TPM versiegeln, damit
@@ -208,6 +209,86 @@ def vorlagen_pfad(uid):
     return f"{BASIS}/{uid}/vorlagen.bin"
 
 
+# Versiegelt (vorlagen_tpm = ja): auf der Festplatte nur vorlagen.cred (host+tpm2, PCR 7), beim
+# Start von winky-verwalten entsiegeln in den Arbeitsspeicher (/run, tmpfs) gelegt
+VORLAGEN_RAM = "/run/winky/vorlagen"
+
+
+def siegel_pfad(uid):
+    return f"{BASIS}/{uid}/vorlagen.cred"
+
+
+def ram_pfad(uid):
+    return f"{VORLAGEN_RAM}/{uid}/vorlagen.bin"
+
+
+def versiegelt():
+    return konfig_wert(lese_konfig(), "vorlagen_tpm") == "ja"
+
+
+def hat_vorlagen(uid):
+    return os.path.exists(vorlagen_pfad(uid)) or os.path.exists(siegel_pfad(uid))
+
+
+def tpm_vorhanden():
+    return subprocess.run(["systemd-creds", "has-tpm2"], capture_output=True).returncode == 0
+
+
+def ram_schreiben(uid, daten):
+    gid = grp.getgrnam(GRUPPE).gr_gid
+    sicherer_ordner(VORLAGEN_RAM, 0o755)
+    sicherer_ordner(f"{VORLAGEN_RAM}/{uid}", 0o750, gid)
+    schreibe_atomar(ram_pfad(uid), daten, 0o640, gid)
+
+
+def versiegeln(uid, daten):
+    """Gesichtsdaten im TPM versiegeln; True bei Erfolg."""
+    neu = siegel_pfad(uid) + ".neu"
+    loeschen(neu)
+    alt = os.umask(0o077)
+    try:
+        r = subprocess.run(["systemd-creds", "encrypt", "--with-key=host+tpm2", "--tpm2-pcrs=7",
+                            f"--name=winky-vorlagen-{uid}", "-", neu], input=daten,
+                           capture_output=True)
+    finally:
+        os.umask(alt)
+    if r.returncode != 0:
+        loeschen(neu)
+        return False
+    os.chmod(neu, 0o600)
+    os.rename(neu, siegel_pfad(uid))
+    return True
+
+
+def entsiegeln_daten(uid):
+    """Versiegelte Gesichtsdaten entschlüsseln; None, wenn der TPM-Zustand nicht mehr passt."""
+    try:
+        r = subprocess.run(["systemd-creds", "decrypt", f"--name=winky-vorlagen-{uid}",
+                            siegel_pfad(uid), "-"], capture_output=True, timeout=20)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if r.returncode != 0 or r.stdout[:4] != b"WNKV":
+        return None
+    return r.stdout
+
+
+def speichere_vorlagen(uid, daten):
+    """Gesichtsdaten ablegen: versiegelt (Festplatte nur verschlüsselt, Arbeitsspeicher offen)
+    oder wie bisher als vorlagen.bin. Die jeweils andere Form wird entfernt."""
+    gid = grp.getgrnam(GRUPPE).gr_gid
+    sicherer_ordner(BASIS, 0o755)
+    sicherer_ordner(f"{BASIS}/{uid}", 0o750, gid)
+    if versiegelt():
+        if not versiegeln(uid, daten):
+            fertig(False, fehler=_("Sealing in the TPM chip failed"))
+        ram_schreiben(uid, daten)
+        loeschen(vorlagen_pfad(uid))
+    else:
+        schreibe_atomar(vorlagen_pfad(uid), daten, 0o640, gid)
+        loeschen(siegel_pfad(uid))
+        loeschen(ram_pfad(uid))
+
+
 def geste_pfad(uid):
     """Freigabe für sudo: ✌-Test bestanden (liest der Prüfdienst)."""
     return f"{BASIS}/{uid}/geste-ok"
@@ -358,11 +439,8 @@ def befehl_einlernen(uid, _name):
         fertig(False, fehler=hinweis.get(antwort["status"]) or antwort.get("fehler") or
                _("Recording your face failed. Details: journalctl -t winky"))
     anzahl, dim, floats = pruefe_vektoren(vektoren)
-    gid = grp.getgrnam(GRUPPE).gr_gid
-    sicherer_ordner(BASIS, 0o755)
-    sicherer_ordner(f"{BASIS}/{uid}", 0o750, gid)
     kopf = b"WNKV" + struct.pack("III", 1, dim, anzahl) + MODELL_SHA + struct.pack("q", int(time.time()))
-    schreibe_atomar(vorlagen_pfad(uid), kopf + floats, 0o640, gid)
+    speichere_vorlagen(uid, kopf + floats)
     loeschen(geste_pfad(uid))  # neue Vorlagen: ✌-Test bitte neu
     schreibe_status(uid, {"vorlagen": anzahl, "vorlagen_basis": anzahl,
                           "eingelernt": int(time.time())})
@@ -372,7 +450,7 @@ def befehl_einlernen(uid, _name):
 def lese_vorlagen(uid):
     """Gespeicherte Vorlagen als Liste von Vektoren; None, wenn fehlend oder ungültig."""
     try:
-        with open(vorlagen_pfad(uid), "rb") as f:
+        with open(ram_pfad(uid) if versiegelt() else vorlagen_pfad(uid), "rb") as f:
             roh = f.read(88 + VORLAGEN_MAX * MODELL_DIM * 4 + 1)
     except OSError:
         return None
@@ -453,11 +531,10 @@ def ergaenzung_name(roh):
 
 
 def schreibe_vorlagen(uid, vorlagen):
-    gid = grp.getgrnam(GRUPPE).gr_gid
     daten = b"".join(struct.pack(f"{MODELL_DIM}f", *v) for v in vorlagen)
     kopf = (b"WNKV" + struct.pack("III", 1, MODELL_DIM, len(vorlagen)) + MODELL_SHA +
             struct.pack("q", int(time.time())))
-    schreibe_atomar(vorlagen_pfad(uid), kopf + daten, 0o640, gid)
+    speichere_vorlagen(uid, kopf + daten)
 
 
 def befehl_ergaenzen(uid, _name, roh_name=""):
@@ -556,7 +633,7 @@ def countdown(sekunden):
 
 def befehl_gegenprobe(uid, _name):
     """Eine andere Person darf nicht erkannt werden und soll deutlich unter der Schwelle bleiben."""
-    if not os.path.exists(vorlagen_pfad(uid)):
+    if not hat_vorlagen(uid):
         fertig(False, fehler=_("Record your own face first"))
     countdown(GEGENPROBE_COUNTDOWN)
     s = verbinde(OP_TESTEN, uid, 10)
@@ -598,7 +675,7 @@ def befehl_gegenprobe(uid, _name):
 def befehl_geste_testen(uid, _name):
     """Gesicht und ✌ wie bei sudo, aber mit Vorschau und mehr Zeit. Gelingt es, gibt das
     die sudo-Bestätigung für diese Person frei (Datei geste-ok)."""
-    if not os.path.exists(vorlagen_pfad(uid)):
+    if not hat_vorlagen(uid):
         fertig(False, fehler=_("Record your own face first"))
     s = verbinde(OP_GESTE_TESTEN, uid, 12)
     try:
@@ -689,14 +766,18 @@ def befehl_kamera(uid, _name, wahl=None):
 
 
 def befehl_entfernen(uid, _name):
-    for pfad in (vorlagen_pfad(uid), geste_pfad(uid), schluesselbund_pfad(uid),
-                 f"{STATUS_ORDNER}/{uid}.json"):
+    for pfad in (vorlagen_pfad(uid), siegel_pfad(uid), ram_pfad(uid), geste_pfad(uid),
+                 schluesselbund_pfad(uid), f"{STATUS_ORDNER}/{uid}.json"):
         try:
             os.unlink(pfad)
         except FileNotFoundError:
             pass
     try:
         os.rmdir(f"{BASIS}/{uid}")
+    except OSError:
+        pass
+    try:
+        os.rmdir(f"{VORLAGEN_RAM}/{uid}")
     except OSError:
         pass
     fertig(True)
@@ -725,7 +806,7 @@ def pam_aktiv():
 def befehl_aktivieren(uid, _name):
     if not konfig_wert(lese_konfig(), "kamera"):
         fertig(False, fehler=_("Set up the camera first"))
-    if not os.path.exists(vorlagen_pfad(uid)):
+    if not hat_vorlagen(uid):
         fertig(False, fehler=_("Record your face first"))
     schwelle = aktuelle_schwelle()
     if schwelle <= 0:
@@ -768,7 +849,7 @@ def befehl_keepassxc(uid, _name, wahl=None):
         if not konfig_wert(lese_konfig(), "kamera"):
             fertig(False, fehler=_("Set up the camera first"))
         status = lese_status(uid)
-        if not os.path.exists(vorlagen_pfad(uid)):
+        if not hat_vorlagen(uid):
             fertig(False, fehler=_("Record your face first"))
         if status.get("test_ok", 0) < status.get("eingelernt", 0) or not status.get("test_ok"):
             fertig(False, fehler=_("Try out the recognition successfully first"))
@@ -914,9 +995,26 @@ def udev_anwenden(*kennungen):
             subprocess.run([UDEVADM, "trigger", "--action=change", "--subsystem-match=video4linux",
                             f"--property-match=ID_PATH={kennung}"], timeout=30)
         subprocess.run([UDEVADM, "settle", "--timeout=10"], timeout=20)
-        return True
     except (OSError, subprocess.TimeoutExpired):
         return False
+    # Bei „change“ setzt udev die Gruppe nicht zurück: freigegebene Kameras wieder an video
+    geschuetzt = ir_regel_kennung()
+    for kennung in {k for k in kennungen if k and k != geschuetzt}:
+        gruppe_zuruecksetzen(kennung)
+    return True
+
+
+def gruppe_zuruecksetzen(kennung):
+    try:
+        winky, video = grp.getgrnam(GRUPPE).gr_gid, grp.getgrnam("video").gr_gid
+    except KeyError:
+        return
+    for k in kamera_knoten(kennung):
+        try:
+            if os.stat(k, follow_symlinks=False).st_gid == winky:
+                os.chown(k, -1, video, follow_symlinks=False)
+        except OSError:
+            pass
 
 
 def ir_schutz_setzen(pfad):
@@ -983,6 +1081,86 @@ def befehl_ir_schutz(_uid, _name, wahl=None):
         udev_anwenden(kennung)
         fertig(True)
     fertig(False, fehler=_("Usage: {usage}").format(usage="ir-schutz an|aus"))
+
+
+def benutzer_mit_vorlagen():
+    """uids mit Gesichtsdaten (Ordnernamen unter /var/lib/winky)."""
+    try:
+        return sorted(int(n) for n in os.listdir(BASIS) if n.isdigit())
+    except OSError:
+        return []
+
+
+def befehl_vorlagen_tpm(_uid, _name, wahl=None):
+    """Gesichtsdaten aller Benutzer im TPM versiegeln bzw. wieder normal ablegen."""
+    if wahl == "an":
+        if versiegelt():
+            fertig(True)
+        if not tpm_vorhanden():
+            fertig(False, fehler=_("No usable TPM chip found on this computer"))
+        erledigt = []
+        for uid in benutzer_mit_vorlagen():
+            try:
+                with open(vorlagen_pfad(uid), "rb") as f:
+                    daten = f.read()
+            except OSError:
+                continue
+            if not versiegeln(uid, daten):
+                for u in erledigt:   # nichts Halbes: bisher Versiegeltes zurücknehmen
+                    loeschen(siegel_pfad(u))
+                    loeschen(ram_pfad(u))
+                fertig(False, fehler=_("Sealing in the TPM chip failed"))
+            ram_schreiben(uid, daten)
+            erledigt.append(uid)
+        setze_konfig("vorlagen_tpm", "ja")
+        for uid in erledigt:
+            loeschen(vorlagen_pfad(uid))
+        fertig(True, versiegelt=len(erledigt))
+    if wahl == "aus":
+        verloren = []
+        for uid in benutzer_mit_vorlagen():
+            if not os.path.exists(siegel_pfad(uid)):
+                continue
+            try:
+                with open(ram_pfad(uid), "rb") as f:
+                    daten = f.read()
+            except OSError:
+                daten = entsiegeln_daten(uid)
+            if daten:
+                gid = grp.getgrnam(GRUPPE).gr_gid
+                schreibe_atomar(vorlagen_pfad(uid), daten, 0o640, gid)
+            else:
+                # Nicht mehr entsiegelbar: wie ohne Gesicht, die App bittet um eine neue Aufnahme
+                verloren.append(uid)
+                loeschen(geste_pfad(uid))
+                schreibe_status(uid, {k: w for k, w in lese_status(uid).items()
+                                      if k.startswith("schluesselbund")})
+            loeschen(siegel_pfad(uid))
+            loeschen(ram_pfad(uid))
+        setze_konfig("vorlagen_tpm", "nein")
+        fertig(True, verloren=verloren)
+    fertig(False, fehler=_("Usage: {usage}").format(usage="vorlagen-tpm an|aus"))
+
+
+def entsiegeln():
+    """Beim Start (winky-entsiegeln.service, root): versiegelte Gesichtsdaten in den
+    Arbeitsspeicher legen. Passt der TPM-Zustand nicht mehr (BIOS-Update, Secure Boot
+    geändert), erfährt es die App über den Status und bittet um eine neue Aufnahme."""
+    if not versiegelt():
+        return
+    for uid in benutzer_mit_vorlagen():
+        if not os.path.exists(siegel_pfad(uid)):
+            continue
+        daten = entsiegeln_daten(uid)
+        status = lese_status(uid)
+        if daten:
+            ram_schreiben(uid, daten)
+            status.pop("vorlagen_tpm_fehler", None)
+        else:
+            loeschen(ram_pfad(uid))
+            status["vorlagen_tpm_fehler"] = int(time.time())
+            print(f"Gesichtsdaten uid={uid} ließen sich nicht entsiegeln", file=sys.stderr)
+        schreibe_status(uid, status)
 
 
 def migrieren():
@@ -1151,7 +1329,7 @@ def befehl_fortsetzen(_uid, _name):
 def befehl_status(uid, name):
     status = lese_status(uid)
     socket_aktiv = subprocess.run(["systemctl", "is-active", "--quiet", "winky.socket"]).returncode == 0
-    fertig(True, benutzer=name, eingelernt=os.path.exists(vorlagen_pfad(uid)),
+    fertig(True, benutzer=name, eingelernt=hat_vorlagen(uid), vorlagen_tpm=versiegelt(),
            vorlagen=status.get("vorlagen"), schwelle=konfig_wert(lese_konfig(), "schwelle"),
            kamera=konfig_wert(lese_konfig(), "kamera"), test_ok=status.get("test_ok"),
            keepassxc=os.path.exists(KEEPASSXC_REGEL), keepassxc_geste=keepassxc_mit_geste(),
@@ -1176,6 +1354,7 @@ BEFEHLE = {
     "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
     "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
     "dialoge": None, "anmeldung": None, "geste-zeit": None, "entsperren-geste": None, "ir-schutz": None,
+    "vorlagen-tpm": None,
     "schluesselbund": None,
 }
 
@@ -1186,8 +1365,11 @@ def main(argv):
     if argv[1:] == ["migrieren"] and os.getuid() == 0:
         migrieren()
         sys.exit(0)
+    if argv[1:] == ["entsiegeln"] and os.getuid() == 0:
+        entsiegeln()
+        sys.exit(0)
     mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "dialoge", "anmeldung", "geste-zeit",
-                "schluesselbund", "entsperren-geste", "ir-schutz", "ergaenzen",
+                "schluesselbund", "entsperren-geste", "ir-schutz", "vorlagen-tpm", "ergaenzen",
                 "ergaenzung-entfernen"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
@@ -1216,6 +1398,8 @@ def main(argv):
         befehl_entsperren_geste(uid, name, argv[2])
     if argv[1] == "ir-schutz":
         befehl_ir_schutz(uid, name, argv[2])
+    if argv[1] == "vorlagen-tpm":
+        befehl_vorlagen_tpm(uid, name, argv[2])
     if argv[1] == "ergaenzen":
         befehl_ergaenzen(uid, name, argv[2])
     if argv[1] == "ergaenzung-entfernen":

@@ -72,8 +72,14 @@ struct Optionen {
   std::string notschalter = "/etc/winky/disabled";
   std::string dialog_schalter = "/etc/winky/dialoge-ein";
   std::string entsperren_schalter = "/etc/winky/entsperren-geste";
+  std::string vorlagen_ram = winky::kVorlagenRamBasis;
   bool polkit = false;
 };
+
+// Versiegelt (TPM): nur die beim Start entsiegelte Fassung im Arbeitsspeicher, nie die Festplatte
+const std::string& vorlagenBasis(const Optionen& o, const winky::Konfig& k) {
+  return k.vorlagen_tpm ? o.vorlagen_ram : o.vorlagen;
+}
 
 const char* statusText(uint32_t s) {
   switch (s) {
@@ -610,6 +616,7 @@ int main(int argc, char** argv) {
     else if (a == "--notschalter") o.notschalter = argv[i];
     else if (a == "--dialog-schalter") o.dialog_schalter = argv[i];
     else if (a == "--entsperren-schalter") o.entsperren_schalter = argv[i];
+    else if (a == "--vorlagen-ram") o.vorlagen_ram = argv[i];
     else {
       log(3, "Unbekannte Option %s", a.c_str());
       return 2;
@@ -726,7 +733,7 @@ int main(int argc, char** argv) {
     if (!gesteFreigegeben(o.vorlagen, uid))
       return ende(WINKY_NICHT_EINGERICHTET, -1, "geste_nicht_getestet", nullptr);
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       log(6, "%s", fehler.c_str());
       return ende(WINKY_NICHT_EINGERICHTET, -1, "vorlagen", nullptr);
     }
@@ -796,7 +803,7 @@ int main(int argc, char** argv) {
     if (!gesteFreigegeben(o.vorlagen, uid))
       return ende(WINKY_NICHT_EINGERICHTET, -1, "geste_nicht_getestet");
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       log(6, "%s", fehler.c_str());
       return ende(WINKY_NICHT_EINGERICHTET, -1, "vorlagen");
     }
@@ -849,7 +856,7 @@ int main(int argc, char** argv) {
     if (winky::leseFehlversuche(o.sperre, uid) >= k.sperre_nach)
       return ende(WINKY_GESPERRT, -1, "zu_viele_fehlversuche");
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       log(6, "%s", fehler.c_str());
       return ende(WINKY_NICHT_EINGERICHTET, -1, "vorlagen");
     }
@@ -912,7 +919,7 @@ int main(int argc, char** argv) {
     if (!gesteFreigegeben(o.vorlagen, uid))
       return ende(WINKY_NICHT_EINGERICHTET, -1, "geste_nicht_getestet", nullptr);
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       log(6, "%s", fehler.c_str());
       return ende(WINKY_NICHT_EINGERICHTET, -1, "vorlagen", nullptr);
     }
@@ -958,7 +965,7 @@ int main(int argc, char** argv) {
   if (q.op == WINKY_OP_GESTE_TESTEN) {
     const int dauer_s = static_cast<int>(std::clamp<uint32_t>(q.dauer_s, 3, 30));
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       c.status("{\"fehler\":\"Noch kein Gesicht eingelernt\"}");
       c.antwort(WINKY_NICHT_EINGERICHTET, -1, msSeit(t0), true);
       return 1;
@@ -994,7 +1001,7 @@ int main(int argc, char** argv) {
     if (q.op == WINKY_OP_EINLERNEN) return einlernen(l, c, dauer_s, t0) == 0 ? 0 : 1;
 
     winky::Vorlagen v;
-    if (!winky::ladeVorlagen(o.vorlagen, uid, v, fehler)) {
+    if (!winky::ladeVorlagen(vorlagenBasis(o, k), uid, v, fehler)) {
       c.status("{\"fehler\":\"Noch kein Gesicht eingelernt\"}");
       c.antwort(WINKY_NICHT_EINGERICHTET, -1, msSeit(t0), true);
       return 1;

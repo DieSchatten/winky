@@ -34,6 +34,8 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
 - **Gesicht ergänzen** (freiwillig): Erkennt Winky dich manchmal nicht, etwa mit Brille oder
   bei anderem Licht, nimmst du diesen Anblick als benannte Ergänzung dazu. Höchstens drei,
   jede lässt sich wieder löschen. Übernommen wird nur, was zu deinem Gesicht passt.
+- **Automatisch sperren** (Freigaben): einstellen, wie lange der Rechner ohne Eingabe
+  entsperrt bleibt, von 1 bis 15 Minuten. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.
 - **Verlauf:** Im Nachhinein sehen, was Winky entsperrt und freigegeben hat, samt jedem
   sudo-Befehl und ob du ihn bestätigt hast. Praktisch, wenn ein KI-Assistent oder ein Skript
   für dich Befehle mit sudo ausführt.
@@ -48,6 +50,13 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   Infrarot-Kamera benutzen; andere Programme, auch Schadprogramme, können sie nicht mehr
   öffnen. Andere Kameras bleiben, wie sie sind. Hängt die Infrarot-Kamera am selben Anschluss
   wie die normale Kamera, lässt Winky beide unverändert.
+- **Gesichtsdaten im TPM-Chip versiegeln** (freiwillig, unter Erweitert): Auf der Festplatte
+  liegen deine Gesichtsdaten dann nur verschlüsselt, beim Start entsiegelt Winky sie nur in
+  den Arbeitsspeicher. Das hilft, wenn jemand deine Festplatte ohne dein Passwort lesen kann,
+  etwa von Windows aus (Dual Boot) oder nach dem Ausbauen der Festplatte. Es hilft nicht gegen
+  einen USB-Stick mit Ubuntu oder einem verwandten Linux, der auf diesem Rechner startet, siehe
+  [SICHERHEIT.md](SICHERHEIT.md). Nach einem BIOS-Update oder einer Änderung an Secure Boot
+  musst du dein Gesicht unter Umständen neu aufnehmen; dein Passwort geht immer.
 
 ## Was Winky braucht
 
@@ -240,10 +249,12 @@ an den Schlüsselbund weiter, nur direkt nachdem die Anmeldemaske dein Gesicht e
 nur nach einer Prüfung, ob es noch stimmt. Änderst du dein Passwort, verwirft Winky die
 versiegelte Kopie, und die App bittet dich, es neu einzurichten.
 
-**Risiko:** Dein Anmeldepasswort ist dann auf diesem Rechner wiederherstellbar. Ohne Secure
-Boot schützt der TPM-Chip es nur schwach; wer den Rechner hat, kann es unter Umständen
-auslesen. Nutze das nur mit einem Passwort, das du nirgends sonst verwendest, am besten mit
-Secure Boot und verschlüsselter Festplatte.
+**Risiko:** Dein Anmeldepasswort ist dann auf diesem Rechner wiederherstellbar. Der TPM-Chip
+prüft nur den Secure-Boot-Zustand, nicht welches System läuft: Wer den Rechner hat, kann ihn
+von einem USB-Stick mit Ubuntu oder einem verwandten Linux starten und das Passwort dort
+auslesen, ohne Secure Boot noch leichter. Nutze das nur mit einem Passwort, das du nirgends
+sonst verwendest, am besten mit verschlüsselter Festplatte oder einem BIOS-Passwort, das den
+Start von USB sperrt.
 
 ## Notfall und Deinstallieren
 

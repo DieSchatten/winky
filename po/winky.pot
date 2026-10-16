@@ -385,8 +385,9 @@ msgstr ""
 msgid ""
 "Your login password is stored sealed in this computer’s TPM chip and handed "
 "to the keyring only right after your face was recognized at the login "
-"screen. Without Secure Boot, the TPM chip protects it only weakly: someone "
-"who has this computer may be able to read it."
+"screen. Someone who has this computer may still be able to read it, for "
+"example by starting it from a USB stick with Ubuntu or a related Linux; "
+"without Secure Boot it’s even easier. Don’t use this password anywhere else."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -434,6 +435,44 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "<b>Only works with KeePassXC 2.8 or later</b>"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock automatically"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"With face unlock, a short time hardly bothers you: you’re back in with a "
+"glance."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock after"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "1 minute"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "2 minutes"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "5 minutes"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "10 minutes"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "15 minutes"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Never"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -763,6 +802,21 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Delete …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Seal face data in the TPM chip"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your face data is then stored on the disk only encrypted; the key stays in "
+"this computer’s TPM chip. This helps if someone reads your disk in another "
+"computer or from Windows on the same computer (dual boot). It doesn’t help "
+"against a USB stick with Ubuntu or a related Linux started on this computer; "
+"a BIOS password that blocks starting from USB helps against that. After a "
+"BIOS update or a change to Secure Boot, you may have to record your face "
+"again. Applies to all users of this computer."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1124,7 +1178,12 @@ msgstr ""
 msgid ""
 "Winky stores your login password sealed in this computer’s TPM chip and "
 "hands it to the keyring after you log in with your face. Only on this "
-"computer, only right after your face was recognized at the login screen."
+"computer, only right after your face was recognized at the login screen.\n"
+"\n"
+"Someone who has this computer may still be able to read it, for example by "
+"starting it from a USB stick with Ubuntu or a related Linux. A BIOS password "
+"that blocks starting from USB helps against that. Don’t use this password "
+"anywhere else."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1187,6 +1246,68 @@ msgid "The infrared camera is available to all programs again"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Not available on this desktop"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Caution: the screen turns off, but doesn’t lock"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Locks {seconds} s after the screen turns off"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Currently {minutes} minutes (set in the system settings)"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Without input, the screen turns off and locks"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Never locks by itself; lock with Super+L"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Face data is stored unencrypted again"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your face data (numbers, no photos) is then stored on the disk only "
+"encrypted. The key is in this computer’s TPM chip. When the computer starts, "
+"Winky unseals the data into memory only, so unlocking stays just as fast.\n"
+"\n"
+"This helps if someone reads your disk in another computer or from Windows on "
+"the same computer (dual boot). It doesn’t help if someone starts this "
+"computer from a USB stick with Ubuntu or a related Linux: Secure Boot "
+"accepts it, so the TPM chip unseals the data there too. A BIOS password that "
+"blocks starting from USB helps against that. If your disk is already "
+"encrypted, sealing adds little.\n"
+"\n"
+"Please note: after a BIOS or firmware update, or if Secure Boot is turned on "
+"or off, the TPM chip may refuse the data. Winky then tells you, and you "
+"record your face again. Your password always works. The previous unencrypted "
+"data is deleted; on SSDs, remnants can’t be ruled out completely, so record "
+"your face again afterwards if that matters to you."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Secure Boot is off. Then the TPM chip protects the data only weakly."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Seal your face data in the TPM chip?"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face data is now sealed in the TPM chip"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
 msgstr ""
 
@@ -1220,6 +1341,13 @@ msgstr ""
 msgid ""
 "Without this part, Winky can’t check anything. Until then, your password "
 "works everywhere."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Your sealed face data can’t be unsealed anymore, for example after a BIOS "
+"update. Until you record your face again under “Face”, only your password "
+"works."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1285,8 +1413,8 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid ""
-"Your login password is stored sealed in the TPM chip. Caution: weaker "
-"without Secure Boot."
+"Your login password is stored sealed in the TPM chip. Caution: whoever has "
+"this computer may be able to read it."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1451,6 +1579,20 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "None"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Can’t be unsealed anymore (the TPM chip changed). Record your face again."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Your face data is stored on the disk only encrypted"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Helps if your disk is read in another computer or from Windows (dual boot)"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1969,6 +2111,10 @@ msgid "{path} is not a folder"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
+msgid "Sealing in the TPM chip failed"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
 msgid "The verification service is not running (winky.socket)"
 msgstr ""
 
@@ -2195,6 +2341,10 @@ msgid "The infrared camera wasn't found"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
+msgid "No usable TPM chip found on this computer"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
 msgid "The time must be between 5 and 30 seconds"
 msgstr ""
 
@@ -2207,15 +2357,7 @@ msgid "No password given"
 msgstr ""
 
 #: src/verwalten/winky-verwalten
-msgid "No usable TPM chip found on this computer"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
 msgid "That is not your login password"
-msgstr ""
-
-#: src/verwalten/winky-verwalten
-msgid "Sealing in the TPM chip failed"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

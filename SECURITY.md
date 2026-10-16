@@ -6,7 +6,7 @@ Winky is a **convenience** for the lock screen, not a replacement for a good pas
 disk encryption. This page honestly describes what Winky protects against, what it does not
 protect against, and which risks lie in its use and in the technology itself.
 
-As of version 0.14.0. Winky was developed by one person with AI assistance and has **not been
+As of version 0.15.0. Winky was developed by one person with AI assistance and has **not been
 independently reviewed**. Recognition was measured on one laptop with a Windows Hello
 camera with the owner and one other person, and tried on a Microsoft Surface Laptop 4.
 
@@ -66,7 +66,8 @@ This is in your own hands:
    front of it would then get in without any action from you. After every restart of
    KeePassXC, the master password applies again. Only works with KeePassXC 2.8 or later.
 7. **Backups.** The face data is stored under `/var/lib/winky`. If a backup program backs up
-   the system directory (e.g. Timeshift), the face data ends up in the backup too.
+   the system directory (e.g. Timeshift), the face data ends up in the backup too; sealed in
+   the TPM chip (see 12), only in encrypted form.
 8. **Outdated version.** Winky ships its own recognition runtime (ONNX Runtime). Its bug
    fixes only arrive with a new Winky version, not through the normal Ubuntu updates.
 9. **Login after startup with your face** (off by default). Then anyone who can fool your
@@ -74,14 +75,26 @@ This is in your own hands:
    stays locked, because only the password opens it. Without disk encryption, the extra risk
    is small: whoever has the computer can read the disk anyway.
 10. **Keyring password in the TPM chip** (experimental, off by default). Your login password
-    is stored sealed and can be recovered on this computer. Without Secure Boot, someone with
-    physical access may be able to read it, and with it the password itself, which many
-    people also use elsewhere. Winky only hands it out right after a recognized face login,
-    checks it against `/etc/shadow` first and discards it after a password change.
+    is stored sealed and can be recovered on this computer. The TPM chip only checks the
+    Secure Boot state (PCR 7), not which system is running: someone with physical access can
+    start the computer from a USB stick with Ubuntu or a related Linux and unseal it there,
+    and without Secure Boot it is even easier. That reveals the password itself, which many
+    people also use elsewhere. A BIOS password that blocks starting from USB helps. Winky only
+    hands it out right after a recognized face login, checks it against `/etc/shadow` first
+    and discards it after a password change.
 11. **Administrator dialogs with ✌.** Works like sudo with ✌: a harmful program running as
     you can open such a dialog, and a ✌ at the wrong moment approves it, with full
     administrator rights. The dialog itself shows what is requested; only show ✌ for dialogs
     you started yourself. Background permission checks never reach Winky.
+12. **Face data in the TPM chip** (optional, off by default). On the disk, the face data is
+    then stored only encrypted (`systemd-creds`, host key and TPM chip, PCR 7). This helps if
+    the disk is read in another computer or from Windows on the same computer. It does not
+    help against a USB stick with Ubuntu or a related Linux started on this computer (see
+    10); only disk encryption or a BIOS password that blocks starting from USB helps. After a
+    BIOS or firmware update or a change to Secure Boot, the data can no longer be unsealed:
+    face unlock then stops until you record your face again, the password still works. When
+    it is turned on, the previous unencrypted file is deleted; on SSDs, remnants cannot be
+    ruled out.
 
 ## Risks in the technology itself
 
@@ -137,7 +150,8 @@ These cannot be avoided by how you use Winky:
    list anyway, and sudo also logs commands itself.
 9. **Biometric data.** No images are stored, only feature vectors (30 series of 128 values
    each per person). They are readable only by the system, under `/var/lib/winky/<uid>/`
-   (root:_winky 0640). On an unencrypted disk, anyone with physical access can read them.
+   (root:_winky 0640). On an unencrypted disk, anyone with physical access can read them;
+   sealing them in the TPM chip narrows this, but does not rule it out (Risks in use, 12).
    According to research, roughly face-like images can be reconstructed from such vectors;
    they are not directly usable as a substitute for your real face in front of the camera.
 10. **Camera on at every attempt.** At every unlock attempt and every sudo request, the
@@ -148,7 +162,6 @@ These cannot be avoided by how you use Winky:
 11. **Third-party models.** The recognition models come from third-party sources (OpenCV
     Zoo, Google MediaPipe). They are pinned by checksum, but for their origin you have to
     trust these sources.
-
 ## Built-in safeguards
 
 - **Allow list in the PAM module:** only the lock screen (recognized by the GDM marker for
@@ -165,6 +178,10 @@ These cannot be avoided by how you use Winky:
   access to exactly this camera and gives it to the verification service. Refused if another
   node on the same connection delivers color images; on failure, the previous state stays.
   The app checks whether the protection is in effect. Uninstalling gives the camera back.
+- **Face data in the TPM chip (optional):** sealed for all users or for none; if it fails for
+  one, the previous state stays. At startup, a small sandboxed service unseals the data into
+  memory (`/run/winky/vorlagen`); the verification service then reads only this copy and
+  never falls back to the disk. If unsealing fails, the app asks for a new recording.
 - **Adding to your face only with you in the picture:** An addition is only saved if Winky
   recognizes you in the recording at least three times at the set threshold. Images more
   than 0.20 below it are discarded; if someone else sits in front of the camera in between,
@@ -187,7 +204,8 @@ These cannot be avoided by how you use Winky:
 2. Do the check with a second person, with the most similar person in your household.
 3. Do not lower the strictness below the default.
 4. Only turn on sudo with ✌ if you take the messages seriously.
-5. Lock the screen when you walk away, and set up automatic locking.
+5. Lock the screen when you walk away, and set a short automatic lock time (Winky:
+   Unlocks → Lock automatically).
 6. Install Winky updates.
 
 ## Privacy

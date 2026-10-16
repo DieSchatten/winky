@@ -59,12 +59,12 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 
 ## Tests
 
-- **Komponenten** (`tests/test_dienst.cc`, 77 Prüfungen): Konfiguration, Vorlagen samt
+- **Komponenten** (`tests/test_dienst.cc`, 80 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
 - **PAM** (`tests/pam_test.py`, 59 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst. Läuft beim Paketbau.
-- **App** (`tests/app/gui_logik_test.py`, 104 Prüfungen): spielt den Assistenten von
+- **App** (`tests/app/gui_logik_test.py`, 120 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu alle Abschnitte der Seitenleiste und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 
@@ -81,11 +81,13 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Software-Verwaltung** (`tests/systemtest/store-test.sh`, 29 Prüfungen): Aktualisieren,
   Deinstallieren und Neuinstallieren über PackageKit;
   AppStream-Beschreibung, Icon, Bildschirmfotos.
-- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 67 Prüfungen): echter Prüfdienst, echte
+- **sudo-Kette** (`tests/systemtest/sudo-test.sh`, 85 Prüfungen): echter Prüfdienst, echte
   Kamera, echtes libpam im Wegwerf-System. Einschalten nur mit aktiver Gesichtsentsperrung
   und bestandenem ✌-Test, Zeitlimit, Desktop-Hinweis, gleichzeitige Anfragen, Begrenzung,
   Zurücksetzen per Passwort, ohne Terminal, Schalter aus, su/login/polkit unberührt,
-  KeePassXC über das echte Polkit-Prüfprogramm mit und ohne ✌, Rückbau.
+  KeePassXC über das echte Polkit-Prüfprogramm mit und ohne ✌, Gesichtsdaten im TPM-Chip
+  (mit vorgetäuschtem Chip: Versiegeln, Rücknahme, Entsiegeln beim Start, unlesbares Siegel),
+  Rückbau.
 
 Die beiden Systemtests laufen in einem Wegwerf-Container mit systemd
 (`tests/systemtest/Containerfile`); der Aufruf steht jeweils am Anfang der Skripte.

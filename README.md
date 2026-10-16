@@ -33,6 +33,8 @@ the name too.
 - **Add to your face** (optional): if Winky sometimes doesn’t recognize you, for example with
   glasses or in different light, record these looks as a named addition. Up to three, each can
   be deleted again. Only images that match your face are added.
+- **Lock automatically** (Unlocks): choose how long the computer stays unlocked without
+  input, from 1 to 15 minutes. With face unlock, a short time hardly bothers you.
 - **History:** see afterwards what Winky unlocked and approved, including every sudo command
   and whether you confirmed it. Handy when an AI assistant or a script runs commands with sudo
   for you.
@@ -47,6 +49,13 @@ the name too.
   other programs, including harmful ones, can't open it anymore. Other cameras stay as they
   are. If the infrared camera shares its connection with the normal camera, Winky leaves both
   unchanged.
+- **Face data sealed in the TPM chip** (optional, Advanced): on the disk, your face data is
+  then stored only encrypted; at startup Winky unseals it into memory only. This helps if
+  someone can read your disk without your password, for example from a second operating
+  system such as Windows (dual boot) or after removing the disk. It doesn't help against a USB
+  stick with Ubuntu or a related Linux started on this computer, see [SECURITY.md](SECURITY.md).
+  After a BIOS update or a change to Secure Boot, you may have to record your face again; your
+  password always works.
 
 ## What Winky needs
 
@@ -241,10 +250,11 @@ login, a small isolated service hands it to the keyring, only right after your f
 recognized at the login screen and only after checking it is still correct. If you change
 your password, Winky discards the sealed copy and the app asks you to set it up again.
 
-**Risk:** your login password can then be recovered on this computer. Without Secure Boot,
-the TPM chip protects it only weakly; someone who has the computer may be able to read it.
-Only use this with a password you use nowhere else, ideally with Secure Boot and disk
-encryption.
+**Risk:** your login password can then be recovered on this computer. The TPM chip only
+checks the Secure Boot state, not which system is running: someone who has the computer can
+start it from a USB stick with Ubuntu or a related Linux and read the password there; without
+Secure Boot it is even easier. Only use this with a password you use nowhere else, ideally
+with disk encryption or a BIOS password that blocks starting from USB.
 
 ## Emergency and uninstalling
 

@@ -26,6 +26,7 @@ struct Konfig {
   int sudo_ms = 8000;         // Wartezeit auf das ✌ (sudo; Polkit-Wege höchstens 9 s)
   bool dialoge = false;       // Administrator-Dialoge (polkit-1) mit Gesicht und ✌
   bool entsperren_geste = false;  // Sperrbildschirm und Erstanmeldung nur mit Gesicht und ✌
+  bool vorlagen_tpm = false;  // Gesichtsdaten im TPM versiegelt: nur die entsiegelte Fassung in /run
 };
 
 bool ladeKonfig(const std::string& pfad, Konfig& k, std::string& fehler);

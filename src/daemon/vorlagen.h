@@ -18,6 +18,8 @@
 namespace winky {
 
 constexpr const char* kVorlagenBasis = "/var/lib/winky";
+// Versiegelte Gesichtsdaten: beim Start entsiegelt, nur im Arbeitsspeicher (tmpfs)
+constexpr const char* kVorlagenRamBasis = "/run/winky/vorlagen";
 constexpr const char* kErkennungsModellSha =
     "0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79";
 constexpr uint32_t kVorlagenDim = 128;

@@ -37,6 +37,8 @@ class Zustand:
     entsperren_geste: bool = False  # Sperrbildschirm und Erstanmeldung nur mit ✌
     ir_schutz: bool = False   # Infrarot-Kamera nur für den Prüfdienst (udev-Regel)
     ir_offen: bool = False    # das eigene Konto kann die Infrarot-Kamera öffnen
+    vorlagen_tpm: bool = False  # Gesichtsdaten im TPM versiegelt
+    tpm_fehler: int = 0       # versiegelte Gesichtsdaten ließen sich beim Start nicht entsiegeln
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
     geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
     schluesselbund: int = 0   # Anmeldepasswort im TPM versiegelt (Zeitpunkt)
@@ -96,6 +98,7 @@ def lese_zustand(uid=None) -> Zustand:
             z.gegenprobe_wert = float(status["gegenprobe_wert"])
         z.geste_ok = int(status.get("geste_ok") or 0)
     z.schluesselbund = int(status.get("schluesselbund") or 0)
+    z.tpm_fehler = int(status.get("vorlagen_tpm_fehler") or 0)
     z.schluesselbund_veraltet = int(status.get("schluesselbund_veraltet") or 0)
     try:
         text = w("/etc/winky/winky.conf").read_text()
@@ -105,6 +108,7 @@ def lese_zustand(uid=None) -> Zustand:
         z.keepassxc = _konfig(text, "keepassxc") == "ja"
         z.keepassxc_geste = _konfig(text, "keepassxc_geste") != "nein"
         z.geste_zeit = int(_konfig(text, "sudo_ms") or 8000) // 1000
+        z.vorlagen_tpm = _konfig(text, "vorlagen_tpm") == "ja"
     except (OSError, ValueError):
         pass
     try:

@@ -601,8 +601,10 @@ class Fenster(Adw.ApplicationWindow):
             warnung=True,
             info=_("Your login password is stored sealed in this computer’s TPM chip and handed "
                    "to the keyring only right after your face was recognized at the login "
-                   "screen. Without Secure Boot, the TPM chip protects it only weakly: someone "
-                   "who has this computer may be able to read it."))
+                   "screen. Someone who has this computer may still be able to read it, for "
+                   "example by starting it from a USB stick with Ubuntu or a related Linux; "
+                   "without Secure Boot it’s even easier. Don’t use this password anywhere "
+                   "else."))
         self.r_schluesselbund.connect("notify::active", self._schluesselbund_umgeschaltet)
         self.g_schalter.add(self.r_schluesselbund)
         self.r_sudo = SchalterZeile(
@@ -644,6 +646,21 @@ class Fenster(Adw.ApplicationWindow):
         self.r_keepassxc_version.add_prefix(warnung)
         self.g_schalter.add(self.r_keepassxc_version)
         s.add(self.g_schalter)
+
+        # Automatisch sperren: Bildschirm aus nach … und dann sofort sperren (GNOME-Einstellungen)
+        g_sperre = Adw.PreferencesGroup(
+            title=_("Lock automatically"),
+            description=_("With face unlock, a short time hardly bothers you: you’re back in "
+                          "with a glance."))
+        self.sperrzeiten = [60, 120, 300, 600, 900, 0]
+        self.r_sperrzeit = Adw.ComboRow(
+            title=_("Lock after"), model=Gtk.StringList.new(
+                [_("1 minute"), _("2 minutes"), _("5 minutes"), _("10 minutes"), _("15 minutes"),
+                 _("Never")]))
+        self.r_sperrzeit.add_prefix(Gtk.Image(icon_name="preferences-system-time-symbolic"))
+        self.r_sperrzeit.connect("notify::selected", self._sperrzeit_gewaehlt)
+        g_sperre.add(self.r_sperrzeit)
+        s.add(g_sperre)
         box = Gtk.Stack()
         box.add_named(s, "inhalt")
         box.add_named(self._platzhalter(_("Not set up yet"),
@@ -992,6 +1009,17 @@ class Fenster(Adw.ApplicationWindow):
         self.k_daten_weg = knopf(_("Delete …"), self._vorlagen_loeschen_fragen)
         self.r_vorlagen.add_suffix(self.k_daten_weg)
         daten.add(self.r_vorlagen)
+        self.r_vorlagen_tpm = SchalterZeile(
+            _("Seal face data in the TPM chip"), symbol="channel-secure-symbolic",
+            info=_("Your face data is then stored on the disk only encrypted; the key stays in "
+                   "this computer’s TPM chip. This helps if someone reads your disk in another "
+                   "computer or from Windows on the same computer (dual boot). It doesn’t help "
+                   "against a USB stick with Ubuntu or a related Linux started on this computer; "
+                   "a BIOS password that blocks starting from USB helps against that. After a "
+                   "BIOS update or a change to Secure Boot, you may have to record your face "
+                   "again. Applies to all users of this computer."))
+        self.r_vorlagen_tpm.connect("notify::active", self._vorlagen_tpm_umgeschaltet)
+        daten.add(self.r_vorlagen_tpm)
         s.add(daten)
 
         info = Adw.PreferencesGroup(title=_("About Winky"))
@@ -1391,7 +1419,11 @@ class Fenster(Adw.ApplicationWindow):
             return
         text = _("Winky stores your login password sealed in this computer’s TPM chip and "
                  "hands it to the keyring after you log in with your face. Only on this "
-                 "computer, only right after your face was recognized at the login screen.")
+                 "computer, only right after your face was recognized at the login screen.\n\n"
+                 "Someone who has this computer may still be able to read it, for example by "
+                 "starting it from a USB stick with Ubuntu or a related Linux. A BIOS password "
+                 "that blocks starting from USB helps against that. Don’t use this password "
+                 "anywhere else.")
         if system.secure_boot() is not True:
             text += "\n\n" + _("Secure Boot is off. Then the TPM chip protects your password "
                                "only weakly: someone who has this computer may be able to "
@@ -1500,6 +1532,106 @@ class Fenster(Adw.ApplicationWindow):
             self._verwalten(["ir-schutz", "aus"],
                             _("The infrared camera is available to all programs again"), admin=True)
 
+    def _desktop(self):
+        """Sitzungs- und Sperreinstellungen von GNOME; None, wenn es sie nicht gibt."""
+        if not hasattr(self, "_desktop_einst"):
+            quelle = Gio.SettingsSchemaSource.get_default()
+            if quelle and quelle.lookup("org.gnome.desktop.session", True) and \
+                    quelle.lookup("org.gnome.desktop.screensaver", True):
+                self._desktop_einst = (Gio.Settings.new("org.gnome.desktop.session"),
+                                       Gio.Settings.new("org.gnome.desktop.screensaver"))
+            else:
+                self._desktop_einst = None
+        return self._desktop_einst
+
+    def _sperrzeit_zeigen(self):
+        einst = self._desktop()
+        self.r_sperrzeit.set_sensitive(einst is not None)
+        if einst is None:
+            self.r_sperrzeit.set_subtitle(_("Not available on this desktop"))
+            return
+        sitzung, sperre = einst
+        sekunden = sitzung.get_uint("idle-delay")
+        # Nächstgelegene Auswahl; andere Werte (aus den Systemeinstellungen) stehen im Untertitel
+        if sekunden in self.sperrzeiten:
+            wahl = self.sperrzeiten.index(sekunden)
+        else:
+            wahl = min(range(len(self.sperrzeiten) - 1),
+                       key=lambda i: abs(self.sperrzeiten[i] - sekunden))
+        self._sperrzeit_sperre = True
+        self.r_sperrzeit.set_selected(wahl)
+        self._sperrzeit_sperre = False
+        if sekunden and not sperre.get_boolean("lock-enabled"):
+            self.r_sperrzeit.set_subtitle(_("Caution: the screen turns off, but doesn’t lock"))
+        elif sekunden and sperre.get_uint("lock-delay"):
+            self.r_sperrzeit.set_subtitle(_("Locks {seconds} s after the screen turns off").format(
+                seconds=sperre.get_uint("lock-delay")))
+        elif sekunden and sekunden not in self.sperrzeiten:
+            self.r_sperrzeit.set_subtitle(_("Currently {minutes} minutes (set in the system "
+                                            "settings)").format(minutes=round(sekunden / 60)))
+        elif sekunden:
+            self.r_sperrzeit.set_subtitle(_("Without input, the screen turns off and locks"))
+        else:
+            self.r_sperrzeit.set_subtitle(_("Never locks by itself; lock with Super+L"))
+
+    def _sperrzeit_gewaehlt(self, zeile, _pspec):
+        einst = self._desktop()
+        if getattr(self, "_sperrzeit_sperre", False) or einst is None:
+            return
+        sitzung, sperre = einst
+        sekunden = self.sperrzeiten[zeile.get_selected()]
+        sitzung.set_uint("idle-delay", sekunden)
+        if sekunden:
+            sperre.set_boolean("lock-enabled", True)
+            sperre.set_uint("lock-delay", 0)
+        self._sperrzeit_zeigen()
+
+    def _vorlagen_tpm_umgeschaltet(self, zeile, _pspec):
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.vorlagen_tpm:
+            return
+        if not zeile.get_active():
+            self._verwalten(["vorlagen-tpm", "aus"],
+                            _("Face data is stored unencrypted again"), admin=True)
+            return
+        if getattr(self, "tpm_dialog", None):   # schon offen: kein zweiter Dialog
+            return
+        text = _(
+            "Your face data (numbers, no photos) is then stored on the disk only encrypted. "
+            "The key is in this computer’s TPM chip. When the computer starts, Winky unseals the "
+            "data into memory only, so unlocking stays just as fast.\n\n"
+            "This helps if someone reads your disk in another computer or from Windows on the "
+            "same computer (dual boot). It doesn’t help if someone starts this computer from a "
+            "USB stick with Ubuntu or a related Linux: Secure Boot accepts it, so the TPM chip "
+            "unseals the data there too. A BIOS password that blocks starting from USB helps "
+            "against that. If your disk is already encrypted, sealing adds little.\n\n"
+            "Please note: after a BIOS or firmware update, or if Secure Boot is turned on or off, "
+            "the TPM chip may refuse the data. Winky then tells you, and you record your face "
+            "again. Your password always works. The previous unencrypted data is deleted; on "
+            "SSDs, remnants can’t be ruled out completely, so record your face again afterwards "
+            "if that matters to you.")
+        if system.secure_boot() is not True:
+            text += "\n\n" + _("Secure Boot is off. Then the TPM chip protects the data only "
+                                 "weakly.")
+        dialog = Adw.AlertDialog.new(_("Seal your face data in the TPM chip?"), text)
+        dialog.add_response("abbrechen", _("Cancel"))
+        dialog.add_response("an", _("Seal"))
+        dialog.set_response_appearance("an", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("abbrechen")
+        self.tpm_dialog = dialog
+
+        def antwort(_d, r):
+            self.tpm_dialog = None
+            if r == "an":
+                GLib.idle_add(lambda: self._verwalten(
+                    ["vorlagen-tpm", "an"], _("Your face data is now sealed in the TPM chip"),
+                    admin=True) and False)
+            else:
+                self.aktualisieren()
+
+        dialog.connect("response", antwort)
+        dialog.present(self)
+
     def _hinweis_starten(self):
         """Das Hinweisprogramm startet sonst erst bei der nächsten Anmeldung."""
         if umgebung.ATTRAPPE or not os.path.exists(HINWEIS):
@@ -1550,6 +1682,12 @@ class Fenster(Adw.ApplicationWindow):
                 "fehlt", "dialog-warning-symbolic", _("Winky is missing something"),
                 _("Without this part, Winky can’t check anything. Until then, your password "
                   "works everywhere."))
+        elif z.eingelernt and z.vorlagen_tpm and z.tpm_fehler:
+            art, symbol, titel, inhalt = (
+                "fehlt", "dialog-warning-symbolic", _("Record your face again"),
+                _("Your sealed face data can’t be unsealed anymore, for example after a BIOS "
+                  "update. Until you record your face again under “Face”, only your password "
+                  "works."))
         elif z.pausiert:
             art, symbol, titel, inhalt = (
                 "pause", "media-playback-pause-symbolic", _("Winky is paused"),
@@ -1609,8 +1747,8 @@ class Fenster(Adw.ApplicationWindow):
         self.r_schluesselbund.set_subtitle(
             _("Your password has changed. Turn this on again to keep using it.")
             if z.schluesselbund_veraltet and not z.schluesselbund else
-            _("Your login password is stored sealed in the TPM chip. Caution: weaker without "
-              "Secure Boot."))
+            _("Your login password is stored sealed in the TPM chip. Caution: whoever has this "
+              "computer may be able to read it."))
         self.s_sudo.set_active(z.sudo)
         self.s_sudo.set_sensitive(((z.aktiv and s["geste"]) or z.sudo) and not laeuft)
         self.k_sudo_einrichten.set_visible(not s["geste"] and not z.sudo)
@@ -1653,6 +1791,7 @@ class Fenster(Adw.ApplicationWindow):
             _("Found: {found}.").format(found=gefunden) + " " + rest if gefunden else rest)
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
+        self._sperrzeit_zeigen()
         self.r_entsperren_geste.set_active(z.entsperren_geste)
         self.r_entsperren_geste.set_sensitive(((z.aktiv and s["geste"]) or z.entsperren_geste)
                                               and not laeuft)
@@ -1749,6 +1888,15 @@ class Fenster(Adw.ApplicationWindow):
                                        "photos").format(date=datum(z.eingelernt_am))
                                      if z.eingelernt else _("None"))
         self.k_daten_weg.set_sensitive(z.eingelernt and not laeuft)
+        self._schalter_sperre = True
+        self.r_vorlagen_tpm.set_active(z.vorlagen_tpm)
+        self._schalter_sperre = False
+        self.r_vorlagen_tpm.set_sensitive(bereit and not laeuft)
+        self.r_vorlagen_tpm.set_subtitle(
+            _("Can’t be unsealed anymore (the TPM chip changed). Record your face again.")
+            if z.vorlagen_tpm and z.tpm_fehler else
+            _("Your face data is stored on the disk only encrypted") if z.vorlagen_tpm else
+            _("Helps if your disk is read in another computer or from Windows (dual boot)"))
         if info.get("polkit_aktion"):
             self.r_keepassxc_symbol.set_from_icon_name("emblem-ok-symbolic")
             self.r_keepassxc_info.set_subtitle(
