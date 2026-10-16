@@ -278,7 +278,7 @@ msgstr ""
 msgid "Winky isn’t fully installed."
 msgstr ""
 
-#: src/app/gesicht_app.py
+#: src/app/gesicht_app.py src/verwalten/winky-verwalten
 msgid "Set up the camera first."
 msgstr ""
 
@@ -675,6 +675,18 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "Choose …"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Infrared camera only for Winky"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Normally every program in your account can switch on the cameras, including "
+"harmful ones. Unlike the normal camera, the infrared camera has no shutter. "
+"With this switch, only Winky may use it; the normal camera stays as it is. "
+"Turn it off if another program needs the infrared camera."
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1165,6 +1177,14 @@ msgid "Your face alone unlocks again"
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid "Only Winky can use the infrared camera now"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "The infrared camera is available to all programs again"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
 msgstr ""
 
@@ -1372,6 +1392,21 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "None set up yet"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Not effective: programs can still open the infrared camera. Turn it off and "
+"on again."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Other programs can’t switch on the infrared camera"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid ""
+"Otherwise every program in your account can switch on the infrared camera"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -2131,6 +2166,30 @@ msgstr ""
 
 #: src/verwalten/winky-verwalten
 msgid "Test your face and ✌ successfully first"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The camera can't be identified by the system"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"On this computer, the infrared camera shares its connection with the normal "
+"camera. Locking it down would also lock the normal camera, so Winky leaves "
+"it as it is."
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The system’s device manager (udev) can't be reached"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "The infrared camera could not be locked down ({device})"
+msgstr ""
+
+#: src/verwalten/winky-verwalten
+msgid "The infrared camera wasn't found"
 msgstr ""
 
 #: src/verwalten/winky-verwalten

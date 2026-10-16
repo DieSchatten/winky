@@ -35,6 +35,8 @@ class Zustand:
     geste_ok: int = 0         # eigener ✌-Test bestanden (Zeitpunkt)
     dialoge: bool = False     # Administrator-Dialoge mit Gesicht und ✌
     entsperren_geste: bool = False  # Sperrbildschirm und Erstanmeldung nur mit ✌
+    ir_schutz: bool = False   # Infrarot-Kamera nur für den Prüfdienst (udev-Regel)
+    ir_offen: bool = False    # das eigene Konto kann die Infrarot-Kamera öffnen
     anmeldung: bool = False   # auch die erste Anmeldung nach dem Start per Gesicht
     geste_zeit: int = 8       # Wartezeit auf das ✌ in Sekunden
     schluesselbund: int = 0   # Anmeldepasswort im TPM versiegelt (Zeitpunkt)
@@ -116,6 +118,12 @@ def lese_zustand(uid=None) -> Zustand:
     z.anmeldung = w("/etc/winky/anmeldung-ein").exists()
     z.dialoge = w("/etc/winky/dialoge-ein").exists()
     z.entsperren_geste = w("/etc/winky/entsperren-geste").exists()
+    z.ir_schutz = w("/etc/udev/rules.d/72-winky-ir-kamera.rules").exists()
+    if umgebung.ATTRAPPE:
+        z.ir_offen = not z.ir_schutz or w("/ir-offen").exists()
+    elif z.kamera:
+        # Wirkt der Schutz, darf das eigene Konto die Kamera nicht öffnen
+        z.ir_offen = os.access(os.path.realpath(z.kamera), os.R_OK)
     if umgebung.ATTRAPPE:
         z.dienst = w("/run/winky.sock").exists()
     elif z.installiert:

@@ -372,6 +372,25 @@ def test(f):
            and f.s_einrichten.get_label() == "Einrichtung fortsetzen",
            "danach: „Einrichtung fortsetzen“")
 
+    # Infrarot-Kamera nur für Winky: ab Werk aus; geteilter Anschluss wird abgelehnt; Wirkung sichtbar
+    pruefe(not f.r_ir_schutz.get_active() and f.r_ir_schutz.get_sensitive()
+           and "jedes Programm" in f.r_ir_schutz.get_subtitle(),
+           "IR-Schutz: ab Werk aus, mit eingerichteter Kamera schaltbar")
+    os.environ["WINKY_ATTRAPPE_IR"] = "geteilt"
+    f.r_ir_schutz.set_active(True)
+    pruefe(fertig(f) and not f.zustand.ir_schutz and not f.r_ir_schutz.get_active(),
+           "IR-Schutz: teilt sich die IR-Kamera den Anschluss, bleibt alles, wie es ist")
+    del os.environ["WINKY_ATTRAPPE_IR"]
+    f.r_ir_schutz.set_active(True)
+    pruefe(fertig(f) and f.zustand.ir_schutz and "können die Infrarot-Kamera nicht"
+           in f.r_ir_schutz.get_subtitle(), "IR-Schutz eingeschaltet")
+    (W / "ir-offen").touch()
+    f.aktualisieren()
+    pruefe("Wirkt nicht" in f.r_ir_schutz.get_subtitle(), "IR-Schutz: App warnt, wenn er nicht wirkt")
+    (W / "ir-offen").unlink()
+    f.r_ir_schutz.set_active(False)
+    pruefe(fertig(f) and not f.zustand.ir_schutz, "IR-Schutz wieder aus")
+
     # Erweitert: Kamera wählen
     f._kamera_auswahl()
     pruefe(fertig(f) and DIALOGE, "Kameraliste erscheint")

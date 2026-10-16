@@ -242,6 +242,18 @@ def main():
         else:
             p("/etc/winky/dialoge-ein").unlink(missing_ok=True)
         fertig(True)
+    if befehl == "ir-schutz":
+        regel = p("/etc/udev/rules.d/72-winky-ir-kamera.rules")
+        if args[1] == "an":
+            if not wert_von("kamera"):
+                fertig(False, fehler="Zuerst die Kamera einrichten")
+            if os.environ.get("WINKY_ATTRAPPE_IR") == "geteilt":
+                fertig(False, fehler="Die Infrarot-Kamera teilt sich den Anschluss mit der normalen Kamera.")
+            regel.parent.mkdir(parents=True, exist_ok=True)
+            regel.write_text("Winky\n")
+        else:
+            regel.unlink(missing_ok=True)
+        fertig(True)
     if befehl == "entsperren-geste":
         if args[1] == "an":
             if "pam_winky" not in p("/etc/pam.d/common-auth").read_text():

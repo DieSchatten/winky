@@ -295,7 +295,7 @@ msgstr ""
 msgid "Winky isn’t fully installed."
 msgstr "Winky ist nicht vollständig installiert."
 
-#: src/app/gesicht_app.py
+#: src/app/gesicht_app.py src/verwalten/winky-verwalten
 msgid "Set up the camera first."
 msgstr "Zuerst die Kamera einrichten."
 
@@ -747,6 +747,23 @@ msgstr "Falls mehrere Infrarot-Kameras da sind"
 #: src/app/gesicht_app.py
 msgid "Choose …"
 msgstr "Auswählen …"
+
+#: src/app/gesicht_app.py
+msgid "Infrared camera only for Winky"
+msgstr "Infrarot-Kamera nur für Winky"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Normally every program in your account can switch on the cameras, including "
+"harmful ones. Unlike the normal camera, the infrared camera has no shutter. "
+"With this switch, only Winky may use it; the normal camera stays as it is. "
+"Turn it off if another program needs the infrared camera."
+msgstr ""
+"Normalerweise kann jedes Programm unter deinem Konto die Kameras "
+"einschalten, auch ein Schadprogramm. Anders als die normale Kamera hat die "
+"Infrarot-Kamera keinen Schieber. Mit diesem Schalter darf nur Winky sie "
+"benutzen; die normale Kamera bleibt, wie sie ist. Schalte ihn aus, wenn ein "
+"anderes Programm die Infrarot-Kamera braucht."
 
 #: src/app/gesicht_app.py
 msgid "Strictness"
@@ -1282,6 +1299,14 @@ msgid "Your face alone unlocks again"
 msgstr "Dein Gesicht allein entsperrt wieder"
 
 #: src/app/gesicht_app.py
+msgid "Only Winky can use the infrared camera now"
+msgstr "Nur noch Winky kann die Infrarot-Kamera benutzen"
+
+#: src/app/gesicht_app.py
+msgid "The infrared camera is available to all programs again"
+msgstr "Die Infrarot-Kamera steht wieder allen Programmen offen"
+
+#: src/app/gesicht_app.py
 msgid "Paused: only the password works everywhere"
 msgstr "Pause: Es gilt überall nur das Passwort"
 
@@ -1516,6 +1541,24 @@ msgstr "✓ Eingeschaltet"
 #: src/app/gesicht_app.py
 msgid "None set up yet"
 msgstr "noch keine eingerichtet"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Not effective: programs can still open the infrared camera. Turn it off and "
+"on again."
+msgstr ""
+"Wirkt nicht: Programme können die Infrarot-Kamera noch öffnen. Einmal aus- "
+"und wieder einschalten."
+
+#: src/app/gesicht_app.py
+msgid "Other programs can’t switch on the infrared camera"
+msgstr "Andere Programme können die Infrarot-Kamera nicht einschalten"
+
+#: src/app/gesicht_app.py
+msgid ""
+"Otherwise every program in your account can switch on the infrared camera"
+msgstr ""
+"Sonst kann jedes Programm unter deinem Konto die Infrarot-Kamera einschalten"
 
 #: src/app/gesicht_app.py
 #, python-brace-format
@@ -2350,6 +2393,33 @@ msgstr "Zuerst die Gesichtsentsperrung am Sperrbildschirm einschalten"
 #: src/verwalten/winky-verwalten
 msgid "Test your face and ✌ successfully first"
 msgstr "Zuerst Gesicht und ✌ erfolgreich testen"
+
+#: src/verwalten/winky-verwalten
+msgid "The camera can't be identified by the system"
+msgstr "Das System kann die Kamera nicht eindeutig zuordnen"
+
+#: src/verwalten/winky-verwalten
+msgid ""
+"On this computer, the infrared camera shares its connection with the normal "
+"camera. Locking it down would also lock the normal camera, so Winky leaves "
+"it as it is."
+msgstr ""
+"An diesem Rechner teilt sich die Infrarot-Kamera den Anschluss mit der "
+"normalen Kamera. Eine Sperre würde auch die normale Kamera treffen, deshalb "
+"lässt Winky alles, wie es ist."
+
+#: src/verwalten/winky-verwalten
+msgid "The system’s device manager (udev) can't be reached"
+msgstr "Die Geräteverwaltung des Systems (udev) ist nicht erreichbar"
+
+#: src/verwalten/winky-verwalten
+#, python-brace-format
+msgid "The infrared camera could not be locked down ({device})"
+msgstr "Die Infrarot-Kamera ließ sich nicht absichern ({device})"
+
+#: src/verwalten/winky-verwalten
+msgid "The infrared camera wasn't found"
+msgstr "Die Infrarot-Kamera wurde nicht gefunden"
 
 #: src/verwalten/winky-verwalten
 msgid "The time must be between 5 and 30 seconds"

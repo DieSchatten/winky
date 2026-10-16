@@ -267,6 +267,10 @@ pruefe 'echo "$SUDO_AUS" | grep -q "Enter without a password" && echo "$SUDO_AUS
 rm -f /etc/sudoers.d/ubuntu /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 SUDO_UID=1000 $V sudo aus </dev/null >/dev/null
 
+# 9e. IR-Schutz: im Container ohne Geräteverwaltung klar abgelehnt, keine halbe Regel zurück
+pruefe 'SUDO_UID=1000 $V ir-schutz an </dev/null | erg | grep -q "\"ok\": false" && [ ! -e /etc/udev/rules.d/72-winky-ir-kamera.rules ]' "IR-Schutz ohne udev: abgelehnt, keine Regel zurückgelassen"
+pruefe 'SUDO_UID=1000 $G ir-schutz an </dev/null | erg | grep -qi "administrator"' "IR-Schutz nur mit Administratorpasswort"
+
 # 10. Rückbau
 SUDO_UID=1000 $V sudo an </dev/null >/dev/null
 dpkg -r winky >/dev/null 2>&1

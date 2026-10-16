@@ -1,5 +1,11 @@
 # Changes / Änderungen
 
+## 0.14.0 (Prototyp)
+
+- Optional: infrared camera only for Winky (Advanced → Camera); other programs can no longer
+  switch it on. Wahlweise Infrarot-Kamera nur für Winky (Erweitert → Kamera); andere
+  Programme können sie nicht mehr einschalten.
+
 ## 0.13.0 (15.10.2026)
 
 - Optional: unlock only with face and ✌ (lock screen and login after startup), so nobody

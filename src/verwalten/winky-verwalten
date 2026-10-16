@@ -14,6 +14,7 @@ System: kamera PFAD|auto (stellt auch die Blinkprüfung ein), schwelle WERT (0.4
   keepassxc an|aus|geste-an|geste-aus (KeePassXC ab 2.8), sudo an|aus,
   dialoge an|aus (Administrator-Dialoge mit Gesicht und ✌),
   entsperren-geste an|aus (Sperrbildschirm und Erstanmeldung nur mit Gesicht und ✌),
+  ir-schutz an|aus (Infrarot-Kamera nur für den Prüfdienst, per udev-Regel),
   anmeldung an|aus (auch die erste Anmeldung nach dem Start per Gesicht),
   geste-zeit SEKUNDEN (Wartezeit auf das ✌, 5 bis 30; Polkit-Wege höchstens 9)
 Eigenes Gesicht, zusätzlich: schluesselbund an|aus (Anmeldepasswort im TPM versiegeln, damit
@@ -30,6 +31,7 @@ import json
 import math
 import os
 import pwd
+import re
 import select
 import socket
 import stat
@@ -51,6 +53,9 @@ SUDO_SCHALTER = "/etc/winky/sudo-ein"
 ANMELDUNG_SCHALTER = "/etc/winky/anmeldung-ein"
 DIALOG_SCHALTER = "/etc/winky/dialoge-ein"
 ENTSPERREN_SCHALTER = "/etc/winky/entsperren-geste"
+# Nach 70-uaccess (vergibt den Zugriff an den angemeldeten Benutzer), vor 73-seat-late (wendet ihn an)
+IR_REGEL = "/etc/udev/rules.d/72-winky-ir-kamera.rules"
+UDEVADM = "/usr/bin/udevadm"
 # Polkit-Regel der Gruppen aus 0.10.0: ersetzt durch den Weg über den Dialog (PAM polkit-1)
 ALTE_FREIGABEN_REGEL = "/etc/polkit-1/rules.d/zz-winky-freigaben.rules"
 GRUPPE = "_winky"
@@ -672,6 +677,10 @@ def befehl_kamera(uid, _name, wahl=None):
         fertig(False, fehler=_("Invalid camera path"))
     setze_konfig("kamera", pfad)
     setze_konfig("blinkpruefung", "ja" if kamera.get("blinkt") else "nein")
+    if os.path.exists(IR_REGEL):
+        ok, fehler = ir_schutz_setzen(pfad)
+        if not ok:
+            fertig(False, fehler=fehler)
     hinweis = None
     if kamera.get("hell", 0) < 10:
         hinweis = _("The IR image stays dark. On some laptops the IR emitter has to be "
@@ -830,6 +839,150 @@ def befehl_entsperren_geste(uid, _name, wahl=None):
         setze_konfig("entsperren_geste", "nein")
         fertig(True)
     fertig(False, fehler=_("Usage: {usage}").format(usage="entsperren-geste an|aus"))
+
+
+def kamera_kennung(pfad):
+    """ID_PATH der Kamera-Schnittstelle: gilt für alle Knoten dieser Kamera, nicht für andere."""
+    try:
+        r = subprocess.run([UDEVADM, "info", "-q", "property", "-n", pfad], capture_output=True,
+                           text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    for zeile in r.stdout.splitlines():
+        if zeile.startswith("ID_PATH="):
+            kennung = zeile.split("=", 1)[1]
+            return kennung if re.fullmatch(r"[A-Za-z0-9:._+-]+", kennung) else None
+    return None
+
+
+def ir_regel_text(kennung):
+    return ("# Winky: Infrarot-Kamera nur für den Prüfdienst. Programme des angemeldeten Benutzers\n"
+            "# bekommen keinen Zugriff (kein uaccess); zurück mit: winky-verwalten ir-schutz aus\n"
+            f'SUBSYSTEM=="video4linux", ENV{{ID_PATH}}=="{kennung}", TAG-="uaccess", '
+            f'GROUP="{GRUPPE}", MODE="0660"\n')
+
+
+def ir_regel_kennung():
+    try:
+        with open(IR_REGEL, encoding="utf-8") as f:
+            m = re.search(r'ENV\{ID_PATH\}=="([^"]+)"', f.read())
+        return m.group(1) if m else None
+    except OSError:
+        return None
+
+
+def kamera_knoten(kennung):
+    knoten = []
+    for name in sorted(os.listdir("/sys/class/video4linux")):
+        if kamera_kennung(f"/dev/{name}") == kennung:
+            knoten.append(f"/dev/{name}")
+    return knoten
+
+
+FARBFORMATE = {b"YUYV", b"MJPG", b"NV12", b"YU12", b"YV12", b"RGB3", b"BGR3", b"H264", b"UYVY",
+               b"NV21", b"YVYU", b"VYUY"}
+
+
+def bildformate(knoten):
+    """Bildformate eines Videoknotens (VIDIOC_ENUM_FMT, nur lesen, kein Bild)."""
+    import fcntl
+    formate = set()
+    try:
+        fd = os.open(knoten, os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC)
+    except OSError:
+        return formate
+    try:
+        for i in range(64):
+            puffer = bytearray(struct.pack("III32sII12x", i, 1, 0, b"", 0, 0))
+            try:
+                fcntl.ioctl(fd, 0xC0405602, puffer)   # VIDIOC_ENUM_FMT, Aufnahme
+            except OSError:
+                break
+            formate.add(bytes(puffer[44:48]))
+    finally:
+        os.close(fd)
+    return formate
+
+
+def udev_anwenden(*kennungen):
+    """Regeln neu laden und die betroffenen Kameras neu einordnen lassen."""
+    try:
+        r = subprocess.run([UDEVADM, "control", "--reload"], capture_output=True, timeout=30)
+        if r.returncode != 0:
+            return False
+        for kennung in {k for k in kennungen if k}:
+            subprocess.run([UDEVADM, "trigger", "--action=change", "--subsystem-match=video4linux",
+                            f"--property-match=ID_PATH={kennung}"], timeout=30)
+        subprocess.run([UDEVADM, "settle", "--timeout=10"], timeout=20)
+        return True
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def ir_schutz_setzen(pfad):
+    """Regel für die Kamera unter pfad schreiben und sofort durchsetzen. Liefert (ok, Fehler)."""
+    kennung = kamera_kennung(pfad)
+    if not kennung:
+        return False, _("The camera can't be identified by the system")
+    # Hängt die Farbkamera am selben Anschluss, würde die Regel sie mitsperren: dann nicht
+    for k in kamera_knoten(kennung):
+        if bildformate(k) & FARBFORMATE:
+            return False, _("On this computer, the infrared camera shares its connection with the "
+                            "normal camera. Locking it down would also lock the normal camera, so "
+                            "Winky leaves it as it is.")
+    alte = ir_regel_kennung()
+    try:
+        with open(IR_REGEL, "rb") as f:
+            vorher = f.read()
+    except OSError:
+        vorher = None
+
+    def zurueck(fehler):
+        # Nichts Halbes zurücklassen: vorherige Regel wiederherstellen bzw. keine
+        if vorher is None:
+            loeschen(IR_REGEL)
+        else:
+            schreibe_atomar(IR_REGEL, vorher, 0o644)
+        udev_anwenden(kennung, alte)
+        return False, fehler
+
+    schreibe_atomar(IR_REGEL, ir_regel_text(kennung).encode(), 0o644)
+    if not udev_anwenden(kennung, alte if alte != kennung else None):
+        return zurueck(_("The system’s device manager (udev) can't be reached"))
+    gid = grp.getgrnam(GRUPPE).gr_gid
+    knoten = kamera_knoten(kennung)
+    for k in knoten:
+        # Schon erteilte Freigaben des angemeldeten Benutzers gelten sonst bis zum Neustart
+        try:
+            os.removexattr(k, "system.posix_acl_access")
+        except OSError:
+            pass
+    for k in knoten:
+        st = os.stat(k)
+        frei = "system.posix_acl_access" in os.listxattr(k)
+        if st.st_gid != gid or st.st_mode & 0o007 or frei:
+            return zurueck(_("The infrared camera could not be locked down ({device})").format(
+                device=k))
+    return (True, None) if knoten else zurueck(_("The infrared camera wasn't found"))
+
+
+def befehl_ir_schutz(_uid, _name, wahl=None):
+    """Infrarot-Kamera nur für den Prüfdienst: Programme unter dem eigenen Konto (auch
+    Schadprogramme) können sie dann nicht mehr einschalten. Die Farbkamera bleibt unberührt."""
+    if wahl == "an":
+        kamera = konfig_wert(lese_konfig(), "kamera")
+        if not kamera:
+            fertig(False, fehler=_("Set up the camera first."))
+        ok, fehler = ir_schutz_setzen(kamera)
+        if not ok:
+            fertig(False, fehler=fehler)
+        fertig(True)
+    if wahl == "aus":
+        kennung = ir_regel_kennung()
+        loeschen(IR_REGEL)
+        udev_anwenden(kennung)
+        fertig(True)
+    fertig(False, fehler=_("Usage: {usage}").format(usage="ir-schutz an|aus"))
 
 
 def migrieren():
@@ -1005,6 +1158,7 @@ def befehl_status(uid, name):
            sudo=os.path.exists(SUDO_SCHALTER), dialoge=os.path.exists(DIALOG_SCHALTER),
            anmeldung=os.path.exists(ANMELDUNG_SCHALTER),
            entsperren_geste=os.path.exists(ENTSPERREN_SCHALTER),
+           ir_schutz=os.path.exists(IR_REGEL),
            geste_zeit=int(konfig_wert(lese_konfig(), "sudo_ms") or 8000) // 1000,
            schluesselbund=os.path.exists(schluesselbund_pfad(uid)), secure_boot=secure_boot(),
            geste_ok=os.path.exists(geste_pfad(uid)),
@@ -1021,7 +1175,7 @@ BEFEHLE = {
     "aktivieren": befehl_aktivieren, "deaktivieren": befehl_deaktivieren,
     "pausieren": befehl_pausieren, "fortsetzen": befehl_fortsetzen,
     "keepassxc": befehl_keepassxc, "geste-testen": befehl_geste_testen, "sudo": befehl_sudo,
-    "dialoge": None, "anmeldung": None, "geste-zeit": None, "entsperren-geste": None,
+    "dialoge": None, "anmeldung": None, "geste-zeit": None, "entsperren-geste": None, "ir-schutz": None,
     "schluesselbund": None,
 }
 
@@ -1032,8 +1186,8 @@ def main(argv):
     if argv[1:] == ["migrieren"] and os.getuid() == 0:
         migrieren()
         sys.exit(0)
-    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "dialoge",
-                "anmeldung", "geste-zeit", "schluesselbund", "entsperren-geste", "ergaenzen",
+    mit_wert = {"schwelle", "kamera", "keepassxc", "sudo", "dialoge", "anmeldung", "geste-zeit",
+                "schluesselbund", "entsperren-geste", "ir-schutz", "ergaenzen",
                 "ergaenzung-entfernen"}
     if len(argv) < 2 or argv[1] not in BEFEHLE or (argv[1] in mit_wert) != (len(argv) == 3) \
             or len(argv) > 3:
@@ -1060,6 +1214,8 @@ def main(argv):
         befehl_dialoge(uid, name, argv[2])
     if argv[1] == "entsperren-geste":
         befehl_entsperren_geste(uid, name, argv[2])
+    if argv[1] == "ir-schutz":
+        befehl_ir_schutz(uid, name, argv[2])
     if argv[1] == "ergaenzen":
         befehl_ergaenzen(uid, name, argv[2])
     if argv[1] == "ergaenzung-entfernen":

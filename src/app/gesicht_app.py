@@ -925,6 +925,14 @@ class Fenster(Adw.ApplicationWindow):
         self.k_kamera_wahl = knopf(_("Choose …"), self._kamera_auswahl)
         self.r_kamera_wahl.add_suffix(self.k_kamera_wahl)
         kamera.add(self.r_kamera_wahl)
+        self.r_ir_schutz = SchalterZeile(
+            _("Infrared camera only for Winky"), symbol="camera-web-symbolic",
+            info=_("Normally every program in your account can switch on the cameras, including "
+                   "harmful ones. Unlike the normal camera, the infrared camera has no shutter. "
+                   "With this switch, only Winky may use it; the normal camera stays as it is. "
+                   "Turn it off if another program needs the infrared camera."))
+        self.r_ir_schutz.connect("notify::active", self._ir_schutz_umgeschaltet)
+        kamera.add(self.r_ir_schutz)
         s.add(kamera)
 
         strenge = Adw.PreferencesGroup(
@@ -1479,6 +1487,17 @@ class Fenster(Adw.ApplicationWindow):
             self._verwalten(["entsperren-geste", "aus"],
                             _("Your face alone unlocks again"), admin=True)
 
+    def _ir_schutz_umgeschaltet(self, zeile, _pspec):
+        # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
+        if self._schalter_sperre or zeile.get_active() == self.zustand.ir_schutz:
+            return
+        if zeile.get_active():
+            self._verwalten(["ir-schutz", "an"],
+                            _("Only Winky can use the infrared camera now"), admin=True)
+        else:
+            self._verwalten(["ir-schutz", "aus"],
+                            _("The infrared camera is available to all programs again"), admin=True)
+
     def _hinweis_starten(self):
         """Das Hinweisprogramm startet sonst erst bei der nächsten Anmeldung."""
         if umgebung.ATTRAPPE or not os.path.exists(HINWEIS):
@@ -1687,6 +1706,16 @@ class Fenster(Adw.ApplicationWindow):
 
         # Erweitert
         self.r_kamera.set_subtitle(z.kamera or _("None set up yet"))
+        self._schalter_sperre = True
+        self.r_ir_schutz.set_active(z.ir_schutz)
+        self._schalter_sperre = False
+        self.r_ir_schutz.set_sensitive(((bereit and bool(z.kamera)) or z.ir_schutz) and not laeuft)
+        self.r_ir_schutz.set_subtitle(
+            _("Not effective: programs can still open the infrared camera. Turn it off and on "
+              "again.") if z.ir_schutz and z.ir_offen else
+            _("Other programs can’t switch on the infrared camera") if z.ir_schutz else
+            _("Set up the camera first.") if not z.kamera else
+            _("Otherwise every program in your account can switch on the infrared camera"))
         self.k_kamera_suchen.set_sensitive(bereit and not laeuft)
         self.k_kamera_wahl.set_sensitive(bereit and not laeuft)
         if z.schwelle > 0 and not self.r_spin.has_focus():

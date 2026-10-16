@@ -6,16 +6,24 @@ if [ "$1" = "remove" ]; then
     find /var/lib/winky -mindepth 1 -maxdepth 1 ! -name sicherung -exec rm -rf {} + 2>/dev/null || true
     rm -rf /run/winky
     # sudo mit ✌ muss nach einer Neuinstallation ausdrücklich wieder eingeschaltet werden
-    rm -f /etc/winky/sudo-ein /etc/winky/anmeldung-ein /etc/winky/dialoge-ein
+    rm -f /etc/winky/sudo-ein /etc/winky/anmeldung-ein /etc/winky/dialoge-ein \
+        /etc/winky/entsperren-geste
 fi
 if [ "$1" = "purge" ]; then
     rm -rf /var/lib/winky /run/winky
     rm -f /etc/winky/disabled /etc/winky/sudo-ein /etc/winky/anmeldung-ein /etc/winky/dialoge-ein \
+        /etc/winky/entsperren-geste \
         /etc/winky/winky.conf \
         /etc/winky/winky.conf.dpkg-old /etc/winky/winky.conf.dpkg-dist
     rmdir /etc/winky 2>/dev/null || true
 fi
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
     systemctl daemon-reload >/dev/null 2>&1 || true
+    # Infrarot-Kamera wieder wie vor Winky für den angemeldeten Benutzer freigeben
+    if [ -e /etc/udev/rules.d/72-winky-ir-kamera.rules ]; then
+        rm -f /etc/udev/rules.d/72-winky-ir-kamera.rules
+        udevadm control --reload >/dev/null 2>&1 || true
+        udevadm trigger --action=change --subsystem-match=video4linux >/dev/null 2>&1 || true
+    fi
 fi
 exit 0
