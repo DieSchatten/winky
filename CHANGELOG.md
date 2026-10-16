@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.14.0 (Prototyp)
+## 0.14.0 (16.10.2026)
 
 - Optional: infrared camera only for Winky (Advanced → Camera); other programs can no longer
   switch it on. Wahlweise Infrarot-Kamera nur für Winky (Erweitert → Kamera); andere

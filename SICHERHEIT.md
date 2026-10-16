@@ -6,7 +6,7 @@ Winky ist ein **Komfort** für die Bildschirmsperre, kein Ersatz für ein gutes 
 keine Festplattenverschlüsselung. Diese Seite beschreibt ehrlich, wogegen Winky schützt,
 wogegen nicht, und welche Risiken in der Benutzung und in der Technik selbst stecken.
 
-Stand: Version 0.13.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
+Stand: Version 0.14.0. Winky wurde von einer Einzelperson mit KI-Unterstützung entwickelt
 und ist **nicht unabhängig geprüft**. Die Erkennung wurde an einem Laptop mit einer
 Windows-Hello-Kamera mit der eigenen und einer weiteren Person gemessen und an einem
 Microsoft Surface Laptop 4 ausprobiert.
@@ -147,7 +147,10 @@ Das lässt sich durch Bedienung nicht abstellen:
    echtes Gesicht vor der Kamera taugen sie nicht direkt.
 10. **Kamera an bei jedem Versuch.** Bei jedem Entsperrversuch und jeder sudo-Anfrage geht
     die Infrarot-Kamera für einige Sekunden an. Bilder werden nur im Speicher ausgewertet,
-    nie gespeichert. Während der Einrichtung zeigt die App das Kamerabild an.
+    nie gespeichert. Während der Einrichtung zeigt die App das Kamerabild an. Unabhängig von
+    Winky kann normalerweise jedes Programm unter deinem Konto die Kameras einschalten; unter
+    Erweitert lässt sich die Infrarot-Kamera Winky vorbehalten (eine udev-Regel nimmt dem
+    angemeldeten Benutzer den Zugriff).
 11. **Fremde Modelle.** Die Erkennungsmodelle stammen aus fremden Quellen (OpenCV Zoo,
     Google MediaPipe). Sie sind per Prüfsumme festgeschrieben, die Herkunft muss man aber
     diesen Quellen glauben.
@@ -164,6 +167,11 @@ Das lässt sich durch Bedienung nicht abstellen:
   Socket und logind (lokale, aktive, grafische Sitzung an seat0).
 - **Root-eigene Daten:** Konfiguration, Vorlagen, Schalter und Freigaben werden ohne
   Verknüpfungen geöffnet und auf Besitzer, Rechte und Größe geprüft.
+- **Infrarot-Kamera nur für Winky (freiwillig):** Eine udev-Regel nimmt dem angemeldeten
+  Benutzer den Zugriff auf genau diese Kamera und gibt sie dem Prüfdienst. Abgelehnt, wenn ein
+  anderer Knoten am selben Anschluss Farbbilder liefert; bei einem Fehlschlag bleibt der
+  vorherige Zustand. Die App prüft, ob der Schutz wirkt. Deinstallieren gibt die Kamera wieder
+  frei.
 - **Gesicht ergänzen nur mit dir im Bild:** Eine Ergänzung wird nur gespeichert, wenn Winky
   dich in der Aufnahme mindestens dreimal an der eingestellten Schwelle erkennt. Bilder, die
   mehr als 0,20 darunter liegen, werden verworfen; setzt sich zwischendurch jemand anderes vor

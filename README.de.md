@@ -43,6 +43,11 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   lässt sich Winky wieder entfernen.
 - **Ohne Netz und ohne Fotos:** Gespeichert werden nur Zahlen (Merkmalsvektoren), nur für
   das System lesbar.
+- **Infrarot-Kamera nur für Winky** (freiwillig, unter Erweitert): Normalerweise kann jedes
+  Programm unter deinem Konto die Kameras einschalten. Mit diesem Schalter darf nur Winky die
+  Infrarot-Kamera benutzen; andere Programme, auch Schadprogramme, können sie nicht mehr
+  öffnen. Andere Kameras bleiben, wie sie sind. Hängt die Infrarot-Kamera am selben Anschluss
+  wie die normale Kamera, lässt Winky beide unverändert.
 
 ## Was Winky braucht
 

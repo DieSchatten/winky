@@ -42,6 +42,11 @@ the name too.
   manager.
 - **No network and no photos:** Only numbers (feature vectors) are stored, readable only by
   the system.
+- **Infrared camera only for Winky** (optional, Advanced): normally every program in your
+  account can switch on the cameras. With this switch, only Winky may use the infrared camera;
+  other programs, including harmful ones, can't open it anymore. Other cameras stay as they
+  are. If the infrared camera shares its connection with the normal camera, Winky leaves both
+  unchanged.
 
 ## What Winky needs
 

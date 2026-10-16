@@ -46,6 +46,10 @@
         your face.</li>
       <li xml:lang="de">Wahlweise nur mit Gesicht und ✌ entsperren, damit niemand hineinkommt, der
         dir den Rechner vors Gesicht hält.</li>
+      <li>Optional: infrared camera only for Winky, so other programs can no longer switch it
+        on.</li>
+      <li xml:lang="de">Wahlweise Infrarot-Kamera nur für Winky, damit andere Programme sie nicht
+        mehr einschalten können.</li>
       <li>A history shows afterwards what was unlocked and approved, including every sudo command,
         handy when an AI assistant or a script uses sudo for you.</li>
       <li xml:lang="de">Ein Verlauf zeigt im Nachhinein, was entsperrt und freigegeben wurde, samt jedem
@@ -148,7 +152,7 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.14.0" date="2026-10-16T12:00:00Z">
+    <release version="0.14.0" date="2026-10-16T10:18:44Z">
       <description>
         <ul>
           <li>Optional: infrared camera only for Winky. Other programs, including harmful ones, can no longer switch it on; the normal camera stays as it is.</li>

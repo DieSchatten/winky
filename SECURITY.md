@@ -6,7 +6,7 @@ Winky is a **convenience** for the lock screen, not a replacement for a good pas
 disk encryption. This page honestly describes what Winky protects against, what it does not
 protect against, and which risks lie in its use and in the technology itself.
 
-As of version 0.13.0. Winky was developed by one person with AI assistance and has **not been
+As of version 0.14.0. Winky was developed by one person with AI assistance and has **not been
 independently reviewed**. Recognition was measured on one laptop with a Windows Hello
 camera with the owner and one other person, and tried on a Microsoft Surface Laptop 4.
 
@@ -142,7 +142,9 @@ These cannot be avoided by how you use Winky:
    they are not directly usable as a substitute for your real face in front of the camera.
 10. **Camera on at every attempt.** At every unlock attempt and every sudo request, the
     infrared camera turns on for a few seconds. Images are only analyzed in memory, never
-    stored. During setup, the app shows the camera image.
+    stored. During setup, the app shows the camera image. Independently of Winky, every
+    program in your account can normally switch on the cameras; under Advanced, the infrared
+    camera can be reserved for Winky (a udev rule takes away the logged-in user's access).
 11. **Third-party models.** The recognition models come from third-party sources (OpenCV
     Zoo, Google MediaPipe). They are pinned by checksum, but for their origin you have to
     trust these sources.
@@ -159,6 +161,10 @@ These cannot be avoided by how you use Winky:
   socket and logind (local, active, graphical session on seat0).
 - **Root-owned data:** configuration, templates, switches and approvals are opened without
   following links and checked for owner, permissions and size.
+- **Infrared camera only for Winky (optional):** A udev rule removes the logged-in user's
+  access to exactly this camera and gives it to the verification service. Refused if another
+  node on the same connection delivers color images; on failure, the previous state stays.
+  The app checks whether the protection is in effect. Uninstalling gives the camera back.
 - **Adding to your face only with you in the picture:** An addition is only saved if Winky
   recognizes you in the recording at least three times at the set threshold. Images more
   than 0.20 below it are discarded; if someone else sits in front of the camera in between,
