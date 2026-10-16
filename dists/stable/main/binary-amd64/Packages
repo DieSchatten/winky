@@ -1,0 +1,30 @@
+Package: winky
+Architecture: amd64
+Version: 0.14.0
+Priority: optional
+Section: admin
+Maintainer: DieSchatten <43169081+DieSchatten@users.noreply.github.com>
+Installed-Size: 83224
+Depends: libc6 (>= 2.39), libstdc++6, libgcc-s1, libpam0g, libpam-runtime, libsystemd0, systemd, polkitd, pkexec, python3, python3-gi, gir1.2-gtk-4.0, gir1.2-gtk-3.0, gir1.2-adw-1, libnotify-bin, procps
+Filename: pool/main/w/winky/winky_0.14.0_amd64.deb
+Size: 50634740
+MD5sum: 159c37076e0eeec46e6eaf98de7e5f01
+SHA1: c1e297159b3407c426443719899e0e576745a67e
+SHA256: 9d2e44d87a8e9d4e26e185a7cb6c9bc62044cc40ae87dab555dc63e3ca1899a7
+SHA512: 6b2b2eedd6cf59f2d92cdcd62277a46fb7f17e71e50804e722012f9f9154ec2bfb0ca8eb76fbbf1f90b123fbff9c072ba53bfe097a3b63698214293cac0a1158
+Homepage: https://github.com/DieSchatten/winky
+Description: Winky: unlock the screen with your face, like Windows Hello
+ Winky unlocks the GNOME lock screen with a glance at the infrared camera,
+ similar to Windows Hello. The face only applies to the lock screen of a
+ running session; login after boot, su, SSH, the console and administrator
+ dialogs still require the password. Optionally, sudo in the terminal and
+ KeePassXC (from 2.8) can be confirmed with the face and the ✌ sign. The
+ check runs in an isolated service without network and without access to
+ home directories. Nothing is active after installation; the app guides
+ through the setup step by step. Everyone records their own face with their
+ own password. Recognition with YuNet and SFace (OpenCV Zoo), hand sign with
+ Google MediaPipe. The app speaks English and German.
+ .
+ So far tested on two laptops, including a Microsoft Surface Laptop 4; other
+ cameras may behave differently. Use at your own risk.
+
