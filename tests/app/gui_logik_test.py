@@ -405,20 +405,37 @@ def test(f):
 
     # Automatisch sperren: setzt die GNOME-Werte (hier nur im Speicher)
     sitzung, sperre = f._desktop()
-    f.r_sperrzeit.set_selected(1)
-    pruefe(sitzung.get_uint("idle-delay") == 120 and sperre.get_boolean("lock-enabled")
-           and sperre.get_uint("lock-delay") == 0 and "sperrt" in f.r_sperrzeit.get_subtitle(),
-           "Sperrzeit 2 Minuten: Bildschirm aus und sofort gesperrt")
-    sperre.set_boolean("lock-enabled", False)
+    sitzung.set_uint("idle-delay", 600)
+    sperre.set_boolean("lock-enabled", True)
+    sperre.set_uint("lock-delay", 0)
     f.aktualisieren()
-    pruefe("Vorsicht" in f.r_sperrzeit.get_subtitle(), "Sperrzeit: warnt, wenn das System nicht sperrt")
-    f.r_sperrzeit.set_selected(5)
-    pruefe(sitzung.get_uint("idle-delay") == 0 and "Super+L" in f.r_sperrzeit.get_subtitle(),
-           "Sperrzeit „Nie“")
-    sitzung.set_uint("idle-delay", 180)
+    pruefe(f.r_sperre_an.get_active() and f.r_sperrzeit.get_value() == 10
+           and f.r_sperrzeit.get_sensitive(), "Sperre: zeigt die Werte des Systems (an, 10 Minuten)")
+    f.r_sperrzeit.set_value(7)
+    pruefe(sitzung.get_uint("idle-delay") == 420 and sperre.get_boolean("lock-enabled")
+           and "sperrt" in f.r_sperre_an.get_subtitle(), "Sperre: freie Zeit, 7 Minuten")
+    sperre.set_uint("lock-delay", 30)
+    f.aktualisieren()
+    pruefe("30 s" in f.r_sperrzeit.get_subtitle(), "Sperre: nennt eine Verzögerung aus dem System")
+    f.r_sperrzeit.set_value(1)
+    pruefe(sitzung.get_uint("idle-delay") == 60 and sperre.get_uint("lock-delay") == 0
+           and f.r_sperrzeit.get_subtitle() == "", "Sperre: neue Zeit sperrt sofort, 1 Minute")
+    f.r_sperre_an.set_active(False)
+    pruefe(not sperre.get_boolean("lock-enabled") and sitzung.get_uint("idle-delay") == 60
+           and not f.r_sperrzeit.get_sensitive() and "Super+L" in f.r_sperre_an.get_subtitle(),
+           "Sperre aus: Bildschirm geht weiter aus, sperrt nicht")
+    f.r_sperrzeit.set_value(20)
+    pruefe(sitzung.get_uint("idle-delay") == 60, "Sperre aus: Minutenfeld ändert nichts")
+    sitzung.set_uint("idle-delay", 0)
     sperre.set_boolean("lock-enabled", True)
     f.aktualisieren()
-    pruefe("3 Minuten" in f.r_sperrzeit.get_subtitle(), "eigener Wert aus den Systemeinstellungen bleibt sichtbar")
+    pruefe(not f.r_sperre_an.get_active(), "Bildschirm geht nie aus: Sperre gilt als aus")
+    f.r_sperre_an.set_active(True)
+    pruefe(sitzung.get_uint("idle-delay") == f.r_sperrzeit.get_value() * 60 > 0
+           and sperre.get_boolean("lock-enabled"), "Sperre einschalten setzt die gewählte Zeit")
+    sitzung.set_uint("idle-delay", 90)
+    f.aktualisieren()
+    pruefe("2 Minuten" in f.r_sperrzeit.get_subtitle(), "eigener Wert aus den Systemeinstellungen bleibt sichtbar")
 
     # Infrarot-Kamera nur für Winky: ab Werk aus; geteilter Anschluss wird abgelehnt; Wirkung sichtbar
     pruefe(not f.r_ir_schutz.get_active() and f.r_ir_schutz.get_sensitive()

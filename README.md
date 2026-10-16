@@ -34,7 +34,7 @@ the name too.
   glasses or in different light, record these looks as a named addition. Up to three, each can
   be deleted again. Only images that match your face are added.
 - **Lock automatically** (Unlocks): choose how long the computer stays unlocked without
-  input, from 1 to 15 minutes. With face unlock, a short time hardly bothers you.
+  input, freely from 1 to 60 minutes. With face unlock, a short time hardly bothers you.
 - **History:** see afterwards what Winky unlocked and approved, including every sudo command
   and whether you confirmed it. Handy when an AI assistant or a script runs commands with sudo
   for you.

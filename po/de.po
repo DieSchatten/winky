@@ -485,8 +485,8 @@ msgid "<b>Only works with KeePassXC 2.8 or later</b>"
 msgstr "<b>Funktioniert erst ab KeePassXC 2.8</b>"
 
 #: src/app/gesicht_app.py
-msgid "Lock automatically"
-msgstr "Automatisch sperren"
+msgid "Screen lock"
+msgstr "Bildschirmsperre"
 
 #: src/app/gesicht_app.py
 msgid ""
@@ -497,32 +497,12 @@ msgstr ""
 "wieder drin."
 
 #: src/app/gesicht_app.py
-msgid "Lock after"
-msgstr "Sperren nach"
+msgid "Lock automatically"
+msgstr "Automatisch sperren"
 
 #: src/app/gesicht_app.py
-msgid "1 minute"
-msgstr "1 Minute"
-
-#: src/app/gesicht_app.py
-msgid "2 minutes"
-msgstr "2 Minuten"
-
-#: src/app/gesicht_app.py
-msgid "5 minutes"
-msgstr "5 Minuten"
-
-#: src/app/gesicht_app.py
-msgid "10 minutes"
-msgstr "10 Minuten"
-
-#: src/app/gesicht_app.py
-msgid "15 minutes"
-msgstr "15 Minuten"
-
-#: src/app/gesicht_app.py
-msgid "Never"
-msgstr "Nie"
+msgid "After minutes without input"
+msgstr "Nach Minuten ohne Eingabe"
 
 #: src/app/gesicht_app.py
 msgid "Not set up yet"
@@ -1390,8 +1370,12 @@ msgid "Not available on this desktop"
 msgstr "Auf diesem Desktop nicht verfügbar"
 
 #: src/app/gesicht_app.py
-msgid "Caution: the screen turns off, but doesn’t lock"
-msgstr "Vorsicht: Der Bildschirm geht aus, wird aber nicht gesperrt"
+msgid "Without input, the screen turns off and locks"
+msgstr "Ohne Eingabe geht der Bildschirm aus und wird gesperrt"
+
+#: src/app/gesicht_app.py
+msgid "Never locks by itself; lock with Super+L"
+msgstr "Sperrt nie von selbst; sperren mit Super+L"
 
 #: src/app/gesicht_app.py
 #, python-brace-format
@@ -1402,14 +1386,6 @@ msgstr "Sperrt {seconds} s nachdem der Bildschirm ausgeht"
 #, python-brace-format
 msgid "Currently {minutes} minutes (set in the system settings)"
 msgstr "Derzeit {minutes} Minuten (in den Systemeinstellungen festgelegt)"
-
-#: src/app/gesicht_app.py
-msgid "Without input, the screen turns off and locks"
-msgstr "Ohne Eingabe geht der Bildschirm aus und wird gesperrt"
-
-#: src/app/gesicht_app.py
-msgid "Never locks by itself; lock with Super+L"
-msgstr "Sperrt nie von selbst; sperren mit Super+L"
 
 #: src/app/gesicht_app.py
 msgid "Face data is stored unencrypted again"

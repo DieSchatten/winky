@@ -35,7 +35,7 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
   bei anderem Licht, nimmst du diesen Anblick als benannte Ergänzung dazu. Höchstens drei,
   jede lässt sich wieder löschen. Übernommen wird nur, was zu deinem Gesicht passt.
 - **Automatisch sperren** (Freigaben): einstellen, wie lange der Rechner ohne Eingabe
-  entsperrt bleibt, von 1 bis 15 Minuten. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.
+  entsperrt bleibt, frei von 1 bis 60 Minuten. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.
 - **Verlauf:** Im Nachhinein sehen, was Winky entsperrt und freigegeben hat, samt jedem
   sudo-Befehl und ob du ihn bestätigt hast. Praktisch, wenn ein KI-Assistent oder ein Skript
   für dich Befehle mit sudo ausführt.

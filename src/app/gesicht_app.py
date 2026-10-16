@@ -647,18 +647,20 @@ class Fenster(Adw.ApplicationWindow):
         self.g_schalter.add(self.r_keepassxc_version)
         s.add(self.g_schalter)
 
-        # Automatisch sperren: Bildschirm aus nach … und dann sofort sperren (GNOME-Einstellungen)
+        # Automatisch sperren wie in den GNOME-Einstellungen: Schalter = lock-enabled, Minuten =
+        # idle-delay (Bildschirm aus), gesperrt wird dann sofort (lock-delay 0)
         g_sperre = Adw.PreferencesGroup(
-            title=_("Lock automatically"),
+            title=_("Screen lock"),
             description=_("With face unlock, a short time hardly bothers you: you’re back in "
                           "with a glance."))
-        self.sperrzeiten = [60, 120, 300, 600, 900, 0]
-        self.r_sperrzeit = Adw.ComboRow(
-            title=_("Lock after"), model=Gtk.StringList.new(
-                [_("1 minute"), _("2 minutes"), _("5 minutes"), _("10 minutes"), _("15 minutes"),
-                 _("Never")]))
+        self.r_sperre_an = Adw.SwitchRow(title=_("Lock automatically"))
+        self.r_sperre_an.add_prefix(Gtk.Image(icon_name="system-lock-screen-symbolic"))
+        self.r_sperre_an.connect("notify::active", self._sperre_umgeschaltet)
+        g_sperre.add(self.r_sperre_an)
+        self.r_sperrzeit = Adw.SpinRow.new_with_range(1, 60, 1)
+        self.r_sperrzeit.set_title(_("After minutes without input"))
         self.r_sperrzeit.add_prefix(Gtk.Image(icon_name="preferences-system-time-symbolic"))
-        self.r_sperrzeit.connect("notify::selected", self._sperrzeit_gewaehlt)
+        self.r_sperrzeit.connect("notify::value", self._sperrzeit_gewaehlt)
         g_sperre.add(self.r_sperrzeit)
         s.add(g_sperre)
         box = Gtk.Stack()
@@ -1546,44 +1548,57 @@ class Fenster(Adw.ApplicationWindow):
 
     def _sperrzeit_zeigen(self):
         einst = self._desktop()
-        self.r_sperrzeit.set_sensitive(einst is not None)
         if einst is None:
-            self.r_sperrzeit.set_subtitle(_("Not available on this desktop"))
+            for zeile in (self.r_sperre_an, self.r_sperrzeit):
+                zeile.set_sensitive(False)
+            self.r_sperre_an.set_subtitle(_("Not available on this desktop"))
             return
         sitzung, sperre = einst
         sekunden = sitzung.get_uint("idle-delay")
-        # Nächstgelegene Auswahl; andere Werte (aus den Systemeinstellungen) stehen im Untertitel
-        if sekunden in self.sperrzeiten:
-            wahl = self.sperrzeiten.index(sekunden)
-        else:
-            wahl = min(range(len(self.sperrzeiten) - 1),
-                       key=lambda i: abs(self.sperrzeiten[i] - sekunden))
+        an = sekunden > 0 and sperre.get_boolean("lock-enabled")
         self._sperrzeit_sperre = True
-        self.r_sperrzeit.set_selected(wahl)
+        self.r_sperre_an.set_active(an)
+        fokus = self.get_focus()   # beim Tippen nicht überschreiben (Aktualisierung alle 15 s)
+        tippt = fokus is not None and (fokus == self.r_sperrzeit or
+                                       fokus.is_ancestor(self.r_sperrzeit))
+        if sekunden and not tippt:
+            self.r_sperrzeit.set_value(max(1, min(60, round(sekunden / 60))))
         self._sperrzeit_sperre = False
-        if sekunden and not sperre.get_boolean("lock-enabled"):
-            self.r_sperrzeit.set_subtitle(_("Caution: the screen turns off, but doesn’t lock"))
-        elif sekunden and sperre.get_uint("lock-delay"):
+        self.r_sperrzeit.set_sensitive(an)
+        self.r_sperre_an.set_subtitle(
+            _("Without input, the screen turns off and locks") if an else
+            _("Never locks by itself; lock with Super+L"))
+        if an and sperre.get_uint("lock-delay"):
             self.r_sperrzeit.set_subtitle(_("Locks {seconds} s after the screen turns off").format(
                 seconds=sperre.get_uint("lock-delay")))
-        elif sekunden and sekunden not in self.sperrzeiten:
+        elif an and (sekunden % 60 or sekunden > 3600):
             self.r_sperrzeit.set_subtitle(_("Currently {minutes} minutes (set in the system "
                                             "settings)").format(minutes=round(sekunden / 60)))
-        elif sekunden:
-            self.r_sperrzeit.set_subtitle(_("Without input, the screen turns off and locks"))
         else:
-            self.r_sperrzeit.set_subtitle(_("Never locks by itself; lock with Super+L"))
+            self.r_sperrzeit.set_subtitle("")
 
-    def _sperrzeit_gewaehlt(self, zeile, _pspec):
-        einst = self._desktop()
-        if getattr(self, "_sperrzeit_sperre", False) or einst is None:
+    def _sperre_setzen(self):
+        """Bildschirm nach der eingestellten Zeit aus und sofort gesperrt."""
+        sitzung, sperre = self._desktop()
+        sitzung.set_uint("idle-delay", int(self.r_sperrzeit.get_value()) * 60)
+        sperre.set_boolean("lock-enabled", True)
+        sperre.set_uint("lock-delay", 0)
+
+    def _sperre_umgeschaltet(self, zeile, _pspec):
+        if getattr(self, "_sperrzeit_sperre", False) or self._desktop() is None:
             return
-        sitzung, sperre = einst
-        sekunden = self.sperrzeiten[zeile.get_selected()]
-        sitzung.set_uint("idle-delay", sekunden)
-        if sekunden:
-            sperre.set_boolean("lock-enabled", True)
-            sperre.set_uint("lock-delay", 0)
+        if zeile.get_active():
+            self._sperre_setzen()
+        else:
+            # Wie der Schalter in den GNOME-Einstellungen: Bildschirm geht weiter aus, sperrt nicht
+            self._desktop()[1].set_boolean("lock-enabled", False)
+        self._sperrzeit_zeigen()
+
+    def _sperrzeit_gewaehlt(self, _zeile, _pspec):
+        if getattr(self, "_sperrzeit_sperre", False) or self._desktop() is None \
+                or not self.r_sperre_an.get_active():
+            return
+        self._sperre_setzen()
         self._sperrzeit_zeigen()
 
     def _vorlagen_tpm_umgeschaltet(self, zeile, _pspec):

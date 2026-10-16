@@ -438,7 +438,7 @@ msgid "<b>Only works with KeePassXC 2.8 or later</b>"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Lock automatically"
+msgid "Screen lock"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -448,31 +448,11 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Lock after"
+msgid "Lock automatically"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "1 minute"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "2 minutes"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "5 minutes"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "10 minutes"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "15 minutes"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Never"
+msgid "After minutes without input"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1250,7 +1230,11 @@ msgid "Not available on this desktop"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid "Caution: the screen turns off, but doesn’t lock"
+msgid "Without input, the screen turns off and locks"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Never locks by itself; lock with Super+L"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1261,14 +1245,6 @@ msgstr ""
 #: src/app/gesicht_app.py
 #, python-brace-format
 msgid "Currently {minutes} minutes (set in the system settings)"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Without input, the screen turns off and locks"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Never locks by itself; lock with Super+L"
 msgstr ""
 
 #: src/app/gesicht_app.py
