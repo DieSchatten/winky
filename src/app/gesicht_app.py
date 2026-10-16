@@ -928,9 +928,11 @@ class Fenster(Adw.ApplicationWindow):
         self.r_ir_schutz = SchalterZeile(
             _("Infrared camera only for Winky"), symbol="camera-web-symbolic",
             info=_("Normally every program in your account can switch on the cameras, including "
-                   "harmful ones. Unlike the normal camera, the infrared camera has no shutter. "
-                   "With this switch, only Winky may use it; the normal camera stays as it is. "
-                   "Turn it off if another program needs the infrared camera."))
+                   "harmful ones, and on many laptops the infrared camera can’t be covered. With "
+                   "this switch, only Winky may use the infrared camera; other cameras stay as "
+                   "they are. If another program needs the infrared camera (for example another "
+                   "face unlock tool), turn this off. If the infrared camera shares its connection "
+                   "with the normal camera, Winky leaves both as they are."))
         self.r_ir_schutz.connect("notify::active", self._ir_schutz_umgeschaltet)
         kamera.add(self.r_ir_schutz)
         s.add(kamera)
