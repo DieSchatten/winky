@@ -159,6 +159,8 @@
           <li xml:lang="de">Automatisch sperren: in Winky einstellen, wie lange der Rechner ohne Eingabe entsperrt bleibt. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.</li>
           <li>Optional: seal your face data in the TPM chip. On the disk it is then stored only encrypted, which helps with dual boot or a removed disk.</li>
           <li xml:lang="de">Wahlweise Gesichtsdaten im TPM-Chip versiegeln. Auf der Festplatte liegen sie dann nur verschlüsselt, das hilft bei Dual Boot oder ausgebauter Festplatte.</li>
+          <li>sudo: just type your password while Winky waits for the ✌. It isn't shown, and sudo continues right away.</li>
+          <li xml:lang="de">sudo: Passwort einfach tippen, während Winky aufs ✌ wartet. Es wird nicht angezeigt, und sudo geht sofort weiter.</li>
         </ul>
       </description>
     </release>

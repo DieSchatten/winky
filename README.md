@@ -18,7 +18,7 @@ the name too.
 - **Unlock the lock screen with your face.** Super+L locks; to unlock, press a key and look
   into the camera. This typically takes less than a second.
 - **Confirm sudo with your face and ✌** (optional): The terminal shows
-  `Winky: show ✌ to the camera to confirm (or type your password) …`. It only counts as
+  `Winky: show ✌ to the camera to confirm, or type your password …`. It only counts as
   confirmed when your face is recognized **and** you show the V sign next to it. A notice
   window with a large ✌ and the command appears at the top center of the screen.
 - **Open KeePassXC** (optional, **KeePassXC 2.8 or later only**): after the first unlock
@@ -175,7 +175,7 @@ screen, sudo in the terminal, KeePassXC …) are under “Unlocks”. Technical 
 
 ```
 $ sudo apt update
-Winky: show ✌ to the camera to confirm (or type your password) …
+Winky: show ✌ to the camera to confirm, or type your password …
 Winky: ✓ confirmed
 ```
 
@@ -185,6 +185,8 @@ Winky: ✓ confirmed
   without a terminal, not with `sudo -S`.
 - Exactly one face in the picture, the hand close beside it, and it must be the recognized
   face.
+- Rather use the password? Just type it while Winky waits and press Enter. It isn't shown,
+  and sudo continues right away.
 - Missed the ✌? Press Enter without a password: sudo asks again, and Winky waits for the ✌
   once more.
 - Two requests at the same time are both cancelled. After three unconfirmed requests, only

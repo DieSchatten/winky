@@ -340,11 +340,15 @@ def test(f):
         {"zeit": time.time(), "status": "treffer", "wert": 0.9, "dauer_ms": 1500, "grund": "",
          "zweck": "dialog", "befehl": ""},
         {"zeit": time.time(), "status": "kein_treffer", "wert": 0.9, "dauer_ms": 8000,
-         "grund": "kein_zeichen", "zweck": "sudo", "befehl": "sudo rm -rf /tmp/x"}] + v))
+         "grund": "kein_zeichen", "zweck": "sudo", "befehl": "sudo rm -rf /tmp/x"},
+        {"zeit": time.time(), "status": "abgelehnt", "wert": -1, "dauer_ms": 2100,
+         "grund": "passwort", "zweck": "sudo", "befehl": "sudo apt update"}] + v))
     f.aktualisieren()
     pruefe(f._verlauf_zeilen[0].get_title() == "Administrator-Dialog mit ✌ freigegeben"
            and f._verlauf_zeilen[1].get_title() == "sudo nicht bestätigt: sudo rm -rf /tmp/x",
            "Verlauf benennt Dialog-Freigaben und abgelehnte sudo-Befehle")
+    pruefe(f._verlauf_zeilen[2].get_title() == "sudo: Passwort statt ✌ eingegeben: sudo apt update",
+           "Verlauf: Passwort statt ✌ ist kein abgelehntes sudo")
     f.r_pause.set_active(True)
     pruefe(fertig(f) and f.zustand.pausiert and "Pause" in f.s_titel.get_label(), "pausiert")
     f.r_pause.set_active(False)

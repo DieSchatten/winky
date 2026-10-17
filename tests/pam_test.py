@@ -27,12 +27,14 @@ def pruefe(bed, text):
 
 class Attrappe:
     """Antwortet je nach Modus: treffer, kein, haengt, muell, schliesst; für sudo (Operation 7)
-    geste-treffer, geste-kein, geste-ablehnen, geste-haengt. Merkt sich die Zusatznachricht."""
+    geste-treffer, geste-treffer-spaet, geste-kein, geste-ablehnen, geste-haengt, geste-wartet
+    (wartet aufs Auflegen, merkt sich die Zeit in aufgelegt). Merkt sich die Zusatznachricht."""
 
     def __init__(self):
         self.modus = "treffer"
         self.anfragen = []
         self.zusatz = []
+        self.aufgelegt = None
         if os.path.exists(SOCKET):
             os.unlink(SOCKET)
         self.s = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -61,7 +63,8 @@ class Attrappe:
                         self.zusatz.append(c.recv(1024))
                     except OSError:
                         self.zusatz.append(b"")
-                antwort = {"geste-treffer": TREFFER, "geste-kein": KEIN_TREFFER}
+                antwort = {"geste-treffer": TREFFER, "geste-treffer-spaet": TREFFER,
+                           "geste-kein": KEIN_TREFFER}
                 if self.modus in ("geste-ablehnen", "geste-gesperrt"):
                     status = 6 if self.modus == "geste-ablehnen" else 4
                     c.send(struct.pack("IIfI", MAGIC, status, -1.0, 1))
@@ -70,7 +73,16 @@ class Attrappe:
                 if self.modus == "geste-haengt":
                     time.sleep(8)
                     return
-                time.sleep(0.3)
+                if self.modus == "geste-wartet":
+                    t0 = time.monotonic()
+                    c.settimeout(8)
+                    try:
+                        c.recv(16)   # b"" beim Auflegen
+                    except OSError:
+                        return
+                    self.aufgelegt = time.monotonic() - t0
+                    return
+                time.sleep(1.5 if self.modus == "geste-treffer-spaet" else 0.3)
                 c.send(struct.pack("IIfI", MAGIC, antwort.get(self.modus, KEIN_TREFFER), 0.9, 1500))
                 return
             if op == 2:
@@ -102,6 +114,42 @@ def pam(dienstname, user="ubuntu", ops=("authenticate",), env=None, items=()):
     r = subprocess.run(args, env=e, stdin=subprocess.DEVNULL, capture_output=True, text=True)
     pam.ausgabe = r.stdout + r.stderr
     return r.returncode == 0, time.monotonic() - t0
+
+
+def am_terminal(argv, eingaben, dauer_max=12):
+    """Startet argv an einem Pseudo-Terminal und tippt: eingaben ist eine Liste aus (Auslöser,
+    Text), Text wird getippt, sobald der Auslöser nach dem vorigen in der Ausgabe erscheint.
+    Liefert (Rückgabewert oder -Signal, Ausgabe, Dauer, Anzeige des Terminals danach an)."""
+    import pty
+    import select
+    import termios
+    t0 = time.monotonic()
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.execvp(argv[0], argv)
+    aus, ab, offen = b"", 0, list(eingaben)
+    while time.monotonic() - t0 < dauer_max:
+        if select.select([fd], [], [], 0.05)[0]:
+            try:
+                d = os.read(fd, 4096)
+            except OSError:
+                break
+            if not d:
+                break
+            aus += d
+        if offen and offen[0][0].encode() in aus[ab:]:
+            ab = aus.index(offen[0][0].encode(), ab) + len(offen[0][0])
+            time.sleep(0.2)
+            os.write(fd, offen.pop(0)[1].encode())
+    dauer = time.monotonic() - t0
+    try:
+        echo = bool(termios.tcgetattr(fd)[3] & termios.ECHO)
+    except termios.error:
+        echo = None
+    _, st = os.waitpid(pid, 0)
+    os.close(fd)
+    code = os.WEXITSTATUS(st) if os.WIFEXITED(st) else -os.WTERMSIG(st)
+    return code, aus.decode(errors="replace"), dauer, echo
 
 
 def main():
@@ -325,6 +373,42 @@ def main():
     ok, _ = pam("winky-test-geste", items=tty)
     pruefe(not ok and len(a.anfragen) == vorher, "Notschalter gilt auch für sudo")
     os.unlink("/etc/winky/disabled")
+
+    # Passwort während des Wartens aufs ✌ tippen: ohne Anzeige, sofort an pam_unix
+    subprocess.run(["chpasswd"], input="ubuntu:Testpasswort1\n", text=True, check=True)
+    dienst("winky-test-geste", [geste.replace("geste_timeout_ms=3000", "geste_timeout_ms=6000"),
+                                "auth [success=done default=ignore] pam_unix.so try_first_pass",
+                                "auth requisite pam_deny.so"])
+    pamtester = ["pamtester", "-Itty=/dev/pts/7", "winky-test-geste", "ubuntu", "authenticate"]
+    a.modus, a.aufgelegt = "geste-wartet", None
+    code, aus, dauer, echo = am_terminal(pamtester, [("to the camera", "Testpasswort1\n")])
+    pruefe(code == 0 and dauer < 2.5 and "Password:" not in aus,
+           f"Passwort während des Wartens: sofort angemeldet, ohne zweite Frage ({dauer:.1f} s)")
+    pruefe("Testpasswort1" not in aus and echo, "getipptes Passwort nicht angezeigt, Anzeige danach wieder an")
+    time.sleep(0.2)
+    pruefe(a.aufgelegt is not None and a.aufgelegt < 1.5,
+           "Prüfdienst merkt das Auflegen sofort (Kamera kann aus)")
+    # try_first_pass nimmt das Getippte und fragt nicht nach; sudo sagt „Sorry, try again“
+    # und fragt von vorn (wieder mit ✌)
+    code, aus, _, echo = am_terminal(pamtester, [("to the camera", "falsch\n")])
+    pruefe(code != 0 and "Password:" not in aus and "falsch" not in aus and echo,
+           "falsches Passwort: abgelehnt wie sonst auch, nichts angezeigt")
+    code, aus, dauer, echo = am_terminal(pamtester, [("to the camera", "\n"),
+                                                     ("Password:", "Testpasswort1\n")])
+    pruefe(code == 0 and "Password:" in aus and dauer < 2.5 and echo,
+           f"Enter ohne Passwort: gleich zur Passwortfrage ({dauer:.1f} s)")
+    code, aus, _, echo = am_terminal(pamtester, [("to the camera", "Test\x03")])
+    pruefe(code < 0 and echo, "Strg+C beim Warten: bricht ab, Anzeige des Terminals wieder an")
+    a.modus = "geste-treffer-spaet"
+    code, aus, _, echo = am_terminal(
+        ["bash", "-c", " ".join(pamtester) + '; read -r rest; echo "REST=[$rest]"'],
+        [("to the camera", "halb"), ("confirmed", "\n")])
+    pruefe("REST=[]" in aus and "halb" not in aus and echo,
+           "✌ während halb getippt: Rest verworfen, nicht für den Befehl oder die Shell")
+    dienst("winky-test-geste", [geste, "auth requisite pam_deny.so"])
+    a.modus = "geste-treffer"
+    vorher = len(a.anfragen)
+
     # Ein Dienst, der nur in services steht (nicht in geste), bleibt beim Sperrbildschirm-Weg
     dienst("gdm-password", [geste.replace("services=winky-test-geste,gdm-password",
                                           "services=gdm-password,winky-test-geste"),

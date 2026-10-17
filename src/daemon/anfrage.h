@@ -1,6 +1,6 @@
 // Hinweisdatei offener Anfragen für den Desktop-Hinweis: /run/winky/anfrage/<uid>.json mit zeit
-// (Unix), stand (wartet|bestaetigt|nicht_bestaetigt|abgebrochen|begrenzt), befehl, terminal, zweck,
-// frist (Wartezeit auf das ✌ in ms).
+// (Unix), stand (wartet|bestaetigt|nicht_bestaetigt|abgebrochen|passwort|begrenzt), befehl,
+// terminal, zweck, frist (Wartezeit auf das ✌ in ms).
 // Lesbar für alle (Befehl steht ohnehin in der Prozessliste), damit Unerwartetes sofort auffällt.
 #pragma once
 

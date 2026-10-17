@@ -39,6 +39,7 @@ TEXTE = {
         "bestaetigt": ("normal", _("✓ sudo confirmed"), "{befehl}"),
         "nicht_bestaetigt": ("low", _("sudo not confirmed with ✌"), "{befehl}"),
         "abgebrochen": ("critical", _("sudo canceled"), _GLEICHZEITIG + "\n{befehl}"),
+        "passwort": ("low", _("sudo: password typed instead of ✌"), "{befehl}"),
         "begrenzt": _BEGRENZT,
     },
     "keepassxc": {
@@ -196,6 +197,7 @@ class Fenster:
 class Hinweis:
     def __init__(self):
         self.meldung = None   # Kennung für notify-send --replace-id
+        self.warten_gemeldet = False   # Warten per Benachrichtigung statt Fenster
         self.letzte = None
         self.monitor = None
         self.ordner = Gio.File.new_for_path(BASIS)
@@ -243,17 +245,22 @@ class Hinweis:
         dauer = frist / 1000 if isinstance(frist, int) and 3000 <= frist <= 30000 else FENSTER_DAUER
         # Warten: großes Fenster; Fehlschlag, Abbruch, ohne X-Anzeige: Benachrichtigung
         if stand == "wartet":
+            self.warten_gemeldet = False
             if self.fenster.zeigen(zweck, befehl if zweck == "sudo" else "", zeit, dauer):
                 return
+            self.warten_gemeldet = True
         elif stand == "bestaetigt":
             if self.fenster.bestaetigt():
                 return
         else:
             self.fenster.schliessen()
+            # Passwort statt ✌: nur die Benachrichtigung „wartet“ ersetzen, sonst still
+            if stand == "passwort" and not self.warten_gemeldet:
+                return
         befehl += f" ({daten['terminal']})" if daten.get("terminal") else ""
         args = ["notify-send", "--app-name=Winky", "--icon=io.github.dieschatten.Winky",
                 f"--urgency={dringlich}", "--print-id"]
-        if stand in ("bestaetigt", "nicht_bestaetigt"):
+        if stand in ("bestaetigt", "nicht_bestaetigt", "passwort"):
             args.append("--expire-time=4000")
         if self.meldung:
             args.append(f"--replace-id={self.meldung}")

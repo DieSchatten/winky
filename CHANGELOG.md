@@ -14,6 +14,10 @@
   say so. Richtiggestellt: Die TPM-Versiegelung (Schlüsselbund, Gesichtsdaten) schützt auch
   mit Secure Boot nicht gegen einen USB-Stick mit Ubuntu oder einem verwandten Linux; App und
   Doku sagen das jetzt.
+- sudo: type your password while Winky waits for the ✌; it isn't shown and sudo continues
+  right away (before, it was visible and only read after the wait). sudo: Passwort einfach
+  tippen, während Winky aufs ✌ wartet; es wird nicht angezeigt, und sudo geht sofort weiter
+  (bisher war es sichtbar und wurde erst nach der Wartezeit gelesen).
 - Turning off “Infrared camera only for Winky” gives the camera back to the video group right
   away, not only after a restart. Das Ausschalten von „Infrarot-Kamera nur für Winky“ gibt die
   Kamera sofort wieder an die Gruppe video, nicht erst nach einem Neustart.

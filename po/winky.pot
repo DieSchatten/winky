@@ -1624,6 +1624,15 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 #, python-brace-format
+msgid "sudo: password typed instead of ✌: {command}"
+msgstr ""
+
+#: src/app/gesicht_app.py src/hinweis/winky-hinweis
+msgid "sudo: password typed instead of ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
 msgid "sudo confirmed: {command}"
 msgstr ""
 

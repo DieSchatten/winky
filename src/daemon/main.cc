@@ -939,12 +939,16 @@ int main(int argc, char** argv) {
     const winky::Regeln r{k.schwelle, k.mindest_treffer, static_cast<double>(k.sudo_ms),
                         static_cast<double>(k.sudo_ms), k.blink_abstand, k.blinkpruefung};
     c.senden("W", 1);  // Kamera läuft: PAM zeigt jetzt die Aufforderung
+    bool aufgelegt = false;
     const Pruefergebnis erg = pruefeGeste(l, v, r, t0, nullptr, 0, [&] {
+      if (c.getrennt()) return aufgelegt = true;
       return winky::sudoAbbruchGesetzt(o.sperre, uid);
     });
     l.kamera->stop();
     winky::sudoEntsperren(o.sperre, uid, sperre);
     const long jetzt = static_cast<long>(std::time(nullptr));
+    // PAM hat aufgelegt: Passwort statt ✌ getippt. Kein Warnsignal, Kamera ist schon aus
+    if (erg.abgebrochen && aufgelegt) return ende(WINKY_ABGELEHNT, -1, "passwort", "passwort");
     if (erg.abgebrochen) {
       winky::erhoeheSudoOffen(o.sperre, uid, jetzt);
       return ende(WINKY_ABGELEHNT, -1, "gleichzeitig", "abgebrochen");

@@ -18,7 +18,7 @@ zuverlässig erkannt. Geblieben sind das ✌ und der Name.
 - **Bildschirmsperre mit dem Gesicht öffnen.** Super+L sperrt, zum Öffnen eine Taste drücken
   und in die Kamera schauen. Typisch dauert das unter einer Sekunde.
 - **sudo mit Gesicht und ✌ bestätigen** (freiwillig): Im Terminal erscheint
-  `Winky: zum Bestätigen ✌ in die Kamera zeigen (sonst Passwort) …`. Bestätigt ist erst,
+  `Winky: zum Bestätigen ✌ in die Kamera zeigen oder Passwort eingeben …`. Bestätigt ist erst,
   wenn dein Gesicht erkannt ist **und** du daneben das V-Zeichen zeigst. Oben in der
   Bildschirmmitte erscheint dabei ein Hinweisfenster mit großem ✌ und dem Befehl.
 - **KeePassXC öffnen** (freiwillig, **nur ab KeePassXC 2.8**): nach dem ersten Öffnen mit
@@ -175,7 +175,7 @@ Danach zeigt die Übersicht den Zustand mit „Ausprobieren“ und „Pause“; 
 
 ```
 $ sudo apt update
-Winky: zum Bestätigen ✌ in die Kamera zeigen (sonst Passwort) …
+Winky: zum Bestätigen ✌ in die Kamera zeigen oder Passwort eingeben …
 Winky: ✓ bestätigt
 ```
 
@@ -184,6 +184,8 @@ Winky: ✓ bestätigt
 - Nur sudo in einem Terminal der laufenden Sitzung am Rechner selbst. Nicht über SSH, nicht
   ohne Terminal, nicht mit `sudo -S`.
 - Genau ein Gesicht im Bild, die Hand nah daneben, und es muss das erkannte Gesicht sein.
+- Lieber das Passwort? Einfach tippen, während Winky wartet, und Enter drücken. Es wird
+  nicht angezeigt, und sudo geht sofort weiter.
 - ✌ verpasst? Enter ohne Passwort drücken: sudo fragt neu, und Winky wartet noch einmal
   auf das ✌.
 - Zwei Anfragen zur selben Zeit werden beide abgebrochen. Nach drei unbestätigten gilt

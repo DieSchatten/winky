@@ -94,6 +94,10 @@ pruefe(("schliessen",) in fenster and melde and "nicht per ✌" in melde[0][-2],
 fenster, melde = lauf(hinweis, "abgebrochen", "keepassxc", alter=4)
 pruefe(melde and "--urgency=critical" in melde[0] and "abgebrochen" in melde[0][-2],
        "Abbruch: dringende Benachrichtigung")
+fenster, melde = lauf(hinweis, "wartet", alter=11)
+fenster, melde = lauf(hinweis, "passwort", alter=11)
+pruefe(fenster == [("schliessen",)] and not melde,
+       "Passwort statt ✌ getippt: Fenster zu, keine Benachrichtigung")
 fenster, melde = lauf(hinweis, "wartet", alter=300)
 pruefe(not fenster and not melde, "alte Anfragen (etwa nach dem Anmelden) werden nicht gemeldet")
 
@@ -111,6 +115,11 @@ pruefe(hinweis.fenster.dauer == 8.0, "unsinnige Wartezeit: Vorgabe 8 s")
 hinweis.fenster = FensterAttrappe(sichtbar=False)
 fenster, melde = lauf(hinweis, "wartet", "keepassxc", alter=5)
 pruefe(melde and "KeePassXC wartet auf ✌" in melde[0], "ohne X-Anzeige: Benachrichtigung statt Fenster")
+fenster, melde = lauf(hinweis, "wartet", alter=12)
+fenster, melde = lauf(hinweis, "passwort", alter=12)
+pruefe(melde and "--urgency=low" in melde[0] and "--replace-id=7" in melde[0]
+       and "Passwort statt ✌" in melde[0][-2],
+       "ohne X-Anzeige: Benachrichtigung „wartet“ wird ersetzt")
 
 if os.environ.get("DISPLAY"):
     f = h.Fenster()

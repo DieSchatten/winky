@@ -1952,7 +1952,11 @@ class Fenster(Adw.ApplicationWindow):
             zeilen = []
             for e in eintraege:
                 ok = e["status"] == "treffer"
-                if e.get("zweck") == "sudo":
+                if e.get("zweck") == "sudo" and e.get("grund") == "passwort":
+                    titel = (_("sudo: password typed instead of ✌: {command}").format(
+                        command=e["befehl"]) if e.get("befehl")
+                        else _("sudo: password typed instead of ✌"))
+                elif e.get("zweck") == "sudo":
                     if e.get("befehl"):
                         titel = (_("sudo confirmed: {command}") if ok
                                  else _("sudo not confirmed: {command}")).format(

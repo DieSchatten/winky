@@ -15,6 +15,7 @@
 #include <pwd.h>
 #include <security/pam_ext.h>
 #include <security/pam_modules.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <syslog.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -119,10 +121,81 @@ static long ms_seit(const struct timespec *start) {
   return (jetzt.tv_sec - start->tv_sec) * 1000L + (jetzt.tv_nsec - start->tv_nsec) / 1000000L;
 }
 
+/* Tastatur während des Wartens aufs ✌ (sudo): Anzeige aus, eine mit Enter abgeschlossene Zeile
+ * ist das Passwort. Sonst stünde es im Klartext im Terminal, und sudo verwürfe es ohnehin, bevor
+ * es selbst fragt. Signale (Strg+C …) stellen erst das Terminal wieder her und gehen dann wie
+ * vorher an sudo. */
+#define EINGABE_MAX 512
+static const int SIGNALE[] = {SIGINT, SIGQUIT, SIGTERM, SIGHUP, SIGTSTP};
+#define N_SIGNALE (sizeof(SIGNALE) / sizeof(SIGNALE[0]))
+static volatile sig_atomic_t signal_gefangen = 0;
+
+static void signal_merken(int sig) { signal_gefangen = sig; }
+
+struct tastatur {
+  int fd; /* -1: nicht aktiv */
+  int fertig; /* 1: Zeile gelesen (zeile, auch leer) */
+  struct termios vorher;
+  struct sigaction alt[N_SIGNALE];
+  char zeile[EINGABE_MAX];
+};
+
+static void tastatur_an(struct tastatur *t, int fd) {
+  t->fd = -1;
+  t->fertig = 0;
+  t->zeile[0] = '\0';
+  /* Nur im Vordergrund und zeilenweise (sonst hält das Terminal an oder liest ein Programm roh) */
+  if (!isatty(fd) || tcgetpgrp(fd) != getpgrp() || tcgetattr(fd, &t->vorher) != 0 ||
+      !(t->vorher.c_lflag & ICANON))
+    return;
+  signal_gefangen = 0;
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = signal_merken; /* ohne SA_RESTART: poll kehrt zurück */
+  sigemptyset(&sa.sa_mask);
+  for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &sa, &t->alt[i]);
+  struct termios ohne = t->vorher;
+  ohne.c_lflag &= ~(tcflag_t)(ECHO | ECHONL);
+  if (tcsetattr(fd, TCSANOW, &ohne) != 0) {
+    for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &t->alt[i], NULL);
+    return;
+  }
+  t->fd = fd;
+}
+
+static void tastatur_aus(struct tastatur *t) {
+  if (t->fd < 0) return;
+  /* Halb Getipptes nicht dem Befehl oder der Shell überlassen, dort stünde es sichtbar */
+  if (!t->fertig) tcflush(t->fd, TCIFLUSH);
+  tcsetattr(t->fd, TCSANOW, &t->vorher);
+  for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &t->alt[i], NULL);
+  t->fd = -1;
+  if (signal_gefangen) raise(signal_gefangen);
+}
+
+/* Liest die Zeile; 1 bei Erfolg (auch leer oder Strg+D), 0 wenn noch nichts da ist */
+static int tastatur_lesen(struct tastatur *t) {
+  ssize_t n = read(t->fd, t->zeile, sizeof(t->zeile) - 1);
+  if (n < 0 && (errno == EAGAIN || errno == EINTR)) return 0;
+  if (n < 0) n = 0; /* Lesefehler: wie leere Zeile, dann fragt pam_unix */
+  t->zeile[n] = '\0';
+  char *ende = memchr(t->zeile, '\n', (size_t)n);
+  if (ende) {
+    *ende = '\0';
+  } else if (n > 0) { /* zu lang: verwerfen, dann fragt pam_unix */
+    explicit_bzero(t->zeile, sizeof(t->zeile));
+    tcflush(t->fd, TCIFLUSH);
+  }
+  t->fertig = 1;
+  return 1;
+}
+
 /* Fragt den Prüfdienst: 0 und *status, sonst -1. zusatz geht als zweite Nachricht; auf 'W'
- * (Kamera läuft) zeigt PAM einmal hinweis und setzt *wartete. */
+ * (Kamera läuft) zeigt PAM einmal hinweis und setzt *wartete. Mit aktiver tastatur: -2, wenn
+ * eine Zeile getippt wurde (Verbindung wird getrennt, der Prüfdienst schaltet die Kamera ab). */
 static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, size_t zusatz_len,
-                 pam_handle_t *pamh, const char *hinweis, int *wartete, uint32_t *status) {
+                 pam_handle_t *pamh, const char *hinweis, int *wartete, uint32_t *status,
+                 struct tastatur *tasten) {
   struct timespec start;
   clock_gettime(CLOCK_MONOTONIC, &start);
   const int fd = socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
@@ -148,13 +221,25 @@ static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, siz
     close(fd);
     return -1;
   }
+  int tasten_fd = tasten ? tasten->fd : -1;
   for (;;) {
     const long rest = timeout_ms - ms_seit(&start);
     if (rest <= 0) break;
-    struct pollfd p = {fd, POLLIN, 0};
-    const int r = poll(&p, 1, (int)rest);
-    if (r < 0 && errno == EINTR) continue;
+    struct pollfd p[2] = {{fd, POLLIN, 0}, {tasten_fd, POLLIN, 0}};
+    const int r = poll(p, tasten_fd >= 0 ? 2 : 1, (int)rest);
+    if (r < 0 && errno == EINTR) {
+      if (signal_gefangen) break;
+      continue;
+    }
     if (r <= 0) break;
+    if (tasten_fd >= 0 && p[1].revents) {
+      if ((p[1].revents & POLLIN) && tastatur_lesen(tasten)) {
+        close(fd);
+        return -2;
+      }
+      if (!(p[1].revents & POLLIN)) tasten_fd = -1; /* Terminal weg: nur noch aufs ✌ warten */
+    }
+    if (!(p[0].revents & (POLLIN | POLLHUP | POLLERR))) continue;
     struct winky_antwort a;
     const ssize_t n = recv(fd, &a, sizeof(a), MSG_DONTWAIT);
     if (n < 0 && (errno == EAGAIN || errno == EINTR)) continue;
@@ -173,7 +258,7 @@ static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, siz
 }
 
 static int frage_dienst(uint32_t op, uid_t uid, int timeout_ms, uint32_t *status) {
-  return frage(op, uid, timeout_ms, NULL, 0, NULL, NULL, NULL, status);
+  return frage(op, uid, timeout_ms, NULL, 0, NULL, NULL, NULL, status, NULL);
 }
 
 /* Schlüsselbund: nach erkannter Erstanmeldung das im TPM versiegelte Passwort beim
@@ -295,7 +380,7 @@ static int dialog_weg(pam_handle_t *pamh, uid_t uid, const struct argumente *a) 
   if (frage(WINKY_OP_DIALOG, uid, a->geste_timeout_ms, NULL, 0, pamh,
             deutsch() ? "Winky: zum Freigeben \u270c in die Kamera zeigen (sonst Passwort) \u2026"
                       : "Winky: show \u270c to the camera to approve (or type your password) \u2026",
-            &wartete, &status) == 0 && status == WINKY_TREFFER) {
+            &wartete, &status, NULL) == 0 && status == WINKY_TREFFER) {
     pam_info(pamh, deutsch() ? "Winky: \u2713 freigegeben" : "Winky: \u2713 approved");
     pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
     pam_syslog(pamh, LOG_INFO, "Administrator-Dialog per Gesicht und Handzeichen freigegeben");
@@ -337,10 +422,23 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
     const size_t len = 2 + tl + strlen(nachricht + 2 + tl) + 1;
     uint32_t status = WINKY_FEHLER;
     int wartete = 0;
-    if (frage(WINKY_OP_SUDO, uid, a.geste_timeout_ms, nachricht, len, pamh,
-              deutsch() ? "Winky: zum Bestätigen \u270c in die Kamera zeigen (sonst Passwort) \u2026"
-                        : "Winky: show \u270c to the camera to confirm (or type your password) \u2026",
-              &wartete, &status) == 0 && status == WINKY_TREFFER) {
+    struct tastatur tasten;
+    tastatur_an(&tasten, STDIN_FILENO);
+    const int antwort = frage(
+        WINKY_OP_SUDO, uid, a.geste_timeout_ms, nachricht, len, pamh,
+        deutsch() ? "Winky: zum Bestätigen \u270c in die Kamera zeigen oder Passwort eingeben \u2026"
+                  : "Winky: show \u270c to the camera to confirm, or type your password \u2026",
+        &wartete, &status, &tasten);
+    if (antwort == -2) {
+      /* Passwort statt ✌: pam_unix nimmt es mit try_first_pass, sonst fragt es selbst */
+      if (tasten.zeile[0]) pam_set_item(pamh, PAM_AUTHTOK, tasten.zeile);
+      explicit_bzero(tasten.zeile, sizeof(tasten.zeile));
+      tastatur_aus(&tasten);
+      pam_syslog(pamh, LOG_INFO, "sudo: Passwort statt Handzeichen eingegeben");
+      return PAM_IGNORE;
+    }
+    tastatur_aus(&tasten);
+    if (antwort == 0 && status == WINKY_TREFFER) {
       pam_info(pamh, deutsch() ? "Winky: \u2713 bestätigt" : "Winky: \u2713 confirmed");
       pam_set_data(pamh, DATEN_GESICHT, (void *)1, NULL);
       pam_syslog(pamh, LOG_INFO, "sudo per Gesicht und Handzeichen bestätigt");
@@ -382,7 +480,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
               : (deutsch() ? "Winky: zum Entsperren \u270c in die Kamera zeigen (sonst Passwort) \u2026"
                            : "Winky: show \u270c to the camera to unlock (or type your password) \u2026");
     if (frage(maske ? WINKY_OP_ANMELDUNG_GESTE : WINKY_OP_AUTH_GESTE, uid, a.geste_timeout_ms,
-              NULL, 0, pamh, aufforderung, &wartete, &status) == 0 &&
+              NULL, 0, pamh, aufforderung, &wartete, &status, NULL) == 0 &&
         status == WINKY_TREFFER) {
       if (maske) {
         pam_info(pamh, deutsch() ? "Winky: \u2713 bestätigt, Anmeldung l\u00e4uft \u2026"

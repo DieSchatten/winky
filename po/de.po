@@ -1824,6 +1824,15 @@ msgstr "Sperre den Bildschirm mit Super+L."
 
 #: src/app/gesicht_app.py
 #, python-brace-format
+msgid "sudo: password typed instead of ✌: {command}"
+msgstr "sudo: Passwort statt ✌ eingegeben: {command}"
+
+#: src/app/gesicht_app.py src/hinweis/winky-hinweis
+msgid "sudo: password typed instead of ✌"
+msgstr "sudo: Passwort statt ✌ eingegeben"
+
+#: src/app/gesicht_app.py
+#, python-brace-format
 msgid "sudo confirmed: {command}"
 msgstr "sudo bestätigt: {command}"
 

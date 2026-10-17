@@ -170,6 +170,9 @@ These cannot be avoided by how you use Winky:
 - **Fixed time limits:** 3 seconds on the lock screen, at most 30 seconds for sudo, at most
   9 seconds over Polkit. No `fork`, no
   dependency on files in the home directory.
+- **Password instead of ✌:** typed while Winky waits, it is read without being shown and
+  handed to the normal password check; the camera turns off right away. The terminal is
+  restored on every path, including Ctrl+C.
 - **Isolated verification service:** starts only when needed, checks the caller via the
   socket and logind (local, active, graphical session on seat0).
 - **Root-owned data:** configuration, templates, switches and approvals are opened without

@@ -64,6 +64,7 @@ pruefe '[ -f /etc/winky/sudo-ein ] && grep -q "^sudo = ja" /etc/winky/winky.conf
 pruefe 'grep -q "pam_winky.so services=gdm-password,sudo,polkit-1 geste=sudo,polkit-1" /etc/pam.d/common-auth' "common-auth enthält sudo- und Dialog-Weg"
 
 # 1. Anfrage ohne Handzeichen: Aufforderung, dann nicht bestätigt, Hinweisdatei, Zähler
+cp /etc/pam.d/sudo /root/pam-sudo.orig   # echter Stapel (common-auth mit pam_unix) für später
 cp /etc/pam.d/sudo-nurgeste /etc/pam.d/sudo
 t0=$(date +%s%N); AUS=$(sudo_pam sudo ubuntu authenticate); t=$(( ($(date +%s%N)-t0)/1000000 ))
 pruefe 'echo "$AUS" | grep -q "to the camera" && echo "$AUS" | grep -q "not confirmed"' "Aufforderung erscheint, ohne ✌ nicht bestätigt (${t} ms)"
@@ -265,6 +266,43 @@ print(aus.decode(errors="replace"))
 TERMINAL
 )
 pruefe 'echo "$SUDO_AUS" | grep -q "Enter without a password" && echo "$SUDO_AUS" | grep -q "Sorry, try again" && [ "$(echo "$SUDO_AUS" | grep -c "show ✌ to the camera")" -ge 2 ]' "echtes sudo: nach verpasstem ✌ und Enter fragt Winky noch einmal"
+# Passwort während des Wartens aufs ✌, mit dem echten Stapel (common-auth mit pam_unix): ohne
+# Anzeige, ohne Warten, Kamera gleich aus; falsch Getipptes bleibt nicht für den nächsten Versuch
+cp /root/pam-sudo.orig /etc/pam.d/sudo
+cat > /root/terminal.py <<'TERMINAL'
+import json, os, pty, select, sys, time
+schritte = json.loads(sys.argv[1])   # [[Auslöser, Text], …]: Text tippen, sobald Auslöser erscheint
+pid, fd = pty.fork()
+if pid == 0:
+    os.execvp("setpriv", ["setpriv", "--reuid=ubuntu", "--regid=ubuntu", "--init-groups",
+                          "--reset-env", "bash", "-c", "sudo -k; LANG=C sudo true; echo ENDE=$?"])
+aus, ab, getippt, ende = b"", 0, None, time.time() + 60
+while time.time() < ende and b"ENDE=" not in aus:
+    if select.select([fd], [], [], 0.2)[0]:
+        try:
+            d = os.read(fd, 4096)
+        except OSError:
+            break
+        if not d:
+            break
+        aus += d
+    if schritte and schritte[0][0].encode() in aus[ab:]:
+        ab = aus.index(schritte[0][0].encode(), ab) + len(schritte[0][0])
+        time.sleep(0.5)
+        os.write(fd, schritte.pop(0)[1].encode())
+        getippt = time.time()
+print(aus.decode(errors="replace"))
+print(f"DAUER_MS={int((time.time() - getippt) * 1000) if getippt else 99999}")
+TERMINAL
+rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
+SUDO_AUS=$(python3 /root/terminal.py '[["to the camera", "Testpasswort1\n"]]')
+pruefe 'echo "$SUDO_AUS" | grep -q "ENDE=0" && ! echo "$SUDO_AUS" | grep -q -e Testpasswort1 -e "password for" && [ "$(echo "$SUDO_AUS" | sed -n "s/^DAUER_MS=//p")" -lt 3000 ]' "echtes sudo: Passwort während des Wartens getippt, sofort und unsichtbar"
+echo "$SUDO_AUS" | grep -q "ENDE=0" || echo "$SUDO_AUS" | tr -d "\r" | sed 's/^/        /' | tail -8
+sleep 1
+pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=sudo" | tail -1 | grep -q "grund=passwort" && [ "$(anfrage)" = passwort ]' "Prüfdienst: Passwort statt ✌, Kamera aus, Hinweis schließt"
+SUDO_AUS=$(python3 /root/terminal.py '[["to the camera", "falsch\n"], ["to the camera", "\n"], ["password for", "Testpasswort1\n"]]')
+pruefe 'echo "$SUDO_AUS" | grep -q "ENDE=0" && echo "$SUDO_AUS" | grep -q "Sorry, try again" && echo "$SUDO_AUS" | grep -q "password for" && ! echo "$SUDO_AUS" | grep -q -e falsch -e Testpasswort1' "falsch getippt: sudo fragt neu, Enter führt zur Passwortfrage, nichts bleibt hängen"
+echo "$SUDO_AUS" | grep -q "ENDE=0" || echo "$SUDO_AUS" | tr -d "\r" | sed 's/^/        /' | tail -8
 rm -f /etc/sudoers.d/ubuntu /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 SUDO_UID=1000 $V sudo aus </dev/null >/dev/null
 
