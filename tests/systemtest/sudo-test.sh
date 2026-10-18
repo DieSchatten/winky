@@ -296,7 +296,7 @@ print(f"DAUER_MS={int((time.time() - getippt) * 1000) if getippt else 99999}")
 TERMINAL
 rm -f /run/winky/sperre/sudo-1000 /run/winky/sperre/1000
 SUDO_AUS=$(python3 /root/terminal.py '[["to the camera", "Testpasswort1\n"]]')
-pruefe 'echo "$SUDO_AUS" | grep -q "ENDE=0" && ! echo "$SUDO_AUS" | grep -q -e Testpasswort1 -e "password for" && [ "$(echo "$SUDO_AUS" | sed -n "s/^DAUER_MS=//p")" -lt 3000 ]' "echtes sudo: Passwort während des Wartens getippt, sofort und unsichtbar"
+pruefe 'echo "$SUDO_AUS" | grep -q "ENDE=0" && echo "$SUDO_AUS" | grep -q "Winky: password: \*\*\*" && ! echo "$SUDO_AUS" | grep -q -e Testpasswort1 -e "password for" && [ "$(echo "$SUDO_AUS" | sed -n "s/^DAUER_MS=//p")" -lt 3000 ]' "echtes sudo: Passwort während des Wartens getippt, Sterne statt Zeichen, sofort weiter"
 echo "$SUDO_AUS" | grep -q "ENDE=0" || echo "$SUDO_AUS" | tr -d "\r" | sed 's/^/        /' | tail -8
 sleep 1
 pruefe 'journalctl -t winky -o cat --no-pager | grep "zweck=sudo" | tail -1 | grep -q "grund=passwort" && [ "$(anfrage)" = passwort ]' "Prüfdienst: Passwort statt ✌, Kamera aus, Hinweis schließt"

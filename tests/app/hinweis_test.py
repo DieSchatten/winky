@@ -51,6 +51,9 @@ class FensterAttrappe:
     def schliessen(self):
         self.ereignisse.append(("schliessen",))
 
+    def offen(self):
+        return False
+
 
 meldungen = []
 
@@ -98,6 +101,12 @@ fenster, melde = lauf(hinweis, "wartet", alter=11)
 fenster, melde = lauf(hinweis, "passwort", alter=11)
 pruefe(fenster == [("schliessen",)] and not melde,
        "Passwort statt ✌ getippt: Fenster zu, keine Benachrichtigung")
+fenster, melde = lauf(hinweis, "wartet", alter=13)
+fenster, melde = lauf(hinweis, "etwas_neues", alter=13)
+pruefe(fenster == [("schliessen",)] and not melde,
+       "unbekannter Stand (neuerer Prüfdienst): Fenster zu, nichts gemeldet")
+pruefe(not h.veraltet(h.programm_stand()) and h.veraltet((0, 0)),
+       "erkennt, wenn das Programm durch ein Update ersetzt wurde")
 fenster, melde = lauf(hinweis, "wartet", alter=300)
 pruefe(not fenster and not melde, "alte Anfragen (etwa nach dem Anmelden) werden nicht gemeldet")
 

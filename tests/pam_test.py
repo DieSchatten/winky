@@ -27,7 +27,7 @@ def pruefe(bed, text):
 
 class Attrappe:
     """Antwortet je nach Modus: treffer, kein, haengt, muell, schliesst; für sudo (Operation 7)
-    geste-treffer, geste-treffer-spaet, geste-kein, geste-ablehnen, geste-haengt, geste-wartet
+    geste-treffer, geste-kein, geste-ablehnen, geste-haengt, geste-wartet
     (wartet aufs Auflegen, merkt sich die Zeit in aufgelegt). Merkt sich die Zusatznachricht."""
 
     def __init__(self):
@@ -63,8 +63,7 @@ class Attrappe:
                         self.zusatz.append(c.recv(1024))
                     except OSError:
                         self.zusatz.append(b"")
-                antwort = {"geste-treffer": TREFFER, "geste-treffer-spaet": TREFFER,
-                           "geste-kein": KEIN_TREFFER}
+                antwort = {"geste-treffer": TREFFER, "geste-kein": KEIN_TREFFER}
                 if self.modus in ("geste-ablehnen", "geste-gesperrt"):
                     status = 6 if self.modus == "geste-ablehnen" else 4
                     c.send(struct.pack("IIfI", MAGIC, status, -1.0, 1))
@@ -82,7 +81,7 @@ class Attrappe:
                         return
                     self.aufgelegt = time.monotonic() - t0
                     return
-                time.sleep(1.5 if self.modus == "geste-treffer-spaet" else 0.3)
+                time.sleep(0.3)
                 c.send(struct.pack("IIfI", MAGIC, antwort.get(self.modus, KEIN_TREFFER), 0.9, 1500))
                 return
             if op == 2:
@@ -399,12 +398,18 @@ def main():
            f"Enter ohne Passwort: gleich zur Passwortfrage ({dauer:.1f} s)")
     code, aus, _, echo = am_terminal(pamtester, [("to the camera", "Test\x03")])
     pruefe(code < 0 and echo, "Strg+C beim Warten: bricht ab, Anzeige des Terminals wieder an")
-    a.modus = "geste-treffer-spaet"
-    code, aus, _, echo = am_terminal(
-        ["bash", "-c", " ".join(pamtester) + '; read -r rest; echo "REST=[$rest]"'],
-        [("to the camera", "halb"), ("confirmed", "\n")])
-    pruefe("REST=[]" in aus and "halb" not in aus and echo,
-           "✌ während halb getippt: Rest verworfen, nicht für den Befehl oder die Shell")
+    # Erste Taste: Prüfdienst sofort abbestellt, Aufforderung mit Sternen; Löschen und Strg+U
+    a.modus, a.aufgelegt = "geste-wartet", None
+    code, aus, _, echo = am_terminal(pamtester, [
+        ("to the camera", "x"), ("password: ", "\x15Testpasswort12"),
+        ("**", "\x7f\n")])
+    pruefe(a.aufgelegt is not None and a.aufgelegt < 1.5,
+           "erste Taste: Prüfdienst sofort abbestellt (Kamera aus, ✌-Fenster zu)")
+    pruefe(code == 0 and "Winky: password: " in aus and "*" in aus and "Testpasswort" not in aus
+           and echo, "Aufforderung mit Sternen; Rücktaste und Strg+U wirken")
+    code, aus, _, _ = am_terminal(pamtester, [("to the camera", "\n"),
+                                              ("Password:", "Testpasswort1\n")])
+    pruefe(code == 0 and "Winky: password" not in aus, "Enter allein: keine eigene Aufforderung")
     dienst("winky-test-geste", [geste, "auth requisite pam_deny.so"])
     a.modus = "geste-treffer"
     vorher = len(a.anfragen)

@@ -176,8 +176,8 @@ Das lässt sich durch Bedienung nicht abstellen:
 - **Feste Zeitgrenzen:** 3 Sekunden am Sperrbildschirm, höchstens 30 Sekunden für sudo,
   höchstens 9 Sekunden über Polkit. Kein `fork`,
   keine Abhängigkeit von Dateien im Home-Verzeichnis.
-- **Passwort statt ✌:** Während Winky wartet getippt, wird es ohne Anzeige gelesen und an die
-  normale Passwortprüfung weitergegeben; die Kamera geht sofort aus. Das Terminal wird auf
+- **Passwort statt ✌:** Die erste Taste schaltet die Kamera aus; das Passwort erscheint nur
+  als Sterne und geht an die normale Passwortprüfung. Das Terminal wird auf
   jedem Weg wiederhergestellt, auch bei Strg+C.
 - **Abgeschotteter Prüfdienst:** startet nur bei Bedarf, prüft den Aufrufer über den
   Socket und logind (lokale, aktive, grafische Sitzung an seat0).

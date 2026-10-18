@@ -121,11 +121,12 @@ static long ms_seit(const struct timespec *start) {
   return (jetzt.tv_sec - start->tv_sec) * 1000L + (jetzt.tv_nsec - start->tv_nsec) / 1000000L;
 }
 
-/* Tastatur während des Wartens aufs ✌ (sudo): Anzeige aus, eine mit Enter abgeschlossene Zeile
- * ist das Passwort. Sonst stünde es im Klartext im Terminal, und sudo verwürfe es ohnehin, bevor
- * es selbst fragt. Signale (Strg+C …) stellen erst das Terminal wieder her und gehen dann wie
- * vorher an sudo. */
+/* Tastatur während des Wartens aufs ✌ (sudo): Sonst stünde ein getipptes Passwort im Klartext im
+ * Terminal, und sudo verwürfe es ohnehin, bevor es selbst fragt. Die erste Taste schaltet auf
+ * Passworteingabe (Kamera aus), jedes Zeichen zeigt einen Stern; Enter gibt die Zeile an pam_unix.
+ * Signale (Strg+C …) stellen erst das Terminal wieder her und gehen dann wie vorher an sudo. */
 #define EINGABE_MAX 512
+#define TIPPEN_MS 120000 /* nach dieser Pause ohne Enter fragt pam_unix selbst */
 static const int SIGNALE[] = {SIGINT, SIGQUIT, SIGTERM, SIGHUP, SIGTSTP};
 #define N_SIGNALE (sizeof(SIGNALE) / sizeof(SIGNALE[0]))
 static volatile sig_atomic_t signal_gefangen = 0;
@@ -133,17 +134,22 @@ static volatile sig_atomic_t signal_gefangen = 0;
 static void signal_merken(int sig) { signal_gefangen = sig; }
 
 struct tastatur {
-  int fd; /* -1: nicht aktiv */
-  int fertig; /* 1: Zeile gelesen (zeile, auch leer) */
+  int fd;       /* -1: nicht aktiv */
+  int aus;      /* /dev/tty für Aufforderung und Sterne, -1: ohne */
+  int tippt;    /* 1: Taste gedrückt, Prüfdienst abbestellt */
+  int gezeigt;  /* 1: Aufforderung steht da */
+  int fertig;   /* 1: mit Enter abgeschlossen */
+  size_t laenge;
+  const char *aufforderung;
   struct termios vorher;
   struct sigaction alt[N_SIGNALE];
   char zeile[EINGABE_MAX];
 };
 
-static void tastatur_an(struct tastatur *t, int fd) {
-  t->fd = -1;
-  t->fertig = 0;
-  t->zeile[0] = '\0';
+static void tastatur_an(struct tastatur *t, int fd, const char *aufforderung) {
+  memset(t, 0, sizeof(*t));
+  t->fd = t->aus = -1;
+  t->aufforderung = aufforderung;
   /* Nur im Vordergrund und zeilenweise (sonst hält das Terminal an oder liest ein Programm roh) */
   if (!isatty(fd) || tcgetpgrp(fd) != getpgrp() || tcgetattr(fd, &t->vorher) != 0 ||
       !(t->vorher.c_lflag & ICANON))
@@ -154,45 +160,96 @@ static void tastatur_an(struct tastatur *t, int fd) {
   sa.sa_handler = signal_merken; /* ohne SA_RESTART: poll kehrt zurück */
   sigemptyset(&sa.sa_mask);
   for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &sa, &t->alt[i]);
-  struct termios ohne = t->vorher;
-  ohne.c_lflag &= ~(tcflag_t)(ECHO | ECHONL);
-  if (tcsetattr(fd, TCSANOW, &ohne) != 0) {
+  struct termios roh = t->vorher;
+  roh.c_lflag &= ~(tcflag_t)(ICANON | ECHO | ECHONL);
+  roh.c_cc[VMIN] = 1;
+  roh.c_cc[VTIME] = 0;
+  if (tcsetattr(fd, TCSANOW, &roh) != 0) {
     for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &t->alt[i], NULL);
     return;
   }
   t->fd = fd;
+  t->aus = open("/dev/tty", O_WRONLY | O_NOCTTY | O_CLOEXEC);
+}
+
+static void schreibe(struct tastatur *t, const char *text) {
+  if (t->aus >= 0 && write(t->aus, text, strlen(text)) < 0) t->aus = -1;
 }
 
 static void tastatur_aus(struct tastatur *t) {
   if (t->fd < 0) return;
   /* Halb Getipptes nicht dem Befehl oder der Shell überlassen, dort stünde es sichtbar */
-  if (!t->fertig) tcflush(t->fd, TCIFLUSH);
+  if (!t->fertig) {
+    tcflush(t->fd, TCIFLUSH);
+    if (t->gezeigt) schreibe(t, "\n");
+  }
   tcsetattr(t->fd, TCSANOW, &t->vorher);
   for (size_t i = 0; i < N_SIGNALE; ++i) sigaction(SIGNALE[i], &t->alt[i], NULL);
-  t->fd = -1;
+  if (t->aus >= 0) close(t->aus);
+  t->fd = t->aus = -1;
   if (signal_gefangen) raise(signal_gefangen);
 }
 
-/* Liest die Zeile; 1 bei Erfolg (auch leer oder Strg+D), 0 wenn noch nichts da ist */
-static int tastatur_lesen(struct tastatur *t) {
-  ssize_t n = read(t->fd, t->zeile, sizeof(t->zeile) - 1);
-  if (n < 0 && (errno == EAGAIN || errno == EINTR)) return 0;
-  if (n < 0) n = 0; /* Lesefehler: wie leere Zeile, dann fragt pam_unix */
-  t->zeile[n] = '\0';
-  char *ende = memchr(t->zeile, '\n', (size_t)n);
-  if (ende) {
-    *ende = '\0';
-  } else if (n > 0) { /* zu lang: verwerfen, dann fragt pam_unix */
-    explicit_bzero(t->zeile, sizeof(t->zeile));
-    tcflush(t->fd, TCIFLUSH);
+static void zeichen_weg(struct tastatur *t) {
+  /* ganzes UTF-8-Zeichen entfernen, ein Stern */
+  while (t->laenge > 0 && ((unsigned char)t->zeile[--t->laenge] & 0xC0) == 0x80) {
   }
-  t->fertig = 1;
-  return 1;
+  schreibe(t, "\b \b");
+}
+
+/* Verarbeitet getippte Zeichen; 1, wenn die Eingabe mit Enter (oder Strg+D) fertig ist */
+static int tastatur_zeichen(struct tastatur *t, const unsigned char *puf, size_t n) {
+  const cc_t *cc = t->vorher.c_cc;
+  for (size_t i = 0; i < n; ++i) {
+    const unsigned char c = puf[i];
+    t->tippt = 1;
+    if (c == '\n' || c == '\r' || (c == cc[VEOF] && cc[VEOF] && t->laenge == 0)) {
+      t->zeile[t->laenge] = '\0';
+      t->fertig = 1;
+      if (t->gezeigt) schreibe(t, "\n");
+      return 1;
+    }
+    if (!t->gezeigt) {
+      t->gezeigt = 1;
+      schreibe(t, t->aufforderung);
+    }
+    if (c == 0x7f || c == 0x08 || (c == cc[VERASE] && cc[VERASE])) {
+      if (t->laenge > 0) zeichen_weg(t);
+    } else if (c == cc[VKILL] && cc[VKILL]) {
+      while (t->laenge > 0) zeichen_weg(t);
+    } else if (c >= 0x20 && t->laenge < sizeof(t->zeile) - 1) {
+      t->zeile[t->laenge++] = (char)c;
+      if ((c & 0xC0) != 0x80) schreibe(t, "*");
+    }
+  }
+  return 0;
+}
+
+/* Nach der ersten Taste: bis Enter weiterlesen (ohne Prüfdienst). 1: fertig, 0: Pause zu lang
+ * oder Signal (dann ohne Passwort weiter) */
+static int tastatur_zu_ende(struct tastatur *t) {
+  for (;;) {
+    struct pollfd p = {t->fd, POLLIN, 0};
+    const int r = poll(&p, 1, TIPPEN_MS);
+    if (r < 0 && errno == EINTR && !signal_gefangen) continue;
+    if (r <= 0 || !(p.revents & POLLIN)) break;
+    unsigned char puf[256];
+    const ssize_t n = read(t->fd, puf, sizeof(puf));
+    if (n < 0 && (errno == EAGAIN || errno == EINTR) && !signal_gefangen) continue;
+    if (n <= 0) break;
+    const int fertig = tastatur_zeichen(t, puf, (size_t)n);
+    explicit_bzero(puf, sizeof(puf));
+    if (fertig) return 1;
+  }
+  explicit_bzero(t->zeile, sizeof(t->zeile));
+  t->laenge = 0;
+  return 0;
 }
 
 /* Fragt den Prüfdienst: 0 und *status, sonst -1. zusatz geht als zweite Nachricht; auf 'W'
- * (Kamera läuft) zeigt PAM einmal hinweis und setzt *wartete. Mit aktiver tastatur: -2, wenn
- * eine Zeile getippt wurde (Verbindung wird getrennt, der Prüfdienst schaltet die Kamera ab). */
+ * (Kamera läuft) zeigt PAM einmal hinweis und setzt *wartete. Mit aktiver tastatur: -2, sobald
+ * getippt wird (Verbindung wird getrennt, der Prüfdienst schaltet die Kamera ab); die Zeile steht
+ * dann in tasten->zeile, wenn sie mit Enter abgeschlossen wurde (tasten->fertig). */
 static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, size_t zusatz_len,
                  pam_handle_t *pamh, const char *hinweis, int *wartete, uint32_t *status,
                  struct tastatur *tasten) {
@@ -233,11 +290,15 @@ static int frage(uint32_t op, uid_t uid, int timeout_ms, const char *zusatz, siz
     }
     if (r <= 0) break;
     if (tasten_fd >= 0 && p[1].revents) {
-      if ((p[1].revents & POLLIN) && tastatur_lesen(tasten)) {
-        close(fd);
+      unsigned char puf[256];
+      const ssize_t k = (p[1].revents & POLLIN) ? read(tasten_fd, puf, sizeof(puf)) : -1;
+      if (k > 0) {
+        close(fd); /* erste Taste: Passwort statt ✌, der Prüfdienst schaltet die Kamera ab */
+        if (!tastatur_zeichen(tasten, puf, (size_t)k)) tastatur_zu_ende(tasten);
+        explicit_bzero(puf, sizeof(puf));
         return -2;
       }
-      if (!(p[1].revents & POLLIN)) tasten_fd = -1; /* Terminal weg: nur noch aufs ✌ warten */
+      if (k == 0 || !(p[1].revents & POLLIN)) tasten_fd = -1; /* Terminal weg: nur noch ✌ */
     }
     if (!(p[0].revents & (POLLIN | POLLHUP | POLLERR))) continue;
     struct winky_antwort a;
@@ -423,7 +484,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
     uint32_t status = WINKY_FEHLER;
     int wartete = 0;
     struct tastatur tasten;
-    tastatur_an(&tasten, STDIN_FILENO);
+    tastatur_an(&tasten, STDIN_FILENO, deutsch() ? "Winky: Passwort: " : "Winky: password: ");
     const int antwort = frage(
         WINKY_OP_SUDO, uid, a.geste_timeout_ms, nachricht, len, pamh,
         deutsch() ? "Winky: zum Bestätigen \u270c in die Kamera zeigen oder Passwort eingeben \u2026"
@@ -431,7 +492,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
         &wartete, &status, &tasten);
     if (antwort == -2) {
       /* Passwort statt ✌: pam_unix nimmt es mit try_first_pass, sonst fragt es selbst */
-      if (tasten.zeile[0]) pam_set_item(pamh, PAM_AUTHTOK, tasten.zeile);
+      if (tasten.fertig && tasten.zeile[0]) pam_set_item(pamh, PAM_AUTHTOK, tasten.zeile);
       explicit_bzero(tasten.zeile, sizeof(tasten.zeile));
       tastatur_aus(&tasten);
       pam_syslog(pamh, LOG_INFO, "sudo: Passwort statt Handzeichen eingegeben");

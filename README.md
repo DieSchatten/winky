@@ -185,8 +185,8 @@ Winky: ✓ confirmed
   without a terminal, not with `sudo -S`.
 - Exactly one face in the picture, the hand close beside it, and it must be the recognized
   face.
-- Rather use the password? Just type it while Winky waits and press Enter. It isn't shown,
-  and sudo continues right away.
+- Rather use the password? Just start typing while Winky waits: the camera turns off, stars
+  show your input, and after Enter sudo continues right away.
 - Missed the ✌? Press Enter without a password: sudo asks again, and Winky waits for the ✌
   once more.
 - Two requests at the same time are both cancelled. After three unconfirmed requests, only

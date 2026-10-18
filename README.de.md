@@ -184,8 +184,8 @@ Winky: ✓ bestätigt
 - Nur sudo in einem Terminal der laufenden Sitzung am Rechner selbst. Nicht über SSH, nicht
   ohne Terminal, nicht mit `sudo -S`.
 - Genau ein Gesicht im Bild, die Hand nah daneben, und es muss das erkannte Gesicht sein.
-- Lieber das Passwort? Einfach tippen, während Winky wartet, und Enter drücken. Es wird
-  nicht angezeigt, und sudo geht sofort weiter.
+- Lieber das Passwort? Einfach lostippen, während Winky wartet: Die Kamera geht aus, Sterne
+  zeigen die Eingabe, und nach Enter geht sudo sofort weiter.
 - ✌ verpasst? Enter ohne Passwort drücken: sudo fragt neu, und Winky wartet noch einmal
   auf das ✌.
 - Zwei Anfragen zur selben Zeit werden beide abgebrochen. Nach drei unbestätigten gilt

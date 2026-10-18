@@ -185,6 +185,9 @@ class Fenster:
         GLib.timeout_add(1200, lambda: self.schliessen() and False)
         return True
 
+    def offen(self):
+        return self.fenster is not None
+
     def schliessen(self):
         if self.takt:
             GLib.source_remove(self.takt)
@@ -192,6 +195,22 @@ class Fenster:
         if self.fenster:
             self.fenster.destroy()
             self.fenster = None
+
+
+PROGRAMM = str(Path(__file__).resolve())
+
+
+def programm_stand():
+    """Datei und Zeitstempel des laufenden Programms (ändern sich mit jedem Paket-Update)."""
+    try:
+        st = os.stat(PROGRAMM)
+        return st.st_ino, st.st_mtime_ns
+    except OSError:
+        return None
+
+
+def veraltet(stand):
+    return programm_stand() != stand
 
 
 class Hinweis:
@@ -202,7 +221,20 @@ class Hinweis:
         self.monitor = None
         self.ordner = Gio.File.new_for_path(BASIS)
         self.fenster = Fenster()
+        self.programm = programm_stand()
         self._beobachten()
+        # Läuft seit der Anmeldung: nach einem Update der neuen Fassung Platz machen
+        GLib.timeout_add_seconds(30, self._erneuern)
+
+    def _erneuern(self):
+        if not veraltet(self.programm) or self.fenster.offen():
+            return True
+        try:
+            os.execv(PROGRAMM, [PROGRAMM])
+        except OSError:   # deinstalliert oder gerade nicht lesbar
+            if not os.path.exists(PROGRAMM):
+                os._exit(0)
+        return True
 
     def _beobachten(self):
         if not os.path.isdir(BASIS):
@@ -234,7 +266,10 @@ class Hinweis:
         stand, zeit = daten.get("stand"), daten.get("zeit", 0)
         zweck = str(daten.get("zweck", "sudo"))
         texte = TEXTE.get(zweck, TEXTE["sudo"])
-        if stand not in texte or not isinstance(zeit, int) or time.time() - zeit > ALT:
+        if not isinstance(zeit, int) or time.time() - zeit > ALT:
+            return
+        if stand not in texte:   # unbekannter Stand (neuerer Prüfdienst): Fenster jedenfalls zu
+            self.fenster.schliessen()
             return
         if (zeit, stand) == self.letzte:
             return

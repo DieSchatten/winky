@@ -62,9 +62,9 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Komponenten** (`tests/test_dienst.cc`, 80 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
-- **PAM** (`tests/pam_test.py`, 66 Prüfungen): echtes libpam mit pamtester und
+- **PAM** (`tests/pam_test.py`, 68 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst, am Pseudo-Terminal auch das Passwort während des Wartens aufs ✌
-  (ohne Anzeige, an pam_unix, Strg+C, halb Getipptes). Läuft beim Paketbau.
+  (erste Taste bestellt den Prüfdienst ab, Sterne, Löschen, an pam_unix, Strg+C). Läuft beim Paketbau.
 - **App** (`tests/app/gui_logik_test.py`, 126 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu alle Abschnitte der Seitenleiste und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
@@ -75,7 +75,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
     python3 tests/app/gui_logik_test.py
   ```
 
-- **Hinweise** (`tests/app/hinweis_test.py`, 17 Prüfungen): welcher Stand der
+- **Hinweise** (`tests/app/hinweis_test.py`, 19 Prüfungen): welcher Stand der
   Anfragedatei zu welchem Hinweis führt (Fenster, ✓, Benachrichtigung, alte Anfragen).
 - **Gesicht ergänzen** (`tests/app/verwalten_test.py`, 10 Prüfungen): Ergänzungen nur mit
   erkanntem Gesicht, fremde Bilder verworfen, höchstens drei, gezielt löschbar.
