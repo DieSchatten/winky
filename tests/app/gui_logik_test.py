@@ -242,6 +242,16 @@ def test(f):
     f.w_mehr["erweitert"].emit("clicked")
     pruefe(seite(f) == "start" and f.abschnitte.get_visible_child_name() == "erweitert",
            "„Öffnen“ auf der Fertig-Seite springt zum Abschnitt")
+    f.r_assistent.emit("activated")
+    pruefe(seite(f) == "einrichtung" and schritt(f) == "willkommen",
+           "Erweitert: Einrichtungsassistent erneut starten beginnt bei „Willkommen“")
+    for sid in ("kamera", "einlernen", "testen", "gegenprobe", "einschalten"):
+        weiter(f)
+        if schritt(f) != sid or not f.w_weiter.get_sensitive():
+            break
+    pruefe(schritt(f) == "einschalten" and f.zustand.aktiv,
+           "erneuter Durchlauf: erledigte Schritte lassen sich überspringen, nichts wird zurückgesetzt")
+    f.nav.pop_to_tag("start")
     f.abschnitt_zeigen("uebersicht")
 
     # --- Startseite

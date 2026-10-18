@@ -157,6 +157,8 @@
         <ul>
           <li>Setup: when turning on face unlock, you can also choose when the computer locks automatically. The last page shows further options with a button to each.</li>
           <li xml:lang="de">Einrichtung: Beim Einschalten lässt sich gleich einstellen, wann der Rechner automatisch sperrt. Die letzte Seite zeigt weitere Möglichkeiten mit Knopf zum jeweiligen Abschnitt.</li>
+          <li>The setup assistant can be run again at any time (Advanced → Setup); what is already set up stays.</li>
+          <li xml:lang="de">Der Einrichtungsassistent lässt sich jederzeit erneut starten (Erweitert → Einrichtung); was schon eingerichtet ist, bleibt.</li>
         </ul>
       </description>
     </release>

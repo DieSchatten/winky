@@ -953,11 +953,14 @@ class Fenster(Adw.ApplicationWindow):
         self.w_stapel.connect("notify::visible-child-name", lambda *_: self._assistent_anzeigen())
         return seite(_("Setup"), "einrichtung", self.w_stapel, unten)
 
-    def einrichtung_oeffnen(self):
-        """Öffnet den Assistenten beim ersten offenen Schritt."""
+    def einrichtung_oeffnen(self, von_vorn=False):
+        """Öffnet den Assistenten beim ersten offenen Schritt (von_vorn: bei „Willkommen“)."""
+        if self.beschaeftigt():
+            self.melde(_("Please wait, something else is still running"))
+            return
         s = stand(self.zustand)
         offen = [sid for sid in ("kamera", "einlernen", "testen") if not s[sid]]
-        if not s["kamera"] and not s["einlernen"]:
+        if von_vorn or (not s["kamera"] and not s["einlernen"]):
             ziel = "willkommen"
         elif offen:
             ziel = offen[0]
@@ -1127,6 +1130,14 @@ class Fenster(Adw.ApplicationWindow):
         self.r_vorlagen_tpm.connect("notify::active", self._vorlagen_tpm_umgeschaltet)
         daten.add(self.r_vorlagen_tpm)
         s.add(daten)
+
+        einrichtung = Adw.PreferencesGroup(title=_("Setup"))
+        self.r_assistent = weiterzeile(
+            _("Run the setup assistant again"),
+            _("All steps once more. What is already set up stays until you change it there."),
+            lambda: self.einrichtung_oeffnen(von_vorn=True), "view-refresh-symbolic")
+        einrichtung.add(self.r_assistent)
+        s.add(einrichtung)
 
         info = Adw.PreferencesGroup(title=_("About Winky"))
         self.r_version = textzeile(_("Version"))

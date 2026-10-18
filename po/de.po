@@ -771,6 +771,10 @@ msgid "Setup"
 msgstr "Einrichtung"
 
 #: src/app/gesicht_app.py
+msgid "Please wait, something else is still running"
+msgstr "Bitte warten, gerade läuft noch etwas"
+
+#: src/app/gesicht_app.py
 #, python-brace-format
 msgid "Step {number} of {total}"
 msgstr "Schritt {number} von {total}"
@@ -790,10 +794,6 @@ msgstr "Zur Übersicht"
 #: src/app/gesicht_app.py
 msgid "Camera"
 msgstr "Kamera"
-
-#: src/app/gesicht_app.py
-msgid "Please wait, something else is still running"
-msgstr "Bitte warten, gerade läuft noch etwas"
 
 #: src/app/gesicht_app.py
 msgid "Infrared camera"
@@ -943,6 +943,17 @@ msgstr ""
 "dagegen hilft ein BIOS-Passwort, das den Start von USB sperrt. Nach einem "
 "BIOS-Update oder einer Änderung an Secure Boot musst du dein Gesicht unter "
 "Umständen neu aufnehmen. Gilt für alle Benutzer dieses Rechners."
+
+#: src/app/gesicht_app.py
+msgid "Run the setup assistant again"
+msgstr "Einrichtungsassistent erneut starten"
+
+#: src/app/gesicht_app.py
+msgid ""
+"All steps once more. What is already set up stays until you change it there."
+msgstr ""
+"Alle Schritte noch einmal. Was schon eingerichtet ist, bleibt, bis du es "
+"dort änderst."
 
 #: src/app/gesicht_app.py
 msgid "Version"

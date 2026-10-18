@@ -6,6 +6,8 @@
   options with a button to each section. Einrichtung: Beim Einschalten lässt sich gleich die
   automatische Sperre einstellen; die letzte Seite zeigt weitere Möglichkeiten mit Knopf zum
   jeweiligen Abschnitt.
+- Run the setup assistant again at any time (Advanced → Setup). Den Einrichtungsassistenten
+  jederzeit erneut starten (Erweitert → Einrichtung).
 
 ## 0.15.0 (18.10.2026)
 
