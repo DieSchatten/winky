@@ -102,6 +102,7 @@ ABLAEUFE = {
 SCHRITTE = ["willkommen", "kamera", "einlernen", "testen", "gegenprobe", "einschalten", "sudo",
             "fertig"]
 GEZAEHLT = SCHRITTE[1:-1]
+SPERRE_TEXT = _("With face unlock, a short time hardly bothers you: you’re back in with a glance.")
 
 
 def datum(ts):
@@ -282,6 +283,94 @@ class ErgaenzungsListe(Adw.PreferencesGroup):
         for r in self.zeilen:
             r.knopf.set_sensitive(not laeuft)
         self.set_visible(bool(liste))
+
+
+_DESKTOP = []
+
+
+def desktop_einstellungen():
+    """Sitzungs- und Sperreinstellungen von GNOME; None, wenn es sie nicht gibt."""
+    if not _DESKTOP:
+        quelle = Gio.SettingsSchemaSource.get_default()
+        if quelle and quelle.lookup("org.gnome.desktop.session", True) and \
+                quelle.lookup("org.gnome.desktop.screensaver", True):
+            _DESKTOP.append((Gio.Settings.new("org.gnome.desktop.session"),
+                             Gio.Settings.new("org.gnome.desktop.screensaver")))
+        else:
+            _DESKTOP.append(None)
+    return _DESKTOP[0]
+
+
+class SperrZeilen:
+    """Automatisch sperren wie in den GNOME-Einstellungen: Schalter = lock-enabled, Minuten =
+    idle-delay (Bildschirm aus), gesperrt wird dann sofort (lock-delay 0). Steht unter Freigaben
+    und im Assistenten; Änderungen, auch aus den Systemeinstellungen, zeigen beide sofort."""
+
+    def __init__(self):
+        self._sperre = False
+        self.an = Adw.SwitchRow(title=_("Lock automatically"))
+        self.an.add_prefix(Gtk.Image(icon_name="system-lock-screen-symbolic"))
+        self.an.connect("notify::active", self._umgeschaltet)
+        self.zeit = Adw.SpinRow.new_with_range(1, 60, 1)
+        self.zeit.set_title(_("After minutes without input"))
+        self.zeit.add_prefix(Gtk.Image(icon_name="preferences-system-time-symbolic"))
+        self.zeit.connect("notify::value", self._gewaehlt)
+        for einst in desktop_einstellungen() or ():
+            einst.connect("changed", lambda *_: self.zeigen())
+        self.zeigen()
+
+    def zeigen(self):
+        einst = desktop_einstellungen()
+        if einst is None:
+            for zeile in (self.an, self.zeit):
+                zeile.set_sensitive(False)
+            self.an.set_subtitle(_("Not available on this desktop"))
+            return
+        sitzung, sperre = einst
+        sekunden = sitzung.get_uint("idle-delay")
+        an = sekunden > 0 and sperre.get_boolean("lock-enabled")
+        self._sperre = True
+        self.an.set_active(an)
+        fenster = self.zeit.get_root()   # beim Tippen nicht überschreiben
+        fokus = fenster.get_focus() if fenster else None
+        tippt = fokus is not None and (fokus == self.zeit or fokus.is_ancestor(self.zeit))
+        if sekunden and not tippt:
+            self.zeit.set_value(max(1, min(60, round(sekunden / 60))))
+        self._sperre = False
+        self.zeit.set_sensitive(an)
+        self.an.set_subtitle(_("Without input, the screen turns off and locks") if an else
+                             _("Never locks by itself; lock with Super+L"))
+        if an and sperre.get_uint("lock-delay"):
+            self.zeit.set_subtitle(_("Locks {seconds} s after the screen turns off").format(
+                seconds=sperre.get_uint("lock-delay")))
+        elif an and (sekunden % 60 or sekunden > 3600):
+            self.zeit.set_subtitle(_("Currently {minutes} minutes (set in the system "
+                                     "settings)").format(minutes=round(sekunden / 60)))
+        else:
+            self.zeit.set_subtitle("")
+
+    def _setzen(self):
+        """Bildschirm nach der eingestellten Zeit aus und sofort gesperrt."""
+        sitzung, sperre = desktop_einstellungen()
+        sitzung.set_uint("idle-delay", int(self.zeit.get_value()) * 60)
+        sperre.set_boolean("lock-enabled", True)
+        sperre.set_uint("lock-delay", 0)
+
+    def _umgeschaltet(self, zeile, _pspec):
+        if self._sperre or desktop_einstellungen() is None:
+            return
+        if zeile.get_active():
+            self._setzen()
+        else:
+            # Wie der Schalter in den GNOME-Einstellungen: Bildschirm geht weiter aus, sperrt nicht
+            desktop_einstellungen()[1].set_boolean("lock-enabled", False)
+        self.zeigen()
+
+    def _gewaehlt(self, _zeile, _pspec):
+        if self._sperre or desktop_einstellungen() is None or not self.an.get_active():
+            return
+        self._setzen()
+        self.zeigen()
 
 
 class KameraAblauf(Gtk.Box):
@@ -647,20 +736,10 @@ class Fenster(Adw.ApplicationWindow):
         self.g_schalter.add(self.r_keepassxc_version)
         s.add(self.g_schalter)
 
-        # Automatisch sperren wie in den GNOME-Einstellungen: Schalter = lock-enabled, Minuten =
-        # idle-delay (Bildschirm aus), gesperrt wird dann sofort (lock-delay 0)
-        g_sperre = Adw.PreferencesGroup(
-            title=_("Screen lock"),
-            description=_("With face unlock, a short time hardly bothers you: you’re back in "
-                          "with a glance."))
-        self.r_sperre_an = Adw.SwitchRow(title=_("Lock automatically"))
-        self.r_sperre_an.add_prefix(Gtk.Image(icon_name="system-lock-screen-symbolic"))
-        self.r_sperre_an.connect("notify::active", self._sperre_umgeschaltet)
+        g_sperre = Adw.PreferencesGroup(title=_("Screen lock"), description=SPERRE_TEXT)
+        self.sperre = SperrZeilen()
+        self.r_sperre_an, self.r_sperrzeit = self.sperre.an, self.sperre.zeit
         g_sperre.add(self.r_sperre_an)
-        self.r_sperrzeit = Adw.SpinRow.new_with_range(1, 60, 1)
-        self.r_sperrzeit.set_title(_("After minutes without input"))
-        self.r_sperrzeit.add_prefix(Gtk.Image(icon_name="preferences-system-time-symbolic"))
-        self.r_sperrzeit.connect("notify::value", self._sperrzeit_gewaehlt)
         g_sperre.add(self.r_sperrzeit)
         s.add(g_sperre)
         box = Gtk.Stack()
@@ -810,11 +889,18 @@ class Fenster(Adw.ApplicationWindow):
             if nr:
                 r.add_prefix(text(nr, "title-4"))
             so.append(r)
+        # Gehört zur Gesichtsentsperrung: wer schnell wieder drin ist, kann früh sperren lassen
+        self.w_sperre = SperrZeilen()
+        sperre_liste = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        sperre_liste.add_css_class("boxed-list")
+        sperre_liste.append(self.w_sperre.an)
+        sperre_liste.append(self.w_sperre.zeit)
         schritt("einschalten", _("Turn on"),
                 _("Everything is ready. Turn on face unlock for the lock screen. Your computer "
                   "will ask for the administrator password to do this."),
                 self.w_einschalten, self.w_einschalten_status,
-                text(_("How it works from now on"), "heading"), so)
+                text(_("How it works from now on"), "heading"), so,
+                text(_("Screen lock"), "heading"), text(SPERRE_TEXT, "dim-label"), sperre_liste)
 
         a = KameraAblauf(self, "geste-testen", mit_titel=False)
         self.w_ablauf["sudo"] = a
@@ -831,10 +917,28 @@ class Fenster(Adw.ApplicationWindow):
                   "and the ✌ sign instead of typing your password. If you don’t use the "
                   "terminal, just skip this step."), a)
 
+        mehr = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        mehr.add_css_class("boxed-list")
+        self.w_mehr = {}
+        for sid, titel, inhalt, symbol in (
+                ("freigaben", _("Unlocks"),
+                 _("Administrator dialogs, login after startup, KeePassXC, unlock only with ✌"),
+                 "system-lock-screen-symbolic"),
+                ("gesicht", _("Face"),
+                 _("Not always recognized, for example with glasses? Add to your face"),
+                 "avatar-default-symbolic"),
+                ("erweitert", _("Advanced"),
+                 _("Infrared camera only for Winky, face data in the TPM chip, strictness"),
+                 "preferences-system-symbolic")):
+            zeile = textzeile(titel, inhalt, symbol)
+            k = knopf(_("Open"), lambda sid=sid: self.abschnitt_zeigen(sid))
+            zeile.add_suffix(k)
+            self.w_mehr[sid] = k
+            mehr.append(zeile)
         schritt("fertig", _("Done!"),
                 _("Winky is set up. Try it right away: press Super+L, then any key, and look at "
                   "the camera. “Security and help” in the sidebar explains what to watch out "
-                  "for."), symbol="emblem-ok-symbolic")
+                  "for."), text(_("More options"), "heading"), mehr, symbol="emblem-ok-symbolic")
 
         unten = Gtk.Box(spacing=12, margin_top=10, margin_bottom=10, margin_start=18,
                         margin_end=18)
@@ -1535,71 +1639,7 @@ class Fenster(Adw.ApplicationWindow):
                             _("The infrared camera is available to all programs again"), admin=True)
 
     def _desktop(self):
-        """Sitzungs- und Sperreinstellungen von GNOME; None, wenn es sie nicht gibt."""
-        if not hasattr(self, "_desktop_einst"):
-            quelle = Gio.SettingsSchemaSource.get_default()
-            if quelle and quelle.lookup("org.gnome.desktop.session", True) and \
-                    quelle.lookup("org.gnome.desktop.screensaver", True):
-                self._desktop_einst = (Gio.Settings.new("org.gnome.desktop.session"),
-                                       Gio.Settings.new("org.gnome.desktop.screensaver"))
-            else:
-                self._desktop_einst = None
-        return self._desktop_einst
-
-    def _sperrzeit_zeigen(self):
-        einst = self._desktop()
-        if einst is None:
-            for zeile in (self.r_sperre_an, self.r_sperrzeit):
-                zeile.set_sensitive(False)
-            self.r_sperre_an.set_subtitle(_("Not available on this desktop"))
-            return
-        sitzung, sperre = einst
-        sekunden = sitzung.get_uint("idle-delay")
-        an = sekunden > 0 and sperre.get_boolean("lock-enabled")
-        self._sperrzeit_sperre = True
-        self.r_sperre_an.set_active(an)
-        fokus = self.get_focus()   # beim Tippen nicht überschreiben (Aktualisierung alle 15 s)
-        tippt = fokus is not None and (fokus == self.r_sperrzeit or
-                                       fokus.is_ancestor(self.r_sperrzeit))
-        if sekunden and not tippt:
-            self.r_sperrzeit.set_value(max(1, min(60, round(sekunden / 60))))
-        self._sperrzeit_sperre = False
-        self.r_sperrzeit.set_sensitive(an)
-        self.r_sperre_an.set_subtitle(
-            _("Without input, the screen turns off and locks") if an else
-            _("Never locks by itself; lock with Super+L"))
-        if an and sperre.get_uint("lock-delay"):
-            self.r_sperrzeit.set_subtitle(_("Locks {seconds} s after the screen turns off").format(
-                seconds=sperre.get_uint("lock-delay")))
-        elif an and (sekunden % 60 or sekunden > 3600):
-            self.r_sperrzeit.set_subtitle(_("Currently {minutes} minutes (set in the system "
-                                            "settings)").format(minutes=round(sekunden / 60)))
-        else:
-            self.r_sperrzeit.set_subtitle("")
-
-    def _sperre_setzen(self):
-        """Bildschirm nach der eingestellten Zeit aus und sofort gesperrt."""
-        sitzung, sperre = self._desktop()
-        sitzung.set_uint("idle-delay", int(self.r_sperrzeit.get_value()) * 60)
-        sperre.set_boolean("lock-enabled", True)
-        sperre.set_uint("lock-delay", 0)
-
-    def _sperre_umgeschaltet(self, zeile, _pspec):
-        if getattr(self, "_sperrzeit_sperre", False) or self._desktop() is None:
-            return
-        if zeile.get_active():
-            self._sperre_setzen()
-        else:
-            # Wie der Schalter in den GNOME-Einstellungen: Bildschirm geht weiter aus, sperrt nicht
-            self._desktop()[1].set_boolean("lock-enabled", False)
-        self._sperrzeit_zeigen()
-
-    def _sperrzeit_gewaehlt(self, _zeile, _pspec):
-        if getattr(self, "_sperrzeit_sperre", False) or self._desktop() is None \
-                or not self.r_sperre_an.get_active():
-            return
-        self._sperre_setzen()
-        self._sperrzeit_zeigen()
+        return desktop_einstellungen()
 
     def _vorlagen_tpm_umgeschaltet(self, zeile, _pspec):
         # GTK meldet ein Umschalten manchmal doppelt: nur auf echte Änderungen reagieren
@@ -1806,7 +1846,8 @@ class Fenster(Adw.ApplicationWindow):
             _("Found: {found}.").format(found=gefunden) + " " + rest if gefunden else rest)
         self.r_pause.set_active(z.pausiert)
         self.r_pause.set_sensitive(bereit and (z.aktiv or z.pausiert) and not laeuft)
-        self._sperrzeit_zeigen()
+        self.sperre.zeigen()
+        self.w_sperre.zeigen()
         self.r_entsperren_geste.set_active(z.entsperren_geste)
         self.r_entsperren_geste.set_sensitive(((z.aktiv and s["geste"]) or z.entsperren_geste)
                                               and not laeuft)

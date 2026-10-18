@@ -207,6 +207,14 @@ def test(f):
     f.w_einschalten.emit("clicked")
     pruefe(fertig(f) and f.zustand.aktiv and "Eingeschaltet" in f.w_einschalten_status.get_label()
            and f.w_weiter.get_sensitive(), "eingeschaltet")
+    sitzung, sperre = f._desktop()
+    pruefe(f.w_sperre.an.get_active()
+           and f.w_sperre.zeit.get_value() * 60 == sitzung.get_uint("idle-delay"),
+           "Einschalten-Schritt zeigt die automatische Sperre des Systems")
+    f.w_sperre.zeit.set_value(4)
+    pruefe(sitzung.get_uint("idle-delay") == 240
+           and warte(lambda: f.r_sperrzeit.get_value() == 4, 2),
+           "Sperrzeit im Assistenten gesetzt, Freigaben zeigen sie sofort")
     weiter(f)
 
     # --- sudo mit ✌ (freiwillig)
@@ -227,8 +235,14 @@ def test(f):
            "sudo mit Gesicht und ✌ eingeschaltet")
     weiter(f)
     pruefe(schritt(f) == "fertig" and f.w_weiter.get_label() == "Zur Übersicht", "Fertig-Seite")
+    pruefe(set(f.w_mehr) == {"freigaben", "gesicht", "erweitert"},
+           "Fertig-Seite nennt weitere Möglichkeiten (Freigaben, Gesicht, Erweitert)")
     weiter(f)
     pruefe(warte(lambda: seite(f) == "start", 3), "zurück zur Startseite")
+    f.w_mehr["erweitert"].emit("clicked")
+    pruefe(seite(f) == "start" and f.abschnitte.get_visible_child_name() == "erweitert",
+           "„Öffnen“ auf der Fertig-Seite springt zum Abschnitt")
+    f.abschnitt_zeigen("uebersicht")
 
     # --- Startseite
     pruefe("Winky ist an" in f.s_titel.get_label() and not f.s_einrichten.get_visible(),

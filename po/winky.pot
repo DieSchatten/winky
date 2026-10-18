@@ -205,6 +205,12 @@ msgstr ""
 msgid "Test again"
 msgstr ""
 
+#: src/app/gesicht_app.py
+msgid ""
+"With face unlock, a short time hardly bothers you: you’re back in with a "
+"glance."
+msgstr ""
+
 #: src/app/gesicht_app.py src/app/umgebung.py
 msgid "unknown"
 msgstr ""
@@ -250,6 +256,36 @@ msgstr[1] ""
 
 #: src/app/gesicht_app.py
 msgid "Delete"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Lock automatically"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "After minutes without input"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not available on this desktop"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Without input, the screen turns off and locks"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Never locks by itself; lock with Super+L"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Locks {seconds} s after the screen turns off"
+msgstr ""
+
+#: src/app/gesicht_app.py
+#, python-brace-format
+msgid "Currently {minutes} minutes (set in the system settings)"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -442,20 +478,6 @@ msgid "Screen lock"
 msgstr ""
 
 #: src/app/gesicht_app.py
-msgid ""
-"With face unlock, a short time hardly bothers you: you’re back in with a "
-"glance."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Lock automatically"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "After minutes without input"
-msgstr ""
-
-#: src/app/gesicht_app.py
 msgid "Not set up yet"
 msgstr ""
 
@@ -629,6 +651,23 @@ msgid ""
 msgstr ""
 
 #: src/app/gesicht_app.py
+msgid ""
+"Administrator dialogs, login after startup, KeePassXC, unlock only with ✌"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Not always recognized, for example with glasses? Add to your face"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Infrared camera only for Winky, face data in the TPM chip, strictness"
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "Open"
+msgstr ""
+
+#: src/app/gesicht_app.py
 msgid "Done!"
 msgstr ""
 
@@ -637,6 +676,10 @@ msgid ""
 "Winky is set up. Try it right away: press Super+L, then any key, and look at "
 "the camera. “Security and help” in the sidebar explains what to watch out "
 "for."
+msgstr ""
+
+#: src/app/gesicht_app.py
+msgid "More options"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -827,10 +870,6 @@ msgstr ""
 msgid ""
 "In the Software app under “Installed”. After that, only the password works "
 "everywhere again, and the face data of all users is deleted."
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Open"
 msgstr ""
 
 #: src/app/gesicht_app.py
@@ -1223,28 +1262,6 @@ msgstr ""
 
 #: src/app/gesicht_app.py
 msgid "The infrared camera is available to all programs again"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Not available on this desktop"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Without input, the screen turns off and locks"
-msgstr ""
-
-#: src/app/gesicht_app.py
-msgid "Never locks by itself; lock with Super+L"
-msgstr ""
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "Locks {seconds} s after the screen turns off"
-msgstr ""
-
-#: src/app/gesicht_app.py
-#, python-brace-format
-msgid "Currently {minutes} minutes (set in the system settings)"
 msgstr ""
 
 #: src/app/gesicht_app.py
