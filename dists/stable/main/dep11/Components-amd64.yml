@@ -1,0 +1,228 @@
+---
+File: DEP-11
+Version: 1.0
+Origin: winky
+---
+Type: desktop-application
+ID: io.github.dieschatten.Winky
+Package: winky
+ProjectLicense: MIT AND Apache-2.0
+Name:
+  C: Winky
+Summary:
+  C: Unlock your screen with your face, like Windows Hello
+  de: Den Sperrbildschirm mit dem Gesicht öffnen, wie Windows Hello
+Description:
+  C: >-
+    <p>Winky unlocks the GNOME lock screen with a glance at the camera, similar to Windows Hello. It uses the laptop's infrared
+    camera; photos on a phone or screen are invisible in the infrared image.</p>
+
+    <ul><li>A setup assistant guides you through everything in a few minutes, no terminal needed.</li><li>Your password always
+    works. After switching on the computer, for su, remote access and administrator dialogs it is required anyway.</li><li>Optional:
+    confirm sudo in the terminal with your face and the ✌ sign instead of your password. A large ✌ notice shows the command.</li><li>Optional:
+    unlock KeePassXC (from version 2.8) with your face and ✌.</li><li>Optional: approve administrator dialogs such as installing
+    updates with your face and ✌ instead of the password.</li><li>Optional: unlock only with face and ✌, so nobody gets in
+    by holding the computer up to your face.</li><li>Optional: infrared camera only for Winky, so other programs can no longer
+    switch it on.</li><li>A history shows afterwards what was unlocked and approved, including every sudo command, handy when
+    an AI assistant or a script uses sudo for you.</li><li>No images are stored, only face features that only the system can
+    read. No network access.</li><li>Everyone records their own face with their own password.</li></ul>
+
+    <p>Winky is a convenience for the lock screen, not theft protection and no liveness detection: a printout visible in infrared
+    or very similar siblings can fool it. When uninstalled, only the password applies again, and the face data of all users
+    is deleted.</p>
+
+    <p>Requires an infrared camera (Windows Hello camera) and GNOME with GDM, for example Zorin OS 18 or Ubuntu 24.04. So
+    far tested on two laptops, including a Microsoft Surface Laptop 4; other cameras may behave differently. Use at your own
+    risk.</p>
+  de: >-
+    <p>Winky öffnet die GNOME-Bildschirmsperre mit einem Blick in die Kamera, ähnlich wie Windows Hello. Dafür nutzt Winky
+    die Infrarot-Kamera des Laptops; Fotos auf Handy oder Bildschirm sind im Infrarot-Bild unsichtbar.</p>
+
+    <ul><li>Ein Assistent führt in wenigen Minuten durch die Einrichtung, ganz ohne Terminal.</li><li>Das Passwort geht immer.
+    Nach dem Einschalten des Rechners, für su, Fernzugriff und Administrator-Dialoge bleibt es ohnehin nötig.</li><li>Wahlweise
+    bestätigt man sudo im Terminal mit Gesicht und dem Handzeichen ✌ statt mit dem Passwort. Ein großer ✌-Hinweis zeigt den
+    Befehl.</li><li>Wahlweise KeePassXC (ab Version 2.8) mit Gesicht und ✌ entsperren.</li><li>Wahlweise Administrator-Dialoge
+    wie das Installieren von Updates mit Gesicht und ✌ statt Passwort freigeben.</li><li>Wahlweise nur mit Gesicht und ✌ entsperren,
+    damit niemand hineinkommt, der dir den Rechner vors Gesicht hält.</li><li>Wahlweise Infrarot-Kamera nur für Winky, damit
+    andere Programme sie nicht mehr einschalten können.</li><li>Ein Verlauf zeigt im Nachhinein, was entsperrt und freigegeben
+    wurde, samt jedem sudo-Befehl, praktisch, wenn ein KI-Assistent oder ein Skript für dich sudo nutzt.</li><li>Gespeichert
+    werden keine Bilder, nur Gesichtsmerkmale, die nur das System lesen kann. Kein Netzwerkzugriff.</li><li>Jede Person nimmt
+    ihr eigenes Gesicht mit ihrem eigenen Passwort auf.</li></ul>
+
+    <p>Winky ist ein Komfort für die Bildschirmsperre, kein Diebstahlschutz und keine Lebenderkennung: Ein im Infrarot sichtbarer
+    Ausdruck oder sehr ähnliche Geschwister können täuschen. Beim Deinstallieren gilt sofort wieder nur das Passwort, und
+    die Gesichtsdaten aller Benutzer werden gelöscht.</p>
+
+    <p>Braucht eine Infrarot-Kamera (Windows-Hello-Kamera) und GNOME mit GDM, zum Beispiel Zorin OS 18 oder Ubuntu 24.04.
+    Bisher an zwei Laptops getestet, darunter ein Microsoft Surface Laptop 4; andere Kameras können sich anders verhalten.
+    Die Nutzung erfolgt auf eigenes Risiko.</p>
+Developer:
+  id: io.github.dieschatten
+  name:
+    C: DieSchatten
+Categories:
+- Settings
+- Security
+Keywords:
+  C:
+  - Windows Hello
+  - face unlock
+  - face recognition
+  - facial recognition
+  - Howdy
+  - unlock
+  - lock screen
+  - login
+  - biometric
+  - infrared camera
+  - IR camera
+  - sudo
+  - KeePassXC
+  - Gesichtserkennung
+  - Gesichtsentsperrung
+  - Gesicht
+  - entsperren
+  - Sperrbildschirm
+  - Anmeldung
+  - biometrisch
+  - Infrarot-Kamera
+  - IR-Kamera
+Url:
+  homepage: https://github.com/DieSchatten/winky
+  bugtracker: https://github.com/DieSchatten/winky/issues
+  vcs-browser: https://github.com/DieSchatten/winky
+Icon:
+  stock: io.github.dieschatten.Winky
+  cached:
+  - name: winky_io.github.dieschatten.Winky.png
+    width: 48
+    height: 48
+  - name: winky_io.github.dieschatten.Winky.png
+    width: 64
+    height: 64
+  - name: winky_io.github.dieschatten.Winky.png
+    width: 128
+    height: 128
+  - name: winky_io.github.dieschatten.Winky.png
+    width: 64
+    height: 64
+    scale: 2
+  - name: winky_io.github.dieschatten.Winky.png
+    width: 128
+    height: 128
+    scale: 2
+Launchable:
+  desktop-id:
+  - io.github.dieschatten.Winky.desktop
+Provides:
+  binaries:
+  - winky
+Screenshots:
+- default: true
+  caption:
+    C: 'Home page: switches for lock screen, sudo, KeePassXC and pause'
+    de: 'Startseite: Schalter für Bildschirmsperre, sudo, KeePassXC und Pause'
+  thumbnails: []
+  source-image:
+    url: https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/startseite.png
+    width: 900
+    height: 768
+- caption:
+    C: The setup assistant guides you step by step
+    de: Der Assistent führt Schritt für Schritt durch die Einrichtung
+  thumbnails: []
+  source-image:
+    url: https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/einrichtung.png
+    width: 900
+    height: 768
+- caption:
+    C: What Winky can and cannot do, in plain words
+    de: Was Winky kann und was nicht, in einfachen Worten
+  thumbnails: []
+  source-image:
+    url: https://raw.githubusercontent.com/DieSchatten/winky/main/packaging/bildschirmfotos/en/sicherheit.png
+    width: 900
+    height: 768
+Branding:
+  colors:
+  - type: primary
+    scheme-preference: light
+    value: '#99c1f1'
+  - type: primary
+    scheme-preference: dark
+    value: '#1a5fb4'
+Releases:
+- version: 0.15.1
+  type: stable
+  unix-timestamp: 1792328127
+  description:
+    C: >-
+      <ul><li>Setup: when turning on face unlock, you can also choose when the computer locks automatically. The last page
+      shows further options with a button to each.</li><li>The setup assistant can be run again at any time (Advanced → Setup);
+      what is already set up stays.</li></ul>
+- version: 0.15.0
+  type: stable
+  unix-timestamp: 1792326277
+  description:
+    C: >-
+      <ul><li>Lock automatically: choose in Winky how long the computer stays unlocked without input. With face unlock, a
+      short time hardly bothers you.</li><li>Optional: seal your face data in the TPM chip. On the disk it is then stored
+      only encrypted, which helps if the disk is removed or read from Windows (dual boot).</li><li>sudo: just start typing
+      your password while Winky waits for the ✌. The camera turns off, stars show your input, and sudo continues right away.</li><li>Corrected:
+      sealing in the TPM chip doesn't protect against a USB stick with Ubuntu or a related Linux started on the computer,
+      even with Secure Boot. The app and the documentation now say so.</li></ul>
+- version: 0.14.0
+  type: stable
+  unix-timestamp: 1792145924
+  description:
+    C: >-
+      <ul><li>Optional: infrared camera only for Winky. Other programs, including harmful ones, can no longer switch it on;
+      the normal camera stays as it is.</li></ul>
+- version: 0.13.0
+  type: stable
+  unix-timestamp: 1792057429
+  description:
+    C: >-
+      <ul><li>Optional: unlock only with face and ✌, so nobody gets in by holding the computer up to your face.</li><li>Add
+      to your face: named additions such as glasses or different light, up to three, each can be deleted. Only images that
+      match your face are added.</li><li>sudo: missed the ✌? Press Enter without a password and Winky asks again.</li></ul>
+- version: 0.12.0
+  type: stable
+  unix-timestamp: 1791845008
+  description:
+    C: >-
+      <ul><li>Calmer app with a sidebar: overview, unlocks, face, history, security and advanced settings each on their own
+      page.</li><li>Every risky option explains its risk with an info button, and login after startup asks again before it
+      is turned on.</li><li>Round camera view with a progress ring.</li><li>The history shows every sudo command and approved
+      administrator dialog afterwards.</li></ul>
+- version: 0.11.1
+  type: stable
+  unix-timestamp: 1791746777
+  description:
+    C: >-
+      <ul><li>The keyring dialog no longer opens twice; tested on two laptops, including a Microsoft Surface Laptop 4.</li></ul>
+- version: 0.11.0
+  type: stable
+  unix-timestamp: 1791668322
+  description:
+    C: >-
+      <ul><li>Optional: log in after startup with your face. The login keyring then stays locked.</li><li>Experimental: also
+      unlock the login keyring after a face login (password sealed in the TPM chip).</li><li>Administrator dialogs now work
+      inside the password dialog itself: one switch, and background permission checks never turn on the camera.</li><li>Status
+      messages at the login screen.</li><li>Adjustable time for the ✌; the ✌ window shows what you are approving.</li><li>“About
+      Winky” with version, license and project page.</li></ul>
+- version: 0.10.0
+  type: stable
+  unix-timestamp: 1791631500
+  description:
+    C: >-
+      <ul><li>Administrator dialogs with face and ✌, five groups to turn on separately.</li><li>Pause now also applies to
+      KeePassXC.</li></ul>
+- version: 0.9.0
+  type: stable
+  unix-timestamp: 1791586560
+  description:
+    C: >-
+      <ul><li>English and German, own package source for updates through the software manager.</li></ul>
+ContentRating:
+  oars-1.1: {}
