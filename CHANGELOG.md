@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.15.1 (Prototyp)
+## 0.15.1 (18.10.2026)
 
 - Setup: turning on face unlock also offers the automatic lock; the last page shows further
   options with a button to each section. Einrichtung: Beim Einschalten lässt sich gleich die
