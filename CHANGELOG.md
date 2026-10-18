@@ -1,5 +1,12 @@
 # Changes / Änderungen
 
+## 0.15.1 (Prototyp)
+
+- Setup: turning on face unlock also offers the automatic lock; the last page shows further
+  options with a button to each section. Einrichtung: Beim Einschalten lässt sich gleich die
+  automatische Sperre einstellen; die letzte Seite zeigt weitere Möglichkeiten mit Knopf zum
+  jeweiligen Abschnitt.
+
 ## 0.15.0 (18.10.2026)
 
 - Lock automatically: choose in Winky (Unlocks) how long the computer stays unlocked without

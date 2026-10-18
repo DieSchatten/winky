@@ -65,7 +65,7 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **PAM** (`tests/pam_test.py`, 68 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst, am Pseudo-Terminal auch das Passwort während des Wartens aufs ✌
   (erste Taste bestellt den Prüfdienst ab, Sterne, Löschen, an pam_unix, Strg+C). Läuft beim Paketbau.
-- **App** (`tests/app/gui_logik_test.py`, 126 Prüfungen): spielt den Assistenten von
+- **App** (`tests/app/gui_logik_test.py`, 130 Prüfungen): spielt den Assistenten von
   vorn bis hinten durch, dazu alle Abschnitte der Seitenleiste und Fehlerfälle; mit einer Attrappe des
   Helfers, ohne Kamera und ohne root, im GTK-Broadway-Backend:
 

@@ -152,6 +152,14 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
+    <release version="0.15.1" date="2026-10-18T16:00:00Z">
+      <description>
+        <ul>
+          <li>Setup: when turning on face unlock, you can also choose when the computer locks automatically. The last page shows further options with a button to each.</li>
+          <li xml:lang="de">Einrichtung: Beim Einschalten lässt sich gleich einstellen, wann der Rechner automatisch sperrt. Die letzte Seite zeigt weitere Möglichkeiten mit Knopf zum jeweiligen Abschnitt.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.15.0" date="2026-10-18T12:24:37Z">
       <description>
         <ul>
