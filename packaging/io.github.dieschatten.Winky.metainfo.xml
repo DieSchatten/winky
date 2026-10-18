@@ -152,15 +152,17 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
-    <release version="0.15.0" date="2026-10-16T14:00:00Z">
+    <release version="0.15.0" date="2026-10-18T12:24:37Z">
       <description>
         <ul>
           <li>Lock automatically: choose in Winky how long the computer stays unlocked without input. With face unlock, a short time hardly bothers you.</li>
           <li xml:lang="de">Automatisch sperren: in Winky einstellen, wie lange der Rechner ohne Eingabe entsperrt bleibt. Mit Gesichtsentsperrung stört eine kurze Zeit kaum.</li>
-          <li>Optional: seal your face data in the TPM chip. On the disk it is then stored only encrypted, which helps with dual boot or a removed disk.</li>
-          <li xml:lang="de">Wahlweise Gesichtsdaten im TPM-Chip versiegeln. Auf der Festplatte liegen sie dann nur verschlüsselt, das hilft bei Dual Boot oder ausgebauter Festplatte.</li>
+          <li>Optional: seal your face data in the TPM chip. On the disk it is then stored only encrypted, which helps if the disk is removed or read from Windows (dual boot).</li>
+          <li xml:lang="de">Wahlweise Gesichtsdaten im TPM-Chip versiegeln. Auf der Festplatte liegen sie dann nur verschlüsselt, das hilft bei ausgebauter Festplatte oder wenn sie von Windows aus gelesen wird (Dual Boot).</li>
           <li>sudo: just start typing your password while Winky waits for the ✌. The camera turns off, stars show your input, and sudo continues right away.</li>
           <li xml:lang="de">sudo: Passwort einfach lostippen, während Winky aufs ✌ wartet. Die Kamera geht aus, Sterne zeigen die Eingabe, und sudo geht sofort weiter.</li>
+          <li>Corrected: sealing in the TPM chip doesn't protect against a USB stick with Ubuntu or a related Linux started on the computer, even with Secure Boot. The app and the documentation now say so.</li>
+          <li xml:lang="de">Richtiggestellt: Die Versiegelung im TPM-Chip schützt auch mit Secure Boot nicht gegen einen USB-Stick mit Ubuntu oder einem verwandten Linux, der auf dem Rechner gestartet wird. App und Doku sagen das jetzt.</li>
         </ul>
       </description>
     </release>

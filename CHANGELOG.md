@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.15.0 (Prototyp)
+## 0.15.0 (18.10.2026)
 
 - Lock automatically: choose in Winky (Unlocks) how long the computer stays unlocked without
   input. Automatisch sperren: in Winky (Freigaben) einstellen, wie lange der Rechner ohne
