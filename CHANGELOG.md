@@ -1,6 +1,6 @@
 # Changes / Änderungen
 
-## 0.15.2 (Prototyp)
+## 0.15.2 (26.10.2026)
 
 - Winky also tries the camera if the lid sensor still reports "closed" after waking up; only
   with the lid closed at an external monitor does it go straight to the password. Winky
