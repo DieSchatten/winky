@@ -152,6 +152,14 @@
   <content_rating type="oars-1.1"/>
   <!-- Bei jeder Version oben ergänzen; der Paketbau prüft, dass die oberste zur Version passt -->
   <releases>
+    <release version="0.15.2" date="2026-10-27T12:00:00Z">
+      <description>
+        <ul>
+          <li>Winky now also tries the camera if the lid sensor still reports "closed" after waking up, which happens on some laptops. Only with the lid closed at an external monitor does it go straight to the password.</li>
+          <li xml:lang="de">Winky versucht es jetzt auch, wenn der Deckelsensor nach dem Aufwachen noch „zu“ meldet, was bei manchen Laptops vorkommt. Nur mit zugeklapptem Deckel am externen Bildschirm geht es gleich zum Passwort.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.15.1" date="2026-10-18T12:55:27Z">
       <description>
         <ul>

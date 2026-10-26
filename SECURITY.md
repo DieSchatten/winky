@@ -166,7 +166,8 @@ These cannot be avoided by how you use Winky:
 
 - **Allow list in the PAM module:** only the lock screen (recognized by the GDM marker for
   re-authentication) and, if turned on, sudo. No remote access (`PAM_RHOST`), not for
-  root, emergency off switch `/etc/winky/disabled`, lid closed = password right away.
+  root, emergency off switch `/etc/winky/disabled`, lid closed at an external monitor =
+  password right away.
 - **Fixed time limits:** 3 seconds on the lock screen, at most 30 seconds for sudo, at most
   9 seconds over Polkit. No `fork`, no
   dependency on files in the home directory.

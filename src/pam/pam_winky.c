@@ -39,6 +39,12 @@
 #define DIALOG_SCHALTER "/etc/winky/dialoge-ein"
 #define ENTSPERREN_SCHALTER "/etc/winky/entsperren-geste"
 #define TESTDIENST_DIALOG "winky-test-dialog"
+#ifndef DECKEL_ORDNER /* im Test überschrieben (tests/test_deckel.c) */
+#define DECKEL_ORDNER "/proc/acpi/button/lid"
+#endif
+#ifndef DRM_ORDNER
+#define DRM_ORDNER "/sys/class/drm"
+#endif
 
 struct argumente {
   char dienste[256];
@@ -97,14 +103,14 @@ static int dienst_erlaubt(const struct argumente *a, const char *dienst) {
 }
 
 static int deckel_zu(void) {
-  DIR *d = opendir("/proc/acpi/button/lid");
+  DIR *d = opendir(DECKEL_ORDNER);
   if (!d) return 0;
   int zu = 0;
   struct dirent *e;
   while (!zu && (e = readdir(d)) != NULL) {
     if (e->d_name[0] == '.') continue;
     char pfad[300];
-    snprintf(pfad, sizeof(pfad), "/proc/acpi/button/lid/%s/state", e->d_name);
+    snprintf(pfad, sizeof(pfad), "%s/%s/state", DECKEL_ORDNER, e->d_name);
     FILE *f = fopen(pfad, "re");
     if (!f) continue;
     char zeile[64] = {0};
@@ -114,6 +120,38 @@ static int deckel_zu(void) {
   closedir(d);
   return zu;
 }
+
+/* Externer Bildschirm angeschlossen (wie „Docked“ bei logind): ein verbundener Anschluss außer
+ * dem eingebauten (eDP, LVDS, DSI) */
+static int externer_bildschirm(void) {
+  DIR *d = opendir(DRM_ORDNER);
+  if (!d) return 0;
+  int extern_ = 0;
+  struct dirent *e;
+  while (!extern_ && (e = readdir(d)) != NULL) {
+    const char *strich = strchr(e->d_name, '-');
+    if (strncmp(e->d_name, "card", 4) != 0 || !strich) continue;
+    const char *anschluss = strich + 1;
+    if (strncmp(anschluss, "eDP", 3) == 0 || strncmp(anschluss, "LVDS", 4) == 0 ||
+        strncmp(anschluss, "DSI", 3) == 0 || strncmp(anschluss, "Writeback", 9) == 0)
+      continue;
+    char pfad[400];
+    snprintf(pfad, sizeof(pfad), "%s/%s/status", DRM_ORDNER, e->d_name);
+    FILE *f = fopen(pfad, "re");
+    if (!f) continue;
+    char zeile[32] = {0};
+    if (fgets(zeile, sizeof(zeile), f) && strncmp(zeile, "connected", 9) == 0) extern_ = 1;
+    fclose(f);
+  }
+  closedir(d);
+  return extern_;
+}
+
+/* Zugeklappt am externen Bildschirm: Die Kamera sieht nichts, also gleich das Passwort. Ohne
+ * externen Bildschirm versucht Winky es trotzdem: Mancher Deckelsensor meldet nach dem
+ * Aufwachen noch „zu“, obwohl jemand davor sitzt; ist der Deckel wirklich zu, sieht die Kamera
+ * nur Dunkelheit. */
+static int zugeklappt_am_bildschirm(void) { return deckel_zu() && externer_bildschirm(); }
 
 static long ms_seit(const struct timespec *start) {
   struct timespec jetzt;
@@ -435,7 +473,7 @@ static int dialog_weg(pam_handle_t *pamh, uid_t uid, const struct argumente *a) 
   if (!schalter_an(DIALOG_SCHALTER)) return PAM_IGNORE;
   struct stat st;
   if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
-  if (deckel_zu()) return PAM_IGNORE;
+  if (zugeklappt_am_bildschirm()) return PAM_IGNORE;
   uint32_t status = WINKY_FEHLER;
   int wartete = 0;
   if (frage(WINKY_OP_DIALOG, uid, a->geste_timeout_ms, NULL, 0, pamh,
@@ -474,7 +512,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
       return PAM_IGNORE;
     struct stat st;
     if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
-    if (deckel_zu()) return PAM_IGNORE;
+    if (zugeklappt_am_bildschirm()) return PAM_IGNORE;
     char nachricht[WINKY_BEFEHL_MAX];
     nachricht[0] = 'C';
     const size_t tl = strlen((const char *)tty);
@@ -528,7 +566,7 @@ SICHTBAR int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const 
   }
   struct stat st;
   if (lstat(NOTSCHALTER, &st) == 0) return PAM_IGNORE;
-  if (deckel_zu()) return PAM_IGNORE;
+  if (zugeklappt_am_bildschirm()) return PAM_IGNORE;
 
   const int maske = op == WINKY_OP_ANMELDUNG;
   /* Wahlweise nur mit ✌: Wer dir den Rechner vors Gesicht hält, kommt so nicht hinein */

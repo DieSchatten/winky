@@ -25,6 +25,7 @@ podman run --rm --network=none -v "$PWD":/src:Z -w /src \
     cmake --build bau | tail -1
     echo "== Komponententests: $(bau/test_dienst | tail -1)"
     echo "== PAM-Tests: $(python3 tests/pam_test.py bau/pam_winky.so | tail -1)"
+    echo "== Deckelprüfung: $(bau/test_deckel | tail -1)"
     python3 -c "import ast,sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]" \
       src/verwalten/winky-verwalten src/hinweis/winky-hinweis src/schluessel/winky-schluessel src/app/*.py
     ./scripts/uebersetzungen.sh

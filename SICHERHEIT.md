@@ -172,7 +172,8 @@ Das lässt sich durch Bedienung nicht abstellen:
 
 - **Freigabeliste im PAM-Modul:** nur Sperrbildschirm (erkannt am GDM-Merkmal für die
   Wiederanmeldung) und, wenn eingeschaltet, sudo. Kein Fernzugriff (`PAM_RHOST`), nicht für
-  root, Notschalter `/etc/winky/disabled`, Deckel zu = sofort Passwort.
+  root, Notschalter `/etc/winky/disabled`, Deckel zu am externen Bildschirm = sofort
+  Passwort.
 - **Feste Zeitgrenzen:** 3 Sekunden am Sperrbildschirm, höchstens 30 Sekunden für sudo,
   höchstens 9 Sekunden über Polkit. Kein `fork`,
   keine Abhängigkeit von Dateien im Home-Verzeichnis.

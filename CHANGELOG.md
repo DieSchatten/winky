@@ -1,5 +1,12 @@
 # Changes / Änderungen
 
+## 0.15.2 (Prototyp)
+
+- Winky also tries the camera if the lid sensor still reports "closed" after waking up; only
+  with the lid closed at an external monitor does it go straight to the password. Winky
+  versucht es auch, wenn der Deckelsensor nach dem Aufwachen noch „zu“ meldet; nur mit
+  zugeklapptem Deckel am externen Bildschirm geht es gleich zum Passwort.
+
 ## 0.15.1 (18.10.2026)
 
 - Setup: turning on face unlock also offers the automatic lock; the last page shows further

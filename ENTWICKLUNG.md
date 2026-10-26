@@ -62,6 +62,9 @@ Das Sicherheitsmodell steht in [SICHERHEIT.md](SICHERHEIT.md).
 - **Komponenten** (`tests/test_dienst.cc`, 80 Prüfungen): Konfiguration, Vorlagen samt
   Verknüpfungs- und Besitzerangriffen, Entscheidungsregel, Sperrzähler, Gesicht und ✌,
   sudo-Begrenzung. Läuft beim Paketbau.
+- **Deckelprüfung** (`tests/test_deckel.c`, 6 Prüfungen): Kamera überspringen nur bei Deckel
+  zu und externem Bildschirm, auch wenn der Sensor nach dem Aufwachen fälschlich „zu“ meldet.
+  Läuft beim Paketbau.
 - **PAM** (`tests/pam_test.py`, 68 Prüfungen): echtes libpam mit pamtester und
   nachgebautem Prüfdienst, am Pseudo-Terminal auch das Passwort während des Wartens aufs ✌
   (erste Taste bestellt den Prüfdienst ab, Sterne, Löschen, an pam_unix, Strg+C). Läuft beim Paketbau.
